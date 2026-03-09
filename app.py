@@ -1931,7 +1931,10 @@ STATS = {
 
 @app.before_request
 def require_login():
-    allowed = ("login", "static", "crm_cards", "save_crm_note")
+    # Allow CRM routes (used by external EATOC integration without session)
+    if request.path.startswith("/crm") or request.path.startswith("/api/crm/"):
+        return
+    allowed = ("login", "static")
     if request.endpoint and request.endpoint not in allowed:
         if not session.get("authenticated"):
             return redirect(url_for("login"))

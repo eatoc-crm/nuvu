@@ -1931,7 +1931,8 @@ STATS = {
 
 @app.before_request
 def require_login():
-    if request.endpoint and request.endpoint not in ("login", "static"):
+    allowed = ("login", "static", "crm_cards", "save_crm_note")
+    if request.endpoint and request.endpoint not in allowed:
         if not session.get("authenticated"):
             return redirect(url_for("login"))
 

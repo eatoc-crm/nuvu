@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python migrate.py:*)",
+      "Bash(python3:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:developers.zoopla.co.uk)",
+      "WebFetch(domain:support.altosoftware.co.uk)",
+      "Bash(COOKIE_JAR=\"/tmp/nuvu_cookies.txt\":*)",
+      "Bash(# Login first curl -s -c /tmp/nuvu_cookies.txt -d \"\"password=NUVU2026\"\" -L http://127.0.0.1:5000/login # Test 1: Dashboard loads echo \"\"=== TEST 1: Dashboard ===\"\" curl -s -o /dev/null -w \"\"HTTP %{http_code} \\(%{size_download} bytes\\)\\\\n\"\" -b /tmp/nuvu_cookies.txt http://127.0.0.1:5000/ # Test 2: Property page loads echo \"\"=== TEST 2: Property page ===\"\" curl -s -o /dev/null -w \"\"HTTP %{http_code} \\(%{size_download} bytes\\)\\\\n\"\" -b /tmp/nuvu_cookies.txt http://127.0.0.1:5000/property/stalled # Test 3: Completion Engine API echo \"\"=== TEST 3: Completion Engine API ===\"\" curl -s -b /tmp/nuvu_cookies.txt http://127.0.0.1:5000/api/completion-engine/stalled | python3 -m json.tool)",
+      "Bash(__NEW_LINE_fd259799896418b1__ echo \"\")",
+      "Bash(__NEW_LINE_5573bc7ab2f6a3ad__ echo \"\")"
+    ]
+  }
+}

@@ -5581,29 +5581,69 @@ CRM_CARDS_HTML = r"""<!DOCTYPE html>
 :root{
   --navy:#0f1b2d;--navy-lt:#162236;--navy-md:#1c2e4a;--navy-card:#182842;
   --lime:#c4e233;--lime-dk:#a3bf1a;
-  --red:#e11d48;--amber:#f97316;--green:#16a34a;--blue:#3b82f6;--purple:#8b5cf6;
+  --red:#e11d48;--red-chip:#e11d48;
+  --amber:#f97316;--amber-chip:#f97316;
+  --green:#16a34a;--green-chip:#16a34a;
+  --blue:#3b82f6;--purple:#8b5cf6;
   --white:#ffffff;--off-white:#f4f6f9;
   --txt:#1e293b;--txt-mid:#475569;--txt-light:#94a3b8;
   --card-shadow:0 2px 12px rgba(0,0,0,.08);
+  --t:.22s ease;
 }
 html{font-size:15px;scroll-behavior:smooth}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--off-white);color:var(--txt);min-height:100vh}
 
-/* ═══ HERO ═══ */
-.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-md) 50%,#1a3a5c 100%);padding:40px 40px 32px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-50%;right:-20%;width:80%;height:200%;background:radial-gradient(circle,rgba(196,226,51,.06) 0%,transparent 70%);pointer-events:none}
-.hero-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
-.hero-left{display:flex;align-items:center;gap:20px}
-.hero-left img{width:52px;height:52px;border-radius:12px}
-.hero-title{font-size:2rem;font-weight:900;color:var(--white);letter-spacing:8px}
-.hero-sub{font-size:.72rem;color:var(--lime);text-transform:uppercase;letter-spacing:3px;font-weight:600;margin-top:4px}
-.hero-stats{display:flex;gap:24px}
-.hs{text-align:center;padding:12px 20px;background:rgba(255,255,255,.06);border-radius:12px;min-width:100px}
-.hs-val{font-size:1.8rem;font-weight:900;color:var(--white)}
-.hs-lbl{font-size:.62rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.5);font-weight:600;margin-top:2px}
+/* ═══ HERO — matches dashboard street-scene style ═══ */
+.hero{position:relative;width:100%;height:380px;overflow:hidden;background:var(--navy)}
+.hero-img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-badge{
+  position:absolute;top:28px;right:32px;
+  background:rgba(15,27,45,.88);backdrop-filter:blur(12px);
+  border-radius:14px;padding:18px 28px 14px;
+  display:flex;flex-direction:column;align-items:center;
+  border:1px solid rgba(255,255,255,.08);
+}
+.hero-badge-top{display:flex;align-items:center;gap:14px}
+.hero-badge img{width:48px;height:48px;border-radius:10px}
+.hero-badge-top h1{font-size:2rem;font-weight:900;color:var(--white);letter-spacing:12px;line-height:1;margin:0;text-indent:12px}
+.hero-badge-strapline{font-size:.6rem;color:var(--lime);text-transform:uppercase;letter-spacing:3px;font-weight:600;margin-top:8px;text-align:center;white-space:nowrap}
+.hero-stats{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 64px);max-width:1280px;
+  background:#1a2332;border-radius:16px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;justify-content:center;padding:0;
+}
+.hs{
+  flex:1;max-width:220px;text-align:center;padding:22px 16px;
+  border-right:1px solid rgba(255,255,255,.08);
+  transition:all .25s ease;
+}
+.hs:last-child{border-right:none}
+.hs:hover{background:rgba(196,214,0,.12);border-radius:8px;transform:scale(1.04);box-shadow:0 0 16px rgba(196,214,0,.2)}
+.hs-val{font-size:2.1rem;font-weight:900;color:var(--white);line-height:1}
+.hs-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:1.8px;color:rgba(255,255,255,.55);margin-top:6px;font-weight:600}
 
-/* ═══ FILTERS ═══ */
-.filter-bar{max-width:1400px;margin:0 auto;padding:20px 40px 8px;display:flex;gap:10px;flex-wrap:wrap}
+/* ═══ CONTENT CONTAINER ═══ */
+.content{max-width:1280px;margin:0 auto;padding:0 32px 60px}
+
+/* ═══ BACK LINK ═══ */
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;
+  color:var(--txt-light);text-decoration:none;font-size:.82rem;font-weight:600;
+  padding:20px 0 0;
+}
+.back-link:hover{color:var(--lime-dk)}
+
+/* ═══ PAGE HEADER ═══ */
+.page-header{text-align:center;padding:24px 0 8px}
+.page-header-accent{width:60px;height:4px;background:var(--lime);border-radius:2px;margin:0 auto 16px}
+.page-header h2{font-size:1.3rem;font-weight:800;color:var(--txt);display:flex;align-items:center;justify-content:center;gap:10px}
+.page-header p{font-size:.88rem;color:var(--txt-light);margin-top:4px}
+
+/* ═══ FILTER BAR ═══ */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:16px 0 8px}
 .filter-btn{
   padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;
   background:var(--white);color:var(--txt-mid);font-size:.82rem;font-weight:600;
@@ -5612,143 +5652,199 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .filter-btn:hover,.filter-btn.active{background:var(--navy);color:var(--white);border-color:var(--navy)}
 .filter-btn .count{margin-left:6px;font-size:.72rem;opacity:.6}
 
-/* ═══ CARD GRID ═══ */
-.card-grid{max-width:1400px;margin:0 auto;padding:24px 40px 60px;display:grid;grid-template-columns:1fr;gap:28px}
+/* ═══ ERROR / EMPTY ═══ */
+.error-banner{padding:16px 28px;margin:20px 0;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:var(--red);font-size:.88rem;font-weight:600}
+.empty-state{text-align:center;color:var(--txt-light);font-size:1.1rem;padding:60px 0}
+
+/* ═══ CARD GRID — 3 cols matching dashboard ═══ */
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:12px;padding-top:16px}
 
 /* ═══ PROPERTY CARD ═══ */
-.prop-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);border:1px solid #e8ecf1;transition:all .22s ease}
-.prop-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.1)}
+.prop-card{
+  background:var(--white);border-radius:16px;overflow:hidden;
+  box-shadow:var(--card-shadow);
+  transition:all var(--t);border:1px solid #e8ecf1;
+  display:flex;flex-direction:column;
+}
+.prop-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.12)}
 
-/* Header */
-.card-header{display:flex;align-items:flex-start;justify-content:space-between;padding:24px 28px 16px;border-bottom:1px solid #f1f5f9}
-.card-address{font-size:1.3rem;font-weight:800;color:var(--txt);line-height:1.3}
-.card-header-right{display:flex;align-items:center;gap:14px}
-.card-price{font-size:1.15rem;font-weight:800;color:var(--navy)}
-.status-badge{
+/* Card photo */
+.card-photo{height:160px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--navy-md)}
+.card-photo img{width:100%;height:100%;object-fit:cover}
+.card-photo-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:100%;color:rgba(255,255,255,.3)}
+.card-photo-placeholder svg{width:32px;height:32px}
+.card-photo-placeholder span{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.card-chip{
+  position:absolute;top:12px;right:12px;
   padding:5px 14px;border-radius:6px;
   font-size:.68rem;font-weight:800;letter-spacing:.8px;color:var(--white);text-transform:uppercase;
 }
-.badge-active{background:var(--green)}
-.badge-exchanged{background:var(--blue)}
-.badge-problem{background:var(--red)}
-.badge-incomplete_chain{background:var(--amber)}
-.badge-development{background:var(--purple)}
-.badge-default{background:var(--txt-light)}
+.chip-active{background:var(--green-chip)}
+.chip-exchanged{background:var(--blue)}
+.chip-problem{background:var(--red-chip)}
+.chip-incomplete_chain{background:var(--amber-chip)}
+.chip-development{background:var(--purple)}
+.chip-default{background:var(--txt-light)}
 
-/* ═══ MILESTONE TRACKER ═══ */
-.milestone-bar{display:flex;align-items:center;padding:20px 28px;gap:0;background:#fafbfc;border-bottom:1px solid #f1f5f9}
+/* Card body */
+.card-body{padding:18px 22px 16px;flex:1;display:flex;flex-direction:column}
+.card-name{font-size:1.05rem;font-weight:700;color:var(--txt);margin-bottom:8px;line-height:1.3}
+.card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.card-meta-tag{font-size:.68rem;font-weight:600;color:var(--txt-light);background:#f1f5f9;padding:3px 10px;border-radius:5px}
+.card-meta-tag.tag-price{font-weight:800;color:var(--navy);background:#e8ecf1}
+
+/* Milestone tracker (compact) */
+.milestone-bar{display:flex;align-items:center;padding:14px 22px;gap:0;background:#fafbfc;border-top:1px solid #f1f5f9}
 .ms-step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
 .ms-dot{
-  width:28px;height:28px;border-radius:50%;
+  width:22px;height:22px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:.7rem;font-weight:700;color:var(--white);
-  border:3px solid #e2e8f0;background:var(--white);
+  font-size:.55rem;font-weight:700;color:var(--white);
+  border:2.5px solid #e2e8f0;background:var(--white);
   transition:all .3s ease;position:relative;z-index:2;
 }
 .ms-dot.done{background:var(--green);border-color:var(--green)}
-.ms-dot.done::after{content:'✓'}
+.ms-dot.done::after{content:'\2713';font-size:.55rem}
 .ms-dot.current{border-color:var(--lime);background:var(--lime);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(196,226,51,.4)}50%{box-shadow:0 0 0 8px rgba(196,226,51,0)}}
-.ms-label{font-size:.68rem;font-weight:600;color:var(--txt-mid);margin-top:8px;text-align:center;line-height:1.2}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(196,226,51,.4)}50%{box-shadow:0 0 0 6px rgba(196,226,51,0)}}
+.ms-label{font-size:.55rem;font-weight:600;color:var(--txt-mid);margin-top:5px;text-align:center;line-height:1.1}
 .ms-label.done-label{color:var(--green);font-weight:700}
-.ms-connector{flex:1;height:3px;background:#e2e8f0;margin:0 -4px;position:relative;top:-14px;z-index:0}
+.ms-connector{flex:1;height:2px;background:#e2e8f0;margin:0 -2px;position:relative;top:-10px;z-index:0}
 .ms-connector.done-conn{background:var(--green)}
 
-/* ═══ TWO COLUMN CONTACTS ═══ */
-.card-contacts{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #f1f5f9}
-.contact-col{padding:20px 28px}
-.contact-col:first-child{border-right:1px solid #f1f5f9}
-.contact-role{font-size:.62rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt-light);font-weight:700;margin-bottom:10px}
-.contact-name{font-size:.95rem;font-weight:700;color:var(--txt);margin-bottom:4px}
-.contact-detail{font-size:.82rem;color:var(--txt-mid);margin-bottom:2px;display:flex;align-items:center;gap:6px}
-.contact-detail a{color:var(--blue);text-decoration:none}
-.contact-detail a:hover{text-decoration:underline}
-.contact-solicitor{margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9}
-.contact-solicitor .sol-label{font-size:.6rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt-light);font-weight:600;margin-bottom:4px}
-.contact-solicitor .sol-name{font-size:.85rem;font-weight:600;color:var(--txt)}
+/* Card detail rows */
+.card-details{padding:12px 22px;border-top:1px solid #f1f5f9}
+.detail-row{display:flex;justify-content:space-between;padding:4px 0}
+.detail-row .dl{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--txt-light);font-weight:600}
+.detail-row .dv{font-size:.82rem;font-weight:600;color:var(--txt)}
+.detail-row .dv a{color:var(--blue);text-decoration:none}
+.detail-row .dv a:hover{text-decoration:underline}
 
-/* ═══ BOTTOM ROW ═══ */
-.card-bottom{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid #f1f5f9}
-.bottom-item{
-  flex:1;min-width:120px;padding:14px 20px;
-  border-right:1px solid #f1f5f9;
-  display:flex;flex-direction:column;gap:2px;
-}
-.bottom-item:last-child{border-right:none}
-.bi-label{font-size:.58rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt-light);font-weight:700}
-.bi-value{font-size:.85rem;font-weight:600;color:var(--txt)}
-
-/* ═══ NOTES ═══ */
-.card-notes{padding:16px 28px;border-bottom:1px solid #f1f5f9}
-.notes-header{font-size:.62rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt-light);font-weight:700;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.note-text{font-size:.88rem;color:var(--txt-mid);line-height:1.5;min-height:24px}
-.note-text[contenteditable]{outline:none;border:1px solid transparent;border-radius:6px;padding:6px 10px;transition:border-color .2s}
+/* Notes */
+.card-notes{padding:12px 22px;border-top:1px solid #f1f5f9}
+.notes-header{font-size:.62rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt-light);font-weight:700;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.note-text{font-size:.82rem;color:var(--txt-mid);line-height:1.5;min-height:20px}
+.note-text[contenteditable]{outline:none;border:1px solid transparent;border-radius:6px;padding:4px 8px;transition:border-color .2s}
 .note-text[contenteditable]:focus{border-color:var(--lime);background:var(--white)}
-.note-save{display:none;padding:4px 14px;border-radius:6px;border:none;background:var(--lime);color:var(--navy);font-size:.75rem;font-weight:700;cursor:pointer;margin-top:8px}
+.note-save{display:none;padding:4px 14px;border-radius:6px;border:none;background:var(--lime);color:var(--navy);font-size:.72rem;font-weight:700;cursor:pointer}
 .note-save.visible{display:inline-block}
 
-/* ═══ AI PANEL ═══ */
-.ai-panel{background:var(--navy);padding:24px 28px;border-radius:0 0 16px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px}
-.ai-section h4{font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+/* AI Panel */
+.ai-panel{background:var(--navy);padding:18px 22px;border-radius:0 0 16px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.ai-section h4{font-size:.58rem;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:5px}
 .ai-done h4{color:var(--green)}
 .ai-todo h4{color:var(--lime)}
 .ai-human h4{color:var(--red)}
 .ai-list{list-style:none;padding:0}
-.ai-list li{font-size:.8rem;color:rgba(255,255,255,.7);margin-bottom:6px;padding-left:16px;position:relative;line-height:1.4}
-.ai-list li::before{content:'›';position:absolute;left:0;color:rgba(255,255,255,.3);font-weight:700}
+.ai-list li{font-size:.72rem;color:rgba(255,255,255,.7);margin-bottom:5px;padding-left:12px;position:relative;line-height:1.35}
+.ai-list li::before{content:'\203A';position:absolute;left:0;color:rgba(255,255,255,.3);font-weight:700}
 .ai-done .ai-list li::before{color:var(--green)}
 .ai-todo .ai-list li::before{color:var(--lime)}
 .ai-human .ai-list li::before{color:var(--red)}
-.ai-empty{font-size:.78rem;color:rgba(255,255,255,.3);font-style:italic}
-
-/* ═══ ERROR BANNER ═══ */
-.error-banner{max-width:1400px;margin:20px auto 0;padding:16px 28px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:var(--red);font-size:.88rem;font-weight:600}
-
-/* ═══ EMPTY STATE ═══ */
-.empty-state{max-width:1400px;margin:60px auto;text-align:center;color:var(--txt-light);font-size:1.1rem}
-
-/* ═══ BACK LINK ═══ */
-.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--txt-light);text-decoration:none;font-size:.82rem;font-weight:600;padding:16px 40px 0;max-width:1400px;margin:0 auto;display:block}
-.back-link:hover{color:var(--txt)}
+.ai-empty{font-size:.72rem;color:rgba(255,255,255,.3);font-style:italic}
 
 /* ═══ RESPONSIVE ═══ */
-@media(max-width:900px){
-  .hero-inner{flex-direction:column;gap:20px;text-align:center}
-  .hero-stats{justify-content:center}
-  .card-contacts{grid-template-columns:1fr}
-  .contact-col:first-child{border-right:none;border-bottom:1px solid #f1f5f9}
+
+/* Touch devices */
+@media(hover:none){
+  .prop-card:hover{transform:none;box-shadow:var(--card-shadow)}
+  .hs:hover{background:transparent;border-radius:0;transform:none;box-shadow:none}
+  .prop-card:active{transform:scale(.97);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+  .hs:active{background:rgba(196,214,0,.18);border-radius:8px}
+}
+
+/* Tablet */
+@media(max-width:1024px){
+  .hero{height:320px}
+  .hero-badge{top:20px;right:20px;padding:14px 20px}
+  .hero-badge img{width:40px;height:40px}
+  .hero-badge-top h1{font-size:1.6rem;letter-spacing:10px;text-indent:10px}
+  .hero-badge-strapline{font-size:.55rem;letter-spacing:2.5px}
+  .hero-stats{width:calc(100% - 48px);display:grid;grid-template-columns:repeat(3,1fr);padding:0;border-radius:14px}
+  .hs{max-width:none;padding:16px 12px;border-right:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+  .hs:nth-child(3n){border-right:none}
+  .hs:nth-child(n+4){border-bottom:none}
+  .hs-val{font-size:1.6rem}
+  .card-grid{grid-template-columns:repeat(2,1fr);gap:20px}
+  .content{padding:0 24px 48px}
   .ai-panel{grid-template-columns:1fr}
-  .card-grid{padding:16px}
-  .milestone-bar{overflow-x:auto;padding:16px}
-  .filter-bar{padding:16px}
-  .card-bottom{flex-direction:column}
-  .bottom-item{border-right:none;border-bottom:1px solid #f1f5f9}
-  .bottom-item:last-child{border-bottom:none}
+}
+
+/* Mobile */
+@media(max-width:768px){
+  html{font-size:12px}
+  body{overflow-x:hidden}
+  .hero{height:auto;overflow:visible}
+  .hero-img{height:240px}
+  .hero-badge{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%);right:auto;
+    padding:10px 16px;border-radius:10px;
+  }
+  .hero-badge img{width:30px;height:30px;border-radius:6px}
+  .hero-badge-top{gap:8px}
+  .hero-badge-top h1{font-size:1.2rem;letter-spacing:6px;text-indent:6px}
+  .hero-badge-strapline{font-size:.5rem;letter-spacing:2px;margin-top:4px}
+  .hero-stats{
+    position:relative;bottom:auto;left:auto;transform:none;
+    width:100%;max-width:100%;
+    flex-direction:column;
+    border-radius:0 0 12px 12px;margin:0;
+  }
+  .hs{
+    max-width:none;padding:12px 20px;
+    border-right:none;border-bottom:1px solid rgba(255,255,255,.08);
+    display:flex;align-items:center;justify-content:space-between;
+    min-height:48px;
+  }
+  .hs:last-child{border-bottom:none}
+  .hs-val{font-size:1.3rem;order:2}
+  .hs-lbl{margin-top:0;font-size:.7rem;order:1}
+  .content{padding:0 16px 40px}
+  .card-grid{grid-template-columns:1fr;gap:16px}
+  .card-photo{height:180px}
+  .filter-bar{padding:12px 0}
+  .milestone-bar{overflow-x:auto;padding:12px 16px}
+  .ai-panel{grid-template-columns:1fr;padding:14px 16px}
 }
 </style>
 </head>
 <body>
 
-<!-- HERO -->
+<!-- ═══ HERO — street-scene with frosted badge ═══ -->
 <div class="hero">
-  <div class="hero-inner">
-    <div class="hero-left">
+  <img class="hero-img" src="/static/street-scene.PNG" alt="NUVU sold boards">
+  <div class="hero-badge">
+    <div class="hero-badge-top">
       <img src="/static/logo.png" alt="NUVU">
-      <div>
-        <div class="hero-title">NUVU</div>
-        <div class="hero-sub">Live Sales Progression — EATOC CRM</div>
-      </div>
+      <h1>NUVU</h1>
     </div>
-    <div class="hero-stats">
-      <div class="hs"><div class="hs-val">{{ properties|length }}</div><div class="hs-lbl">Active</div></div>
-      <div class="hs"><div class="hs-val">{{ properties|selectattr('status','equalto','exchanged')|list|length }}</div><div class="hs-lbl">Exchanged</div></div>
-      <div class="hs"><div class="hs-val">{{ properties|selectattr('status','equalto','problem')|list|length }}</div><div class="hs-lbl">Problems</div></div>
-    </div>
+    <div class="hero-badge-strapline">Live Sales Progression</div>
+  </div>
+  <div class="hero-stats">
+    {% set active_count = properties|selectattr('status','equalto','active')|list|length %}
+    {% set exchanged_count = properties|selectattr('status','equalto','exchanged')|list|length %}
+    {% set problem_count = properties|selectattr('status','equalto','problem')|list|length %}
+    {% set chain_count = properties|selectattr('status','equalto','incomplete_chain')|list|length %}
+    <div class="hs"><div class="hs-val">{{ properties|length }}</div><div class="hs-lbl">Total</div></div>
+    <div class="hs"><div class="hs-val">{{ active_count }}</div><div class="hs-lbl">Active</div></div>
+    <div class="hs"><div class="hs-val">{{ exchanged_count }}</div><div class="hs-lbl">Exchanged</div></div>
+    <div class="hs"><div class="hs-val">{{ problem_count }}</div><div class="hs-lbl">Problems</div></div>
+    <div class="hs"><div class="hs-val">{{ chain_count }}</div><div class="hs-lbl">Chain</div></div>
   </div>
 </div>
 
+<div class="content">
+
+<a href="/" class="back-link">&larr; Back to Dashboard</a>
+
+<div class="page-header">
+  <div class="page-header-accent"></div>
+  <h2>EATOC CRM Properties</h2>
+  <p>{{ properties|length }} properties currently in progression</p>
+</div>
+
 {% if error %}
-<div class="error-banner">⚠ Could not fetch live data: {{ error }}</div>
+<div class="error-banner">&x26A0; Could not fetch live data: {{ error }}</div>
 {% endif %}
 
 <!-- FILTER BAR -->
@@ -5761,36 +5857,44 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   <button class="filter-btn" data-filter="development">Development</button>
 </div>
 
-<!-- BACK LINK -->
-<a href="/" class="back-link">← Back to Dashboard</a>
-
 <!-- CARDS -->
 <div class="card-grid">
 {% for p in properties %}
-<div class="prop-card" data-status="{{ p.status|lower }}">
+{% set st = p.status|lower if p.status else 'active' %}
+<div class="prop-card" data-status="{{ st }}">
 
-  <!-- HEADER -->
-  <div class="card-header">
-    <div>
-      <div class="card-address">{{ p.property_address or 'Unknown Address' }}</div>
+  <!-- PHOTO -->
+  <div class="card-photo">
+    {% if p.image_url %}
+    <img src="{{ p.image_url }}" alt="{{ p.property_address }}">
+    {% else %}
+    <div class="card-photo-placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      <span>No image</span>
     </div>
-    <div class="card-header-right">
-      {% if p.sale_price %}
-      <div class="card-price">£{{ "{:,.0f}".format(p.sale_price|float) }}</div>
-      {% endif %}
-      {% set st = p.status|lower if p.status else 'active' %}
-      <span class="status-badge badge-{{ st if st in ['active','exchanged','problem','incomplete_chain','development'] else 'default' }}">{{ p.status or 'Active' }}</span>
+    {% endif %}
+    <span class="card-chip chip-{{ st if st in ['active','exchanged','problem','incomplete_chain','development'] else 'default' }}">{{ p.status or 'Active' }}</span>
+  </div>
+
+  <!-- BODY -->
+  <div class="card-body">
+    <div class="card-name">{{ p.property_address or 'Unknown Address' }}</div>
+    <div class="card-meta">
+      {% if p.sale_price %}<span class="card-meta-tag tag-price">&pound;{{ "{:,.0f}".format(p.sale_price|float) }}</span>{% endif %}
+      {% if p.property_type %}<span class="card-meta-tag">{{ p.property_type }}</span>{% endif %}
+      {% if p.beds %}<span class="card-meta-tag">{{ p.beds }} bed</span>{% endif %}
+      {% if p.staff_initials %}<span class="card-meta-tag">{{ p.staff_initials }}</span>{% endif %}
     </div>
   </div>
 
   <!-- MILESTONE TRACKER -->
   {% set milestones = [
-    ('Offer Accepted', p.offer_accepted),
-    ('Memo Sent', p.memo_sent),
+    ('Offer', p.offer_accepted),
+    ('Memo', p.memo_sent),
     ('Searches', p.buyer_solicitor),
     ('Survey', p.surveyor),
     ('Exchange', p.exchange_date),
-    ('Completion', p.completion_date)
+    ('Complete', p.completion_date)
   ] %}
   <div class="milestone-bar">
     {% for label, val in milestones %}
@@ -5802,7 +5906,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       <div class="ms-step">
         <div class="ms-dot {{ 'done' if is_done else ('current' if is_current else '') }}">
           {% if not is_done and not is_current %}
-            <span style="color:var(--txt-light);font-size:.6rem">{{ loop.index }}</span>
+            <span style="color:var(--txt-light);font-size:.5rem">{{ loop.index }}</span>
           {% endif %}
         </div>
         <div class="ms-label {{ 'done-label' if is_done else '' }}">{{ label }}</div>
@@ -5810,88 +5914,46 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     {% endfor %}
   </div>
 
-  <!-- TWO COLUMN CONTACTS -->
-  <div class="card-contacts">
-    <div class="contact-col">
-      <div class="contact-role">Buyer</div>
-      <div class="contact-name">{{ p.buyer_name or '—' }}</div>
-      {% if p.buyer_phone %}<div class="contact-detail">📞 <a href="tel:{{ p.buyer_phone }}">{{ p.buyer_phone }}</a></div>{% endif %}
-      {% if p.buyer_email %}<div class="contact-detail">✉ <a href="mailto:{{ p.buyer_email }}">{{ p.buyer_email }}</a></div>{% endif %}
-      {% if p.buyer_solicitor %}
-      <div class="contact-solicitor">
-        <div class="sol-label">Solicitor</div>
-        <div class="sol-name">{{ p.buyer_solicitor }}</div>
-      </div>
-      {% endif %}
-    </div>
-    <div class="contact-col">
-      <div class="contact-role">Vendor</div>
-      <div class="contact-name">{{ p.vendor_name or '—' }}</div>
-      {% if p.vendor_phone %}<div class="contact-detail">📞 <a href="tel:{{ p.vendor_phone }}">{{ p.vendor_phone }}</a></div>{% endif %}
-      {% if p.vendor_email %}<div class="contact-detail">✉ <a href="mailto:{{ p.vendor_email }}">{{ p.vendor_email }}</a></div>{% endif %}
-      {% if p.vendor_solicitor %}
-      <div class="contact-solicitor">
-        <div class="sol-label">Solicitor</div>
-        <div class="sol-name">{{ p.vendor_solicitor }}</div>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- BOTTOM ROW -->
-  <div class="card-bottom">
-    <div class="bottom-item">
-      <span class="bi-label">Mortgage Broker</span>
-      <span class="bi-value">{{ p.mortgage_broker or '—' }}</span>
-    </div>
-    <div class="bottom-item">
-      <span class="bi-label">Surveyor</span>
-      <span class="bi-value">{{ p.surveyor or '—' }}</span>
-    </div>
-    <div class="bottom-item">
-      <span class="bi-label">Sewage</span>
-      <span class="bi-value">{{ p.sewage_type or '—' }}</span>
-    </div>
-    <div class="bottom-item">
-      <span class="bi-label">Staff</span>
-      <span class="bi-value">{{ p.staff_initials or '—' }}</span>
-    </div>
-    <div class="bottom-item">
-      <span class="bi-label">Fee</span>
-      <span class="bi-value">{% if p.fee %}£{{ "{:,.0f}".format(p.fee|float) }}{% else %}—{% endif %}</span>
-    </div>
+  <!-- KEY DETAILS -->
+  <div class="card-details">
+    {% if p.fee %}<div class="detail-row"><span class="dl">Fee</span><span class="dv">&pound;{{ "{:,.0f}".format(p.fee|float) }}</span></div>{% endif %}
+    {% if p.buyer_name %}<div class="detail-row"><span class="dl">Buyer</span><span class="dv">{{ p.buyer_name }}</span></div>{% endif %}
+    {% if p.buyer_solicitor %}<div class="detail-row"><span class="dl">Buyer Sol.</span><span class="dv">{{ p.buyer_solicitor }}</span></div>{% endif %}
+    {% if p.vendor_solicitor %}<div class="detail-row"><span class="dl">Vendor Sol.</span><span class="dv">{{ p.vendor_solicitor }}</span></div>{% endif %}
+    {% if p.mortgage_broker %}<div class="detail-row"><span class="dl">Mortgage</span><span class="dv">{{ p.mortgage_broker }}</span></div>{% endif %}
+    {% if p.sewage_type %}<div class="detail-row"><span class="dl">Sewage</span><span class="dv">{{ p.sewage_type }}</span></div>{% endif %}
   </div>
 
   <!-- NOTES -->
   <div class="card-notes">
     <div class="notes-header">
-      <span>Progression Notes</span>
-      <button class="note-save" id="save-{{ p.id }}" onclick="saveNote({{ p.id }})">Save</button>
+      <span>Notes</span>
+      <button class="note-save" id="save-{{ p.id }}" onclick="saveNote('{{ p.id }}')">Save</button>
     </div>
     <div class="note-text"
          contenteditable="true"
          data-id="{{ p.id }}"
          onfocus="this.parentNode.querySelector('.note-save').classList.add('visible')"
-         onblur="setTimeout(()=>this.parentNode.querySelector('.note-save').classList.remove('visible'),200)">{{ p.nuvu_notes or p.notes or 'No notes yet — click to add.' }}</div>
+         onblur="setTimeout(()=>this.parentNode.querySelector('.note-save').classList.remove('visible'),200)">{{ p.nuvu_notes or p.notes or 'Click to add notes...' }}</div>
   </div>
 
   <!-- AI PANEL -->
   {% set ai = ai_panels[p.id|string] if ai_panels else {} %}
   <div class="ai-panel">
     <div class="ai-section ai-done">
-      <h4>✓ What We've Done</h4>
+      <h4>&#x2713; Done</h4>
       {% if ai.done %}
       <ul class="ai-list">{% for item in ai.done %}<li>{{ item }}</li>{% endfor %}</ul>
       {% else %}<div class="ai-empty">No actions recorded yet</div>{% endif %}
     </div>
     <div class="ai-section ai-todo">
-      <h4>→ What To Do Next</h4>
+      <h4>&rarr; Next</h4>
       {% if ai.todo %}
       <ul class="ai-list">{% for item in ai.todo %}<li>{{ item }}</li>{% endfor %}</ul>
       {% else %}<div class="ai-empty">All caught up</div>{% endif %}
     </div>
     <div class="ai-section ai-human">
-      <h4>⚑ Needs Human Input</h4>
+      <h4>&#x2691; Human</h4>
       {% if ai.human %}
       <ul class="ai-list">{% for item in ai.human %}<li>{{ item }}</li>{% endfor %}</ul>
       {% else %}<div class="ai-empty">No issues flagged</div>{% endif %}
@@ -5906,6 +5968,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 {% endif %}
 </div>
 
+</div><!-- /content -->
+
 <script>
 // ── Filter buttons ──
 document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -5916,6 +5980,12 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     document.querySelectorAll('.prop-card').forEach(card => {
       card.style.display = (f === 'all' || card.dataset.status === f) ? '' : 'none';
     });
+    // Update count in All button
+    const allBtn = document.querySelector('[data-filter="all"]');
+    if (f === 'all') {
+      const total = document.querySelectorAll('.prop-card').length;
+      allBtn.querySelector('.count').textContent = '(' + total + ')';
+    }
   });
 });
 
@@ -5932,7 +6002,7 @@ function saveNote(propId) {
   .then(r => r.json())
   .then(d => {
     const btn = document.getElementById(`save-${propId}`);
-    if (btn) { btn.textContent = '✓ Saved'; setTimeout(() => btn.textContent = 'Save', 2000); }
+    if (btn) { btn.textContent = '\u2713 Saved'; setTimeout(() => btn.textContent = 'Save', 2000); }
   })
   .catch(e => alert('Save failed: ' + e));
 }

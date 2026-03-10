@@ -76,10 +76,10 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Chased Harper & Lane by phone — no answer, left voicemail",
-            "Vendor solicitor confirmed title pack sent 3 weeks ago",
-            "Buyer mortgage broker says application stalled — awaiting valuation",
-            "Emailed Harper & Lane again requesting update on enquiries"
+            {"date": "9 Mar 2026 · 14:22", "text": "Chased Harper & Lane by phone — no answer, left voicemail"},
+            {"date": "4 Mar 2026 · 09:15", "text": "Vendor solicitor confirmed title pack sent 3 weeks ago"},
+            {"date": "25 Feb 2026 · 16:40", "text": "Buyer mortgage broker says application stalled — awaiting valuation"},
+            {"date": "18 Feb 2026 · 11:03", "text": "Emailed Harper & Lane again requesting update on enquiries"}
         ]
     },
     {
@@ -133,10 +133,10 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Survey flagged damp in west gable wall — awaiting contractor quote",
-            "Buyer requested \u00a312,000 reduction following survey findings",
-            "Called sellers to discuss — they want to see contractor report first",
-            "Sellers relocating to France, need resolution this week or buyer may walk"
+            {"date": "8 Mar 2026 · 10:35", "text": "Survey flagged damp in west gable wall — awaiting contractor quote"},
+            {"date": "2 Mar 2026 · 15:48", "text": "Buyer requested \u00a312,000 reduction following survey findings"},
+            {"date": "22 Feb 2026 · 09:12", "text": "Called sellers to discuss — they want to see contractor report first"},
+            {"date": "14 Feb 2026 · 13:27", "text": "Sellers relocating to France, need resolution this week or buyer may walk"}
         ]
     },
     {
@@ -190,9 +190,9 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Local authority searches delayed \u2014 Eden DC backlog estimated 4 weeks",
-            "Chased Oglethorpe Sturton to book survey — awaiting buyer availability",
-            "Chain above has lost their buyer \u2014 monitoring situation closely"
+            {"date": "7 Mar 2026 · 16:10", "text": "Local authority searches delayed \u2014 Eden DC backlog estimated 4 weeks"},
+            {"date": "28 Feb 2026 · 11:33", "text": "Chased Oglethorpe Sturton to book survey — awaiting buyer availability"},
+            {"date": "19 Feb 2026 · 14:55", "text": "Chain above has lost their buyer \u2014 monitoring situation closely"}
         ]
     },
     {
@@ -246,9 +246,9 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "No survey booked after 52 days \u2014 escalated to branch manager",
-            "Called Mr Henderson directly — confirmed still interested but busy with work",
-            "Buyer solicitor not responding to chaser calls \u2014 sent formal letter"
+            {"date": "7 Mar 2026 · 16:10", "text": "No survey booked after 52 days \u2014 escalated to branch manager"},
+            {"date": "28 Feb 2026 · 11:33", "text": "Called Mr Henderson directly — confirmed still interested but busy with work"},
+            {"date": "19 Feb 2026 · 14:55", "text": "Buyer solicitor not responding to chaser calls \u2014 sent formal letter"}
         ]
     },
     {
@@ -302,10 +302,10 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Mortgage valuation came in \u00a315,000 below asking price",
-            "Lender may reduce offer \u2014 discussing with buyer's broker",
-            "Buyer willing to bridge \u00a35,000 if vendor meets halfway",
-            "Vendor considering \u2014 awaiting response by Friday"
+            {"date": "6 Mar 2026 · 11:42", "text": "Mortgage valuation came in \u00a315,000 below asking price"},
+            {"date": "1 Mar 2026 · 09:58", "text": "Lender may reduce offer \u2014 discussing with buyer's broker"},
+            {"date": "23 Feb 2026 · 15:30", "text": "Buyer willing to bridge \u00a35,000 if vendor meets halfway"},
+            {"date": "16 Feb 2026 · 10:15", "text": "Vendor considering \u2014 awaiting response by Friday"}
         ]
     },
     # ── THIS WEEK ───────────────────────────────────────────
@@ -360,10 +360,10 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Mortgage offer received, all parties notified",
-            "Searches came back clean, no issues",
-            "Completion date provisionally agreed \u2014 7th March",
-            "Confirm exchange date with both solicitors \u2014 target 21 Feb"
+            {"date": "6 Mar 2026 · 11:42", "text": "Mortgage offer received, all parties notified"},
+            {"date": "1 Mar 2026 · 09:58", "text": "Searches came back clean, no issues"},
+            {"date": "23 Feb 2026 · 15:30", "text": "Completion date provisionally agreed \u2014 7th March"},
+            {"date": "16 Feb 2026 · 10:15", "text": "Confirm exchange date with both solicitors \u2014 target 21 Feb"}
         ]
     },
     {
@@ -417,10 +417,10 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Memorandum of sale issued to all parties",
-            "Mr Atkinson confirmed as cash buyer \u2014 no mortgage required",
-            "Enquiries raised by buyer solicitor \u2014 14 questions outstanding",
-            "Chase Bendles for contract approval"
+            {"date": "5 Mar 2026 · 15:18", "text": "Memorandum of sale issued to all parties"},
+            {"date": "27 Feb 2026 · 10:45", "text": "Mr Atkinson confirmed as cash buyer \u2014 no mortgage required"},
+            {"date": "20 Feb 2026 · 14:22", "text": "Enquiries raised by buyer solicitor \u2014 14 questions outstanding"},
+            {"date": "12 Feb 2026 · 09:33", "text": "Chase Bendles for contract approval"}
         ]
     },
     {
@@ -474,9 +474,9 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Searches came back clean, no issues flagged",
-            "Survey completed \u2014 no significant defects found",
-            "Chase Burnetts to raise enquiries now survey is back"
+            {"date": "8 Mar 2026 · 14:30", "text": "Searches came back clean, no issues flagged"},
+            {"date": "1 Mar 2026 · 11:15", "text": "Survey completed \u2014 no significant defects found"},
+            {"date": "22 Feb 2026 · 16:48", "text": "Chase Burnetts to raise enquiries now survey is back"}
         ]
     },
     {
@@ -530,10 +530,10 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Exchange expected this week \u2014 both sides confirmed ready",
-            "Completion date agreed \u2014 14th February",
-            "Buyers confirmed they want to complete by Valentine's Day",
-            "Final check with Burnetts on completion statement"
+            {"date": "7 Mar 2026 · 09:25", "text": "Exchange expected this week \u2014 both sides confirmed ready"},
+            {"date": "28 Feb 2026 · 14:52", "text": "Completion date agreed \u2014 14th February"},
+            {"date": "21 Feb 2026 · 11:05", "text": "Buyers confirmed they want to complete by Valentine's Day"},
+            {"date": "13 Feb 2026 · 16:38", "text": "Final check with Burnetts on completion statement"}
         ]
     },
     {
@@ -587,9 +587,9 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Final contract review underway with both solicitors",
-            "Miss Armstrong relocating from Manchester \u2014 removal firm booked",
-            "Chase Harper & Lane for exchange date confirmation"
+            {"date": "10 Mar 2026 · 11:15", "text": "Final contract review underway with both solicitors"},
+            {"date": "4 Mar 2026 · 09:47", "text": "Miss Armstrong relocating from Manchester \u2014 removal firm booked"},
+            {"date": "26 Feb 2026 · 15:30", "text": "Chase Harper & Lane for exchange date confirmation"}
         ]
     },
     # ── THIS MONTH ──────────────────────────────────────────
@@ -644,10 +644,10 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Enquiries answered \u2014 all parties satisfied",
-            "Chase mortgage offer \u2014 valuation was last week",
-            "Mitchells' Lancaster sale exchanged \u2014 chain clear below",
-            "Vendor confirmed annexe ready for move-in"
+            {"date": "6 Mar 2026 · 16:05", "text": "Enquiries answered \u2014 all parties satisfied"},
+            {"date": "27 Feb 2026 · 11:22", "text": "Chase mortgage offer \u2014 valuation was last week"},
+            {"date": "20 Feb 2026 · 09:40", "text": "Mitchells' Lancaster sale exchanged \u2014 chain clear below"},
+            {"date": "11 Feb 2026 · 14:55", "text": "Vendor confirmed annexe ready for move-in"}
         ]
     },
     {
@@ -701,9 +701,9 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Searches received \u2014 clean, no issues",
-            "Survey complete \u2014 minor pointing work noted, not material",
-            "Bendles to raise enquiries this week now searches are back"
+            {"date": "5 Mar 2026 · 09:33", "text": "Searches received \u2014 clean, no issues"},
+            {"date": "26 Feb 2026 · 14:18", "text": "Survey complete \u2014 minor pointing work noted, not material"},
+            {"date": "18 Feb 2026 · 11:50", "text": "Bendles to raise enquiries this week now searches are back"}
         ]
     },
     {
@@ -757,9 +757,9 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Enquiries raised \u2014 chasing seller solicitor for answers",
-            "Mortgage application submitted by Scotts",
-            "Vendor retiring to Spain \u2014 flexible on completion date"
+            {"date": "5 Mar 2026 · 09:33", "text": "Enquiries raised \u2014 chasing seller solicitor for answers"},
+            {"date": "26 Feb 2026 · 14:18", "text": "Mortgage application submitted by Scotts"},
+            {"date": "18 Feb 2026 · 11:50", "text": "Vendor retiring to Spain \u2014 flexible on completion date"}
         ]
     },
     # ── THIS QUARTER ────────────────────────────────────────
@@ -814,9 +814,9 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Survey booked for next week with local surveyor",
-            "Awaiting search results from Eden DC",
-            "Vendor wants completion by Easter \u2014 timeline tight but achievable"
+            {"date": "9 Mar 2026 · 15:42", "text": "Survey booked for next week with local surveyor"},
+            {"date": "2 Mar 2026 · 10:28", "text": "Awaiting search results from Eden DC"},
+            {"date": "23 Feb 2026 · 14:05", "text": "Vendor wants completion by Easter \u2014 timeline tight but achievable"}
         ]
     },
     {
@@ -870,9 +870,9 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Memorandum of sale issued to all parties",
-            "Searches ordered with Eden DC \u2014 expect 3-4 week turnaround",
-            "Miss Thompson's Newcastle flat sale progressing well"
+            {"date": "8 Mar 2026 · 11:18", "text": "Memorandum of sale issued to all parties"},
+            {"date": "1 Mar 2026 · 15:45", "text": "Searches ordered with Eden DC \u2014 expect 3-4 week turnaround"},
+            {"date": "24 Feb 2026 · 09:22", "text": "Miss Thompson's Newcastle flat sale progressing well"}
         ]
     },
     {
@@ -926,10 +926,10 @@ PROPERTIES = [
             {"label": "Completion", "done": False}
         ],
         "activity": [
-            "Mr Jackson confirmed as cash buyer from London \u2014 no chain",
-            "Survey scheduled for this week",
-            "Chasing search results from Eden DC",
-            "Vendor retiring \u2014 no upward chain, flexible on dates"
+            {"date": "10 Mar 2026 · 14:38", "text": "Mr Jackson confirmed as cash buyer from London \u2014 no chain"},
+            {"date": "5 Mar 2026 · 11:22", "text": "Survey scheduled for this week"},
+            {"date": "25 Feb 2026 · 15:05", "text": "Chasing search results from Eden DC"},
+            {"date": "15 Feb 2026 · 09:48", "text": "Vendor retiring \u2014 no upward chain, flexible on dates"}
         ]
     },
 ]
@@ -1750,7 +1750,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     var ah="";
     if(p.activity&&p.activity.length){
       for(var a=0;a<p.activity.length;a++){
-        ah+='<div class="act-item"><div class="act-idx">Update '+(a+1)+'</div>'+p.activity[a]+'</div>';
+        ah+='<div class="act-item"><div class="act-idx">'+p.activity[a].date+'</div>'+p.activity[a].text+'</div>';
       }
     }
     document.getElementById("mActivityList").innerHTML=ah;

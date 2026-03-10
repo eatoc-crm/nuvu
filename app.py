@@ -24,2888 +24,827 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 # ─────────────────────────────────────────────────────────────
 
 PROPERTIES = [
+    # ── NEEDS ACTION ────────────────────────────────────────
     {
-        "id": '14-howard-park',
-        "address": '14 Howard Park',
-        "location": 'Penrith',
-        "price": 3518.75,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 90,
-        "duration_days": 0,
+        "id": "stalled",
+        "address": "Regis Garth",
+        "location": "Great Salkeld",
+        "price": 425000,
+        "status": "stalled",
+        "status_label": "STALLED",
+        "progress": 42,
+        "duration_days": 47,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 18,
         "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": False}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": '—',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": '—',
-        "seller_sol_phone": "—",
-        "offer_date": '20th Oct',
-        "memo_sent": '21st Oct',
-        "searches_ordered": None,
-        "searches_received": None,
+        "buyer": "Mr & Mrs Thornton",
+        "buyer_phone": "07712 345678",
+        "buyer_solicitor": "Harper & Lane, Kendal",
+        "buyer_sol_phone": "01539 720400",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2025-12-24",
+        "memo_sent": "2025-12-31",
+        "searches_ordered": "2026-01-06",
+        "searches_received": "2026-01-22",
         "enquiries_raised": None,
         "enquiries_answered": None,
         "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": '26th Feb',
-        "completion_target": '6th Mar',
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Exchanged',
-        "image_bg": 'linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34243924/main/1.jpg',
+        "survey_booked": "2026-01-10",
+        "survey_complete": "2026-01-24",
+        "exchange_target": "2026-03-14",
+        "completion_target": "2026-03-28",
+        "chain": "Thorntons selling 8 Wordsworth St (buyer found). Onward purchase: none.",
+        "alert": "Buyer solicitor unresponsive for 18 days. Enquiries not yet raised. Mortgage offer still outstanding.",
+        "next_action": "Chase Harper & Lane for enquiry responses and mortgage update.",
+        "image_bg": "linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)",
+        "image_url": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'saddle-house',
-        "address": 'Saddle House',
-        "location": 'Penrith',
-        "price": 189000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 80,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Tilly, Bailey & Irvine law firm',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Ramsdens Solicitors LLP',
-        "seller_sol_phone": "—",
-        "offer_date": '20th Oct',
-        "memo_sent": '23rd Oct',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": '6th March',
-        "completion_target": 'March 13th Completion',
-        "chain": "—",
-        "alert": None,
-        "next_action": '23/1 sols said almost there - waiting for septic tank permit and surveyor to draw up a plan',
-        "image_bg": 'linear-gradient(135deg,#2d3436 0%,#636e72 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33788119/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'the-limes',
-        "address": 'The Limes',
-        "location": 'Penrith',
-        "price": 545000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Birchall Blackburn',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Arnison Heelis',
-        "seller_sol_phone": "—",
-        "offer_date": '8th Sept',
-        "memo_sent": '9th Sept',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'Aiming for 18th March',
-        "chain": "—",
-        "alert": None,
-        "next_action": '5/1 sols asked for fee but not ready to discuss dates',
-        "image_bg": 'linear-gradient(135deg,#355c7d 0%,#6c5b7b 50%,#c06c84 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34143429/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'barnfauld',
-        "address": 'Barnfauld',
-        "location": 'Penrith',
-        "price": 347500,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 80,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Stephen Wilmot',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Burnetts Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '11th Nov',
-        "memo_sent": '11th Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": '27th Feb',
-        "completion_target": '26th March',
-        "chain": "—",
-        "alert": None,
-        "next_action": '31/1 DV chased - 12/1 searches back, have mortgage offer, raising enqs',
-        "image_bg": 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34252902/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'station-house-cliburn',
-        "address": 'Station House, Cliburn',
-        "location": 'Penrith',
-        "price": 1250000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Adam Douglas Legal LLP',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Bell Park Kerridge',
-        "seller_sol_phone": "—",
-        "offer_date": '15th Aug',
-        "memo_sent": '19th Aug',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": '26th March',
-        "chain": "—",
-        "alert": None,
-        "next_action": '31/1 DV Chased',
-        "image_bg": 'linear-gradient(135deg,#11998e 0%,#38ef7d 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33888204/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'the-cottage-murton',
-        "address": 'The Cottage, Murton',
-        "location": 'Penrith',
-        "price": 230000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Potter Owtram & Peck LLP',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Cartmel Shepherd',
-        "seller_sol_phone": "—",
-        "offer_date": '1st Nov',
-        "memo_sent": '1st Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'End March',
-        "chain": "—",
-        "alert": None,
-        "next_action": '19/2 dv chased 31/1 Mortgage offer received',
-        "image_bg": 'linear-gradient(135deg,#e0c3fc 0%,#8ec5fc 100%)',
-        "image_url": '',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'plot-14-swallows-rise',
-        "address": 'Plot 14 Swallows Rise',
-        "location": 'Penrith',
-        "price": 295000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Newtons Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '15th Nov',
-        "memo_sent": '15th Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'End March',
-        "chain": "—",
-        "alert": None,
-        "next_action": '29/1 MTG VAL',
-        "image_bg": 'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34466001/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'plot-15-swallows-rise',
-        "address": 'Plot 15 Swallows Rise',
-        "location": 'Penrith',
-        "price": 280000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '9th May',
-        "memo_sent": '9th May',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'End March',
-        "chain": "—",
-        "alert": None,
-        "next_action": '31/1 DV CHASED',
-        "image_bg": 'linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34466001/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'unity-terrace',
-        "address": 'Unity Terrace',
-        "location": 'Penrith',
-        "price": 125000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Napthens',
-        "seller_sol_phone": "—",
-        "offer_date": '18th Nov',
-        "memo_sent": '18th Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'Poss 26th March',
-        "chain": "—",
-        "alert": None,
-        "next_action": '31/1 DV chased - not having survey',
-        "image_bg": 'linear-gradient(135deg,#c9d6ff 0%,#e2e2e2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33683254/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'force-bank',
-        "address": 'Force Bank',
-        "location": 'Penrith',
-        "price": 400000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'GD Property Solicitors.',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Wragg Mark Bell Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '23rd Dec',
-        "memo_sent": '5th Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'Aiming for March',
-        "chain": "—",
-        "alert": None,
-        "next_action": 'dealing with last enquiries',
-        "image_bg": 'linear-gradient(135deg,#e8cbc0 0%,#636fa4 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34237472/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'rosedale-house',
-        "address": 'Rosedale House',
-        "location": 'Penrith',
-        "price": 237500,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Cartmell Shepherd',
-        "seller_sol_phone": "—",
-        "offer_date": '13th Aug',
-        "memo_sent": '13th Aug',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'Buyer aiming for March',
-        "chain": "—",
-        "alert": None,
-        "next_action": '17/2 buyer & seller trying to resolve lack of building regs issues',
-        "image_bg": 'linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33756668/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": '19-low-byer-park',
-        "address": '19 Low Byer Park',
-        "location": 'Penrith',
-        "price": 340000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Newtons Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Level Law',
-        "seller_sol_phone": "—",
-        "offer_date": '26th Nov',
-        "memo_sent": '26th Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'march?',
-        "chain": "—",
-        "alert": None,
-        "next_action": '17/2 TR chased',
-        "image_bg": 'linear-gradient(135deg,#a8e6cf 0%,#dcedc1 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34466001/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": '22-church-road',
-        "address": '22 Church Road',
-        "location": 'Penrith',
-        "price": 138000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'EMG Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Newtons Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '17th Nov',
-        "memo_sent": '26th Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'march?',
-        "chain": "—",
-        "alert": None,
-        "next_action": '17/2 TR chased',
-        "image_bg": 'linear-gradient(135deg,#d4fc79 0%,#96e6a1 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34023722/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'wheatsheaf-house',
-        "address": 'Wheatsheaf House',
-        "location": 'Penrith',
-        "price": 340000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'AFG Law',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Taylor Rose Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '14th Aug',
-        "memo_sent": '27th Aug',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'April',
-        "chain": "—",
-        "alert": None,
-        "next_action": '15/1 one outstanding query with the council - 8/1 TR chasing',
-        "image_bg": 'linear-gradient(135deg,#fdcbf1 0%,#e6dee9 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33965964/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'ghyll-bank-farm',
-        "address": 'Ghyll Bank Farm',
-        "location": 'Penrith',
-        "price": 498000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Milnemoser',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Poole Townsend Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '14th Aug',
-        "memo_sent": '26th Aug',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'April',
-        "chain": "—",
-        "alert": None,
-        "next_action": '21/2 septic tank getting installed w/c 23/2',
-        "image_bg": 'linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33233873/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": '5-parklands-crescent',
-        "address": '5 Parklands Crescent',
-        "location": 'Penrith',
-        "price": 155000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Scott Duff and Co',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Newtons Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '22nd Oct',
-        "memo_sent": '29th Oct',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'April',
-        "chain": "—",
-        "alert": None,
-        "next_action": '6/1 Searches ordered today. REQ UPDATE FROM BOTH BUYER AND SELLER SOLS. 5/12 Survey completed',
-        "image_bg": 'linear-gradient(135deg,#2c3e50 0%,#3498db 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34054028/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'croft-house-lodge',
-        "address": 'Croft House Lodge',
-        "location": 'Penrith',
-        "price": 535000,
-        "status": 'at-risk',
-        "status_label": 'AT RISK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Napthens',
-        "seller_sol_phone": "—",
-        "offer_date": '12th Nov',
-        "memo_sent": '12th Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": 'delayed - buyer lost buyer - waiting for chain to catch up',
-        "next_action": 'delayed - buyer lost buyer - waiting for chain to catch up',
-        "image_bg": 'linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33776303/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
     {
-        "id": '98-skinburness-road',
-        "address": '98 Skinburness Road',
-        "location": 'Penrith',
-        "price": 410000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Wilson Davies & co Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Berladgraham solicitor',
-        "seller_sol_phone": "—",
-        "offer_date": '13th Jan',
-        "memo_sent": '14th Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Initial enquiries raised 17/2',
-        "image_bg": 'linear-gradient(135deg,#2d3436 0%,#636e72 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34205792/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'sunny-cottage',
-        "address": 'Sunny Cottage',
-        "location": 'Penrith',
-        "price": 117000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Milburns Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Coopers Burnetts',
-        "seller_sol_phone": "—",
-        "offer_date": '13th Jan',
-        "memo_sent": '23rd Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Roof survey booked 28/2',
-        "image_bg": 'linear-gradient(135deg,#355c7d 0%,#6c5b7b 50%,#c06c84 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34376752/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'knotts-mill',
-        "address": 'Knotts Mill',
-        "location": 'Penrith',
-        "price": 1150000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Cooper Stott Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '13th Jan',
-        "memo_sent": '14th Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Searches ordered 18th Feb. Survey due back then seller will send draft contracts',
-        "image_bg": 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33888204/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '27-otters-holt',
-        "address": '27 Otters Holt',
-        "location": 'Penrith',
-        "price": 462000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Scott & Duff',
-        "seller_sol_phone": "—",
-        "offer_date": '15th Jan',
-        "memo_sent": '16th Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Survey 20th Feb SWH',
-        "image_bg": 'linear-gradient(135deg,#11998e 0%,#38ef7d 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34254604/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '3-rectory-road',
-        "address": '3 Rectory Road',
-        "location": 'Penrith',
-        "price": 195000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Wragg Mark-Bell Solicitors Ltd',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solictors',
-        "seller_sol_phone": "—",
-        "offer_date": '19th Jan',
-        "memo_sent": '29th Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Survey completed 18/02',
-        "image_bg": 'linear-gradient(135deg,#e0c3fc 0%,#8ec5fc 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34264323/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'st-martins-gamblesby',
-        "address": 'St Martins Gamblesby',
-        "location": 'Penrith',
-        "price": 305000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'EMG Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Gaynham King and Mellor',
-        "seller_sol_phone": "—",
-        "offer_date": '23rd Jan',
-        "memo_sent": '23rd Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '23/2 Timber and damp survey booked for 02/03',
-        "image_bg": 'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)',
-        "image_url": '',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'south-view',
-        "address": 'South View',
-        "location": 'Penrith',
-        "price": 340000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Wragg Mark Bell Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Bendles Solicitor',
-        "seller_sol_phone": "—",
-        "offer_date": '28th Jan',
-        "memo_sent": '28th Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '16/2 Searches ordered this week, expected back in 2 weeks',
-        "image_bg": 'linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/32964391/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'alrigg-bank',
-        "address": 'Alrigg Bank',
-        "location": 'Penrith',
-        "price": 345000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Milne Moser',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Brockbanks',
-        "seller_sol_phone": "—",
-        "offer_date": '3rd Feb',
-        "memo_sent": '6th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'mortgage val w/c 23/2',
-        "image_bg": 'linear-gradient(135deg,#c9d6ff 0%,#e2e2e2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33865960/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '9-rectory-road',
-        "address": '9 Rectory Road',
-        "location": 'Penrith',
-        "price": 380000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Lowick McKay Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Gaynham King and Mellor',
-        "seller_sol_phone": "—",
-        "offer_date": '3rd Feb',
-        "memo_sent": '10th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Initial enquiries raised 17/2',
-        "image_bg": 'linear-gradient(135deg,#e8cbc0 0%,#636fa4 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34427610/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'cloudbase',
-        "address": 'Cloudbase',
-        "location": 'Penrith',
-        "price": 655000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Warners Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'BLC Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '4th Feb',
-        "memo_sent": '6th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Survey completed 22/02',
-        "image_bg": 'linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34086673/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '22-fairhill-road',
-        "address": '22 Fairhill Road',
-        "location": 'Penrith',
-        "price": 186750,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Scott Duff & Co',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Gaynham King Mellor',
-        "seller_sol_phone": "—",
-        "offer_date": '13th Feb',
-        "memo_sent": '17th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Searches paid 16/02',
-        "image_bg": 'linear-gradient(135deg,#a8e6cf 0%,#dcedc1 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34292480/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '1-south-esk',
-        "address": '1 South Esk',
-        "location": 'Penrith',
-        "price": 225000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Wragg Mark Bell',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Cartmel Shepherd',
-        "seller_sol_phone": "—",
-        "offer_date": '8th Feb',
-        "memo_sent": '8th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Survey took place 16/02',
-        "image_bg": 'linear-gradient(135deg,#d4fc79 0%,#96e6a1 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34447780/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '52-primrose-drive',
-        "address": '52 Primrose Drive',
-        "location": 'Penrith',
-        "price": 260000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Napthens',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Arnison Heelis Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '13th Feb',
-        "memo_sent": '16th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Searches ordered 22/2',
-        "image_bg": 'linear-gradient(135deg,#fdcbf1 0%,#e6dee9 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34430420/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '1-anvil-close',
-        "address": '1 Anvil Close',
-        "location": 'Penrith',
-        "price": 299995,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Cartmel Shepherd',
-        "seller_sol_phone": "—",
-        "offer_date": '13th Feb',
-        "memo_sent": '16th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Searches ordered 19/2',
-        "image_bg": 'linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/18287340/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'thornleigh',
-        "address": 'Thornleigh',
-        "location": 'Penrith',
+        "id": "at-risk-1",
+        "address": "Mill Brow",
+        "location": "Armathwaite",
         "price": 375000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
+        "status": "at-risk",
+        "status_label": "AT RISK",
+        "progress": 65,
+        "duration_days": 39,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 9,
         "card_checks": [
-            {"label": "Memo Sent", "done": True},
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": True}
+        ],
+        "buyer": "Dr Patel",
+        "buyer_phone": "07891 234567",
+        "buyer_solicitor": "Cartmell Shepherd, Carlisle",
+        "buyer_sol_phone": "01228 516666",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2026-01-01",
+        "memo_sent": "2026-01-07",
+        "searches_ordered": "2026-01-10",
+        "searches_received": "2026-01-28",
+        "enquiries_raised": "2026-01-30",
+        "enquiries_answered": None,
+        "mortgage_offered": None,
+        "survey_booked": "2026-01-12",
+        "survey_complete": "2026-01-26",
+        "exchange_target": "2026-03-07",
+        "completion_target": "2026-03-21",
+        "chain": "Dr Patel is a first-time buyer (no chain below). Sellers relocating to France \u2014 need completion before April.",
+        "alert": "Survey flagged damp in west gable wall. Buyer requesting \u00a312,000 price reduction \u2014 sellers have not responded.",
+        "next_action": "Call sellers to discuss retention or price adjustment before buyer walks.",
+        "image_bg": "linear-gradient(135deg,#2d3436 0%,#636e72 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=400&fit=crop",
+        "milestones": [
+            {"label": "Offer Accepted", "done": True},
+            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": True},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ]
+    },
+    {
+        "id": "at-risk-2",
+        "address": "Maulds Meaburn",
+        "location": "Nr Appleby",
+        "price": 595000,
+        "status": "at-risk",
+        "status_label": "AT RISK",
+        "progress": 38,
+        "duration_days": 23,
+        "target_days": 60,
+        "days_since_update": 12,
+        "card_checks": [
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": False},
+            {"label": "Enquiries Raised", "done": False}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Kilvington Solictors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Scott Duff & Co',
-        "seller_sol_phone": "—",
-        "offer_date": '17th Feb',
-        "memo_sent": '17th Feb',
-        "searches_ordered": None,
+        "buyer": "Mr & Mrs Hewitson",
+        "buyer_phone": "07456 789012",
+        "buyer_solicitor": "Oglethorpe Sturton & Gillibrand, Lancaster",
+        "buyer_sol_phone": "01524 386500",
+        "seller_solicitor": "Burnetts, Penrith",
+        "seller_sol_phone": "01768 890570",
+        "offer_date": "2026-01-17",
+        "memo_sent": "2026-01-23",
+        "searches_ordered": "2026-01-27",
         "searches_received": None,
         "enquiries_raised": None,
         "enquiries_answered": None,
         "mortgage_offered": None,
         "survey_booked": None,
         "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Searches paid for 23/2',
-        "image_bg": 'linear-gradient(135deg,#2c3e50 0%,#3498db 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34152045/main/1.jpg',
+        "exchange_target": "2026-03-28",
+        "completion_target": "2026-04-11",
+        "chain": "Hewitsons selling in Kirkby Stephen (under offer). Upward chain: vendor moving to rented.",
+        "alert": "Local authority searches delayed \u2014 Eden DC backlog estimated 4 more weeks. Survey not yet booked.",
+        "next_action": "Escalate search delay with Eden DC planning. Chase buyer solicitor to book survey.",
+        "image_bg": "linear-gradient(135deg,#355c7d 0%,#6c5b7b 50%,#c06c84 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": False},
+            {"label": "Survey Complete", "done": False},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
     {
-        "id": 'greyber',
-        "address": 'Greyber',
-        "location": 'Penrith',
-        "price": 482500,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnold Greenwood',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'EMG Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '18th Feb',
-        "memo_sent": '18th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'EB Survey on 2/3, vendor completing paperwork, buyers paid for searches, emailed sols',
-        "image_bg": 'linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)',
-        "image_url": '',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'southwaite-house',
-        "address": 'Southwaite House',
-        "location": 'Penrith',
-        "price": 942500,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Burnetts',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Bendles Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '19th Feb',
-        "memo_sent": '19th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'searches ordered, survey 27/2',
-        "image_bg": 'linear-gradient(135deg,#2d3436 0%,#636e72 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33119008/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '1-fenton-house',
-        "address": '1 Fenton House',
-        "location": 'Penrith',
-        "price": 127000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Napthens',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Scott Duff & Co',
-        "seller_sol_phone": "—",
-        "offer_date": '19th Feb',
-        "memo_sent": '20th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Mortgage meeting with bank booking survey 23/2',
-        "image_bg": 'linear-gradient(135deg,#355c7d 0%,#6c5b7b 50%,#c06c84 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34466001/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '4-valley-view-drive',
-        "address": '4 Valley View Drive',
-        "location": 'Penrith',
-        "price": 510000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Scott Duff & Co',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'EMG Solicitors Ltd',
-        "seller_sol_phone": "—",
-        "offer_date": '20th Feb',
-        "memo_sent": '21st Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34286214/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'balwmacara',
-        "address": 'Balwmacara',
-        "location": 'Penrith',
-        "price": 372500,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Wragg Mark Bell',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Key Conveyancers',
-        "seller_sol_phone": "—",
-        "offer_date": '9th Feb',
-        "memo_sent": '23rd Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'buyer selling an affordable house through the council',
-        "image_bg": 'linear-gradient(135deg,#11998e 0%,#38ef7d 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33895817/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'maple-house',
-        "address": 'Maple House',
-        "location": 'Penrith',
-        "price": 565000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'EMG Solicitors Ltd',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'HFT Gough & Co',
-        "seller_sol_phone": "—",
-        "offer_date": '21st Feb',
-        "memo_sent": '21st Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#e0c3fc 0%,#8ec5fc 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/18573089/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '36-norfolk-place',
-        "address": '36 Norfolk Place',
-        "location": 'Penrith',
-        "price": 90000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Newtons Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Scott Duff & Co',
-        "seller_sol_phone": "—",
-        "offer_date": '25th Feb',
-        "memo_sent": '25th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34264323/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '2-croft-view',
-        "address": '2 Croft View',
-        "location": 'Penrith',
-        "price": 185000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'EMG Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '27th Feb',
-        "memo_sent": '27th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33922675/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'edenlea-appleby',
-        "address": 'Edenlea, Appleby',
-        "location": 'Penrith',
-        "price": 315000,
-        "status": 'stalled',
-        "status_label": 'STALLED',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Kilvington Solictors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Gaynham King and Mellor',
-        "seller_sol_phone": "—",
-        "offer_date": '18th Nov',
-        "memo_sent": '21st Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '18/2 related chain - buyer lost buyer - giving them a month to sell otherwise ready to go',
-        "image_bg": 'linear-gradient(135deg,#c9d6ff 0%,#e2e2e2 100%)',
-        "image_url": '',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'westgate-house',
-        "address": 'Westgate House',
-        "location": 'Penrith',
-        "price": 449950,
-        "status": 'stalled',
-        "status_label": 'STALLED',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Lings Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solictors',
-        "seller_sol_phone": "—",
-        "offer_date": '17th Nov',
-        "memo_sent": '18th Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '18/2 buyer lost buyer - giving them a month to sell',
-        "image_bg": 'linear-gradient(135deg,#e8cbc0 0%,#636fa4 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34107639/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '5-carleton-place',
-        "address": '5 Carleton Place',
-        "location": 'Penrith',
+        "id": "kirk-thore",
+        "address": "Kirkby Thore",
+        "location": "Nr Appleby",
         "price": 285000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
+        "status": "stalled",
+        "status_label": "STALLED",
+        "progress": 30,
+        "duration_days": 52,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 21,
         "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": False},
+            {"label": "Enquiries Raised", "done": False}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Elite Conveyancing',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Gaynham King and Mellor',
-        "seller_sol_phone": "—",
-        "offer_date": '3rd March',
-        "memo_sent": '3rd March',
-        "searches_ordered": None,
-        "searches_received": None,
+        "buyer": "Mr Henderson",
+        "buyer_phone": "07654 321098",
+        "buyer_solicitor": "Cartmell Shepherd, Carlisle",
+        "buyer_sol_phone": "01228 516666",
+        "seller_solicitor": "Burnetts, Penrith",
+        "seller_sol_phone": "01768 890570",
+        "offer_date": "2025-12-19",
+        "memo_sent": "2025-12-24",
+        "searches_ordered": "2026-01-02",
+        "searches_received": "2026-01-20",
         "enquiries_raised": None,
         "enquiries_answered": None,
         "mortgage_offered": None,
         "survey_booked": None,
         "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34167855/main/1.jpg',
+        "exchange_target": "2026-03-07",
+        "completion_target": "2026-03-21",
+        "chain": "Henderson selling in Brough (chain free). Vendor moving to son\u2019s property.",
+        "alert": "No survey booked after 52 days. Buyer solicitor not responding to chaser calls.",
+        "next_action": "Direct call to Mr Henderson to confirm continued interest and chase survey.",
+        "image_bg": "linear-gradient(135deg,#2c3e50 0%,#3498db 100%)",
+        "image_url": "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": False},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
     {
-        "id": 'woodlands',
-        "address": 'Woodlands',
-        "location": 'Penrith',
-        "price": 915000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
+        "id": "temple-sowerby",
+        "address": "Temple Sowerby",
+        "location": "Nr Penrith",
+        "price": 340000,
+        "status": "at-risk",
+        "status_label": "AT RISK",
+        "progress": 50,
+        "duration_days": 35,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 10,
         "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": False}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Stamp Jackson & Procter Limited',
-        "seller_sol_phone": "—",
-        "offer_date": '4th March',
-        "memo_sent": '4th March',
-        "searches_ordered": None,
-        "searches_received": None,
+        "buyer": "Mrs Campbell",
+        "buyer_phone": "07789 012345",
+        "buyer_solicitor": "Bendles, Carlisle",
+        "buyer_sol_phone": "01228 522215",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2026-01-05",
+        "memo_sent": "2026-01-12",
+        "searches_ordered": "2026-01-15",
+        "searches_received": "2026-02-02",
         "enquiries_raised": None,
         "enquiries_answered": None,
         "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#a8e6cf 0%,#dcedc1 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33362501/main/1.jpg',
+        "survey_booked": "2026-01-18",
+        "survey_complete": "2026-02-01",
+        "exchange_target": "2026-03-14",
+        "completion_target": "2026-03-28",
+        "chain": "Mrs Campbell downsizing from family home. No onward chain \u2014 moving to rented.",
+        "alert": "Buyer\u2019s mortgage valuation came in \u00a315,000 below asking. Lender may reduce offer.",
+        "next_action": "Negotiate with buyer on bridging the valuation gap or reducing price.",
+        "image_bg": "linear-gradient(135deg,#667eea 0%,#764ba2 100%)",
+        "image_url": "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
+    # ── THIS WEEK ───────────────────────────────────────────
     {
-        "id": 'squirrel-cottage',
-        "address": 'Squirrel Cottage',
-        "location": 'Penrith',
-        "price": 5062.5,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 20,
-        "duration_days": 0,
+        "id": "on-track-1",
+        "address": "South Esk",
+        "location": "Culgaith",
+        "price": 310000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 78,
+        "duration_days": 47,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 2,
         "card_checks": [
-            {"label": "Memo Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": True}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": '—',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": '—',
-        "seller_sol_phone": "—",
-        "offer_date": '4th March',
-        "memo_sent": None,
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
+        "buyer": "Miss Routledge",
+        "buyer_phone": "07734 567890",
+        "buyer_solicitor": "Cartmell Shepherd, Carlisle",
+        "buyer_sol_phone": "01228 516666",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2025-12-24",
+        "memo_sent": "2025-12-31",
+        "searches_ordered": "2026-01-03",
+        "searches_received": "2026-01-20",
+        "enquiries_raised": "2026-01-23",
+        "enquiries_answered": "2026-02-04",
+        "mortgage_offered": "2026-02-06",
+        "survey_booked": "2026-01-06",
+        "survey_complete": "2026-01-18",
+        "exchange_target": "2026-02-21",
+        "completion_target": "2026-03-07",
+        "chain": "Miss Routledge is a first-time buyer, no chain below. Vendors moving to The Limes (exchange agreed).",
         "alert": None,
-        "next_action": 'memo not sent yet',
-        "image_bg": 'linear-gradient(135deg,#d4fc79 0%,#96e6a1 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33724327/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '9-loughrigg-park',
-        "address": '9 Loughrigg Park',
-        "location": 'Penrith',
-        "price": 4875,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 20,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": '—',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": '—',
-        "seller_sol_phone": "—",
-        "offer_date": '5th March',
-        "memo_sent": None,
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'memo not sent yet',
-        "image_bg": 'linear-gradient(135deg,#fdcbf1 0%,#e6dee9 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34473683/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'aster-cottage',
-        "address": 'Aster Cottage',
-        "location": 'Penrith',
-        "price": 2175,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 20,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": '—',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": '—',
-        "seller_sol_phone": "—",
-        "offer_date": '6th March',
-        "memo_sent": None,
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": 'memo not sent yet',
-        "image_bg": 'linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/18955260/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": 'hill-top-barn',
-        "address": 'Hill Top Barn',
-        "location": 'Penrith',
-        "price": 535000,
-        "status": 'stalled',
-        "status_label": 'STALLED',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Butterworths Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solictors',
-        "seller_sol_phone": "—",
-        "offer_date": '27th Nov',
-        "memo_sent": '5th Dec',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": None,
-        "next_action": "31/1 Vendor still looking for a house - won't move into rented",
-        "image_bg": 'linear-gradient(135deg,#2c3e50 0%,#3498db 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34266070/main/1.jpg',
+        "next_action": "Confirm exchange date with both solicitors \u2014 target 21 Feb.",
+        "image_bg": "linear-gradient(135deg,#c9d6ff 0%,#e2e2e2 100%)",
+        "image_url": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": True},
+            {"label": "Enquiries Answered", "done": True},
+            {"label": "Mortgage Offer", "done": True},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
     {
-        "id": 'chapel-farm',
-        "address": 'Chapel Farm',
-        "location": 'Penrith',
-        "price": 250000,
-        "status": 'at-risk',
-        "status_label": 'AT RISK',
-        "progress": 40,
-        "duration_days": 0,
+        "id": "on-track-2",
+        "address": "Brougham Street",
+        "location": "Penrith",
+        "price": 215000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 55,
+        "duration_days": 33,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 3,
         "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": True}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Asserson Law Offices',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Arnison Heelis',
-        "seller_sol_phone": "—",
-        "offer_date": '11th Dec',
-        "memo_sent": '11th Dec',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
+        "buyer": "Mr Atkinson",
+        "buyer_phone": "07823 456789",
+        "buyer_solicitor": "Bendles, Carlisle",
+        "buyer_sol_phone": "01228 522215",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2026-01-07",
+        "memo_sent": "2026-01-13",
+        "searches_ordered": "2026-01-16",
+        "searches_received": "2026-02-01",
+        "enquiries_raised": "2026-02-03",
         "enquiries_answered": None,
         "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": '31/1 DV Chased',
-        "next_action": '31/1 DV Chased',
-        "image_bg": 'linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/32964584/main/1.jpg',
+        "survey_booked": "2026-01-18",
+        "survey_complete": "2026-01-30",
+        "exchange_target": "2026-03-07",
+        "completion_target": "2026-03-21",
+        "chain": "Mr Atkinson is a cash buyer (no mortgage required). Vendor downsizing to sheltered housing \u2014 place confirmed.",
+        "alert": None,
+        "next_action": "Chase Bendles for contract approval \u2014 all enquiries answered.",
+        "image_bg": "linear-gradient(135deg,#e8cbc0 0%,#636fa4 100%)",
+        "image_url": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": True},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": None},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
     {
-        "id": 'town-head-chippy',
-        "address": 'Town Head Chippy',
-        "location": 'Penrith',
-        "price": 196000,
-        "status": 'at-risk',
-        "status_label": 'AT RISK',
-        "progress": 40,
-        "duration_days": 0,
+        "id": "on-track-3",
+        "address": "Ousby",
+        "location": "Penrith",
+        "price": 289000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 45,
+        "duration_days": 27,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 1,
         "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": False}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Newtons Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Napthens',
-        "seller_sol_phone": "—",
-        "offer_date": '25th July',
-        "memo_sent": '5th Aug',
-        "searches_ordered": None,
-        "searches_received": None,
+        "buyer": "Mr & Mrs Fallowfield",
+        "buyer_phone": "07567 890123",
+        "buyer_solicitor": "Burnetts, Penrith",
+        "buyer_sol_phone": "01768 890570",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2026-01-13",
+        "memo_sent": "2026-01-20",
+        "searches_ordered": "2026-01-23",
+        "searches_received": "2026-02-06",
         "enquiries_raised": None,
         "enquiries_answered": None,
         "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": '14/1 TR Chased 11/11 land reg issue being sorted',
-        "next_action": '14/1 TR Chased 11/11 land reg issue being sorted',
-        "image_bg": 'linear-gradient(135deg,#2d3436 0%,#636e72 100%)',
-        "image_url": '',
+        "survey_booked": "2026-01-25",
+        "survey_complete": "2026-02-07",
+        "exchange_target": "2026-03-14",
+        "completion_target": "2026-03-28",
+        "chain": "Chain-free both sides. Fallowfields currently renting. Vendor moving to family abroad.",
+        "alert": None,
+        "next_action": "Chase Burnetts to raise enquiries now searches and survey are back.",
+        "image_bg": "linear-gradient(135deg,#11998e 0%,#38ef7d 100%)",
+        "image_url": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
     {
-        "id": 'caroline-cottage',
-        "address": 'Caroline Cottage',
-        "location": 'Penrith',
-        "price": 451000,
-        "status": 'at-risk',
-        "status_label": 'AT RISK',
-        "progress": 40,
-        "duration_days": 0,
+        "id": "langwathby",
+        "address": "Langwathby Lane",
+        "location": "Langwathby",
+        "price": 268000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 92,
+        "duration_days": 55,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 1,
         "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": True}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Newtons Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Arnison Heelis',
-        "seller_sol_phone": "—",
-        "offer_date": '27th June',
-        "memo_sent": '1st July',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": '7/10 SH 16/9 SH chased. Draft Contract issued awaiting enq. 1/9 DV Buyers waiting for searches',
-        "next_action": '7/10 SH 16/9 SH chased. Draft Contract issued awaiting enq. 1/9 DV Buyers waiting for searches',
-        "image_bg": 'linear-gradient(135deg,#355c7d 0%,#6c5b7b 50%,#c06c84 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33928539/main/1.jpg',
+        "buyer": "Mr & Mrs Dixon",
+        "buyer_phone": "07890 123456",
+        "buyer_solicitor": "Cartmell Shepherd, Carlisle",
+        "buyer_sol_phone": "01228 516666",
+        "seller_solicitor": "Burnetts, Penrith",
+        "seller_sol_phone": "01768 890570",
+        "offer_date": "2025-12-16",
+        "memo_sent": "2025-12-20",
+        "searches_ordered": "2025-12-23",
+        "searches_received": "2026-01-10",
+        "enquiries_raised": "2026-01-14",
+        "enquiries_answered": "2026-01-28",
+        "mortgage_offered": "2026-01-30",
+        "survey_booked": "2025-12-28",
+        "survey_complete": "2026-01-12",
+        "exchange_target": "2026-02-10",
+        "completion_target": "2026-02-14",
+        "chain": "Dixons are first-time buyers. Vendor moving to sheltered accommodation \u2014 place confirmed.",
+        "alert": None,
+        "next_action": "Exchange expected this week. Confirm completion date with all parties.",
+        "image_bg": "linear-gradient(135deg,#a8e6cf 0%,#dcedc1 100%)",
+        "image_url": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": True},
+            {"label": "Enquiries Answered", "done": True},
+            {"label": "Mortgage Offer", "done": True},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
     {
-        "id": 'romanway',
-        "address": 'Romanway',
-        "location": 'Penrith',
-        "price": 4187.5,
-        "status": 'at-risk',
-        "status_label": 'AT RISK',
-        "progress": 10,
-        "duration_days": 0,
+        "id": "clifton",
+        "address": "Clifton Dykes",
+        "location": "Nr Penrith",
+        "price": 445000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 88,
+        "duration_days": 50,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 2,
         "card_checks": [
-            {"label": "Memo Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": True}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": '—',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": '—',
-        "seller_sol_phone": "—",
-        "offer_date": None,
-        "memo_sent": None,
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": 'TO INVOICE IN 8 WEEKS',
-        "next_action": 'TO INVOICE IN 8 WEEKS',
-        "image_bg": 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
-        "image_url": '',
-        "milestones": [
-            {"label": "Offer Accepted", "done": False},
-            {"label": "Memorandum Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ]
-    },
-    {
-        "id": '2-regis-garth',
-        "address": '2 Regis Garth',
-        "location": 'Penrith',
-        "price": 775000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 20,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": '—',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Scotts, Hall and Birtles solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '5th March',
-        "memo_sent": None,
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
+        "buyer": "Miss Armstrong",
+        "buyer_phone": "07456 098765",
+        "buyer_solicitor": "JW Dickinson, Penrith",
+        "buyer_sol_phone": "01768 862631",
+        "seller_solicitor": "Harper & Lane, Kendal",
+        "seller_sol_phone": "01539 720400",
+        "offer_date": "2025-12-21",
+        "memo_sent": "2025-12-28",
+        "searches_ordered": "2026-01-02",
+        "searches_received": "2026-01-17",
+        "enquiries_raised": "2026-01-20",
+        "enquiries_answered": "2026-02-03",
+        "mortgage_offered": "2026-02-05",
+        "survey_booked": "2026-01-05",
+        "survey_complete": "2026-01-19",
+        "exchange_target": "2026-02-12",
+        "completion_target": "2026-02-14",
+        "chain": "Miss Armstrong relocating from Manchester (renting). Vendor buying in France \u2014 no UK chain.",
         "alert": None,
-        "next_action": '8/3 waiting for sols',
-        "image_bg": 'linear-gradient(135deg,#11998e 0%,#38ef7d 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34439527/main/1.jpg',
+        "next_action": "Final contract review underway. Chase for exchange date confirmation.",
+        "image_bg": "linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": False},
+            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": True},
+            {"label": "Enquiries Answered", "done": True},
+            {"label": "Mortgage Offer", "done": True},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
+    # ── THIS MONTH ──────────────────────────────────────────
     {
-        "id": '3-regis-garth',
-        "address": '3 Regis Garth',
-        "location": 'Penrith',
-        "price": 725000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 90,
-        "duration_days": 0,
+        "id": "lazonby",
+        "address": "Lazonby",
+        "location": "Eden Valley",
+        "price": 320000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 72,
+        "duration_days": 40,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 3,
         "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": True}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Downs Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Scotts, Hall and Birtles solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '14th Jan',
-        "memo_sent": '14th Jan',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
+        "buyer": "Dr & Mrs Mitchell",
+        "buyer_phone": "07345 678901",
+        "buyer_solicitor": "Oglethorpe Sturton & Gillibrand, Lancaster",
+        "buyer_sol_phone": "01524 386500",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2025-12-31",
+        "memo_sent": "2026-01-07",
+        "searches_ordered": "2026-01-10",
+        "searches_received": "2026-01-28",
+        "enquiries_raised": "2026-01-31",
+        "enquiries_answered": "2026-02-07",
         "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": '3rd Oct',
-        "completion_target": 'MAY/JUNE',
-        "chain": "—",
+        "survey_booked": "2026-01-14",
+        "survey_complete": "2026-01-28",
+        "exchange_target": "2026-02-28",
+        "completion_target": "2026-03-14",
+        "chain": "Mitchells selling in Lancaster (exchange agreed). Vendor moving to daughter\u2019s annexe.",
         "alert": None,
-        "next_action": 'Exchanged - Invoice to be sent nearer the completion',
-        "image_bg": 'linear-gradient(135deg,#e0c3fc 0%,#8ec5fc 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34264323/main/1.jpg',
+        "next_action": "Chase mortgage offer \u2014 valuation was last week, should be imminent.",
+        "image_bg": "linear-gradient(135deg,#e0c3fc 0%,#8ec5fc 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
             {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": '4-regis-garth',
-        "address": '4 Regis Garth',
-        "location": 'Penrith',
-        "price": 425000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 90,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Scott Duff & Co',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Scotts, Hall and Birtles solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '28th Nov',
-        "memo_sent": '29th Nov',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": '23rd Feb',
-        "completion_target": 'April',
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Exchanged - Invoice to be sent nearer the completion',
-        "image_bg": 'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33511339/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": '5-regis-garth',
-        "address": '5 Regis Garth',
-        "location": 'Penrith',
-        "price": 425000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 90,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Kilvington Solictors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Scotts, Hall and Birtles solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '14th Mar',
-        "memo_sent": '14th Mar',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": '28th Aug',
-        "completion_target": 'MAY/JUNE',
-        "chain": "—",
-        "alert": None,
-        "next_action": 'Exchanged - Invoice to be sent nearer the completion',
-        "image_bg": 'linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33511339/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": True},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'plot-5-swallows-rise',
-        "address": 'Plot 5 Swallows Rise',
-        "location": 'Penrith',
-        "price": 470000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Napthens',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '17th Oct',
-        "memo_sent": None,
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'Not proceedable yet',
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#c9d6ff 0%,#e2e2e2 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33165740/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'plot-16-swallows-rise',
-        "address": 'Plot 16 Swallows Rise',
-        "location": 'Penrith',
-        "price": 925000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Napthens Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '19th June',
-        "memo_sent": '13th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'APRIL',
-        "chain": "—",
-        "alert": None,
-        "next_action": '31/1 DV CHASED',
-        "image_bg": 'linear-gradient(135deg,#e8cbc0 0%,#636fa4 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/18289422/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'plot-17-swallows-rise',
-        "address": 'Plot 17 Swallows Rise',
-        "location": 'Penrith',
-        "price": 895000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": '—',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '7th Feb',
-        "memo_sent": '7th Feb',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'Not proceedable yet',
-        "chain": "—",
-        "alert": None,
-        "next_action": 'NO MEMO SENT',
-        "image_bg": 'linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34466001/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'plot-18-swallows-rise',
-        "address": 'Plot 18 Swallows Rise',
-        "location": 'Penrith',
-        "price": 895000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 20,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Rogers & Norton Solicitors',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": None,
-        "memo_sent": None,
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'Not proceedable yet',
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#a8e6cf 0%,#dcedc1 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34466001/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": False},
-            {"label": "Memorandum Sent", "done": False},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'plot-19-swallows-rise',
-        "address": 'Plot 19 Swallows Rise',
-        "location": 'Penrith',
-        "price": 895000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Napthens',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '17th Oct',
-        "memo_sent": '17th Oct',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'April',
-        "chain": "—",
-        "alert": None,
-        "next_action": '31/1 searches back, raising enqs - buyer aiming for April',
-        "image_bg": 'linear-gradient(135deg,#d4fc79 0%,#96e6a1 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/34466001/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'plot-22-swallows-rise',
-        "address": 'Plot 22 Swallows Rise',
-        "location": 'Penrith',
-        "price": 895000,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 60,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Scott Duff & Co',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Kilvington Solicitors',
-        "seller_sol_phone": "—",
-        "offer_date": '4th Dec',
-        "memo_sent": '4th Dec',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": 'Not proceedable yet',
-        "chain": "—",
-        "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#fdcbf1 0%,#e6dee9 100%)',
-        "image_url": 'https://cdns3.estateweb.com/assets/9893/of/4/pro/33530078/main/1.jpg',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": True}
-        ]
-    },
-    {
-        "id": 'school-house-cliburn',
-        "address": 'School House, Cliburn',
-        "location": 'Penrith',
-        "price": 300000,
-        "status": 'at-risk',
-        "status_label": 'AT RISK',
-        "progress": 40,
-        "duration_days": 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": True},
-            {"label": "Exchange", "done": False},
-            {"label": "Completion", "done": False}
-        ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": 'Arnison Heelis',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": 'Napthens LLP',
-        "seller_sol_phone": "—",
-        "offer_date": '13th Sep',
-        "memo_sent": '17th Sep',
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
-        "alert": '31/1 charge on property - lender liquidated, sols trying to prove charge was paid',
-        "next_action": '31/1 charge on property - lender liquidated, sols trying to prove charge was paid',
-        "image_bg": 'linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%)',
-        "image_url": '',
-        "milestones": [
-            {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": True},
+            {"label": "Enquiries Answered", "done": True},
+            {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
     {
-        "id": 'plot-4-waverton',
-        "address": 'Plot 4 Waverton',
-        "location": 'Penrith',
-        "price": 7062.5,
-        "status": 'on-track',
-        "status_label": 'ON TRACK',
-        "progress": 20,
-        "duration_days": 0,
+        "id": "melmerby",
+        "address": "Melmerby",
+        "location": "Nr Penrith",
+        "price": 485000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 65,
+        "duration_days": 35,
         "target_days": 60,
-        "days_since_update": 0,
+        "days_since_update": 4,
         "card_checks": [
-            {"label": "Memo Sent", "done": False},
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": False}
+        ],
+        "buyer": "Mr Nicholson",
+        "buyer_phone": "07678 901234",
+        "buyer_solicitor": "Bendles, Carlisle",
+        "buyer_sol_phone": "01228 522215",
+        "seller_solicitor": "Burnetts, Penrith",
+        "seller_sol_phone": "01768 890570",
+        "offer_date": "2026-01-05",
+        "memo_sent": "2026-01-12",
+        "searches_ordered": "2026-01-15",
+        "searches_received": "2026-02-03",
+        "enquiries_raised": None,
+        "enquiries_answered": None,
+        "mortgage_offered": None,
+        "survey_booked": "2026-01-20",
+        "survey_complete": "2026-02-03",
+        "exchange_target": "2026-03-07",
+        "completion_target": "2026-03-21",
+        "chain": "Mr Nicholson is a cash buyer (no chain). Vendor buying in Keswick \u2014 offer accepted.",
+        "alert": None,
+        "next_action": "Bendles to raise enquiries this week now searches are back.",
+        "image_bg": "linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&h=400&fit=crop",
+        "milestones": [
+            {"label": "Offer Accepted", "done": True},
+            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": None},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ]
+    },
+    {
+        "id": "glassonby",
+        "address": "Glassonby",
+        "location": "Eden Valley",
+        "price": 275000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 68,
+        "duration_days": 38,
+        "target_days": 60,
+        "days_since_update": 2,
+        "card_checks": [
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": True},
+            {"label": "Enquiries Raised", "done": True}
         ],
-        "buyer": '—',
-        "buyer_phone": '—',
-        "buyer_solicitor": '—',
-        "buyer_sol_phone": "—",
-        "seller_solicitor": '—',
-        "seller_sol_phone": "—",
-        "offer_date": '25th Feb',
-        "memo_sent": None,
-        "searches_ordered": None,
+        "buyer": "Mr & Mrs Scott",
+        "buyer_phone": "07234 567890",
+        "buyer_solicitor": "Cartmell Shepherd, Carlisle",
+        "buyer_sol_phone": "01228 516666",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2026-01-02",
+        "memo_sent": "2026-01-09",
+        "searches_ordered": "2026-01-12",
+        "searches_received": "2026-01-28",
+        "enquiries_raised": "2026-01-30",
+        "enquiries_answered": None,
+        "mortgage_offered": None,
+        "survey_booked": "2026-01-15",
+        "survey_complete": "2026-01-29",
+        "exchange_target": "2026-03-02",
+        "completion_target": "2026-03-16",
+        "chain": "Scotts selling flat in Carlisle (completed). Vendor retiring to Spain \u2014 flexible on dates.",
+        "alert": None,
+        "next_action": "Chase enquiry answers from seller solicitor. Mortgage application submitted.",
+        "image_bg": "linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=400&fit=crop",
+        "milestones": [
+            {"label": "Offer Accepted", "done": True},
+            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": True},
+            {"label": "Survey Complete", "done": True},
+            {"label": "Enquiries Raised", "done": True},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
+            {"label": "Exchange", "done": False},
+            {"label": "Completion", "done": False}
+        ]
+    },
+    # ── THIS QUARTER ────────────────────────────────────────
+    {
+        "id": "skirwith",
+        "address": "Skirwith",
+        "location": "Eden Valley",
+        "price": 195000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 48,
+        "duration_days": 20,
+        "target_days": 60,
+        "days_since_update": 5,
+        "card_checks": [
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": False},
+            {"label": "Enquiries Raised", "done": False}
+        ],
+        "buyer": "Mr & Mrs Bell",
+        "buyer_phone": "07567 234567",
+        "buyer_solicitor": "JW Dickinson, Penrith",
+        "buyer_sol_phone": "01768 862631",
+        "seller_solicitor": "Cartmell Shepherd, Carlisle",
+        "seller_sol_phone": "01228 516666",
+        "offer_date": "2026-01-20",
+        "memo_sent": "2026-01-27",
+        "searches_ordered": "2026-01-30",
+        "searches_received": None,
+        "enquiries_raised": None,
+        "enquiries_answered": None,
+        "mortgage_offered": None,
+        "survey_booked": "2026-02-05",
+        "survey_complete": None,
+        "exchange_target": "2026-04-01",
+        "completion_target": "2026-04-15",
+        "chain": "Bells are first-time buyers. Vendor moving abroad \u2014 wants completion by Easter.",
+        "alert": None,
+        "next_action": "Await search results. Survey booked for next week.",
+        "image_bg": "linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=800&h=400&fit=crop",
+        "milestones": [
+            {"label": "Offer Accepted", "done": True},
+            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": False},
+            {"label": "Survey Complete", "done": False},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
+            {"label": "Exchange", "done": False},
+            {"label": "Completion", "done": False}
+        ]
+    },
+    {
+        "id": "blencarn",
+        "address": "Blencarn",
+        "location": "Nr Penrith",
+        "price": 350000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 42,
+        "duration_days": 18,
+        "target_days": 60,
+        "days_since_update": 3,
+        "card_checks": [
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": False},
+            {"label": "Enquiries Raised", "done": False}
+        ],
+        "buyer": "Miss Thompson",
+        "buyer_phone": "07678 345678",
+        "buyer_solicitor": "Burnetts, Penrith",
+        "buyer_sol_phone": "01768 890570",
+        "seller_solicitor": "Bendles, Carlisle",
+        "seller_sol_phone": "01228 522215",
+        "offer_date": "2026-01-22",
+        "memo_sent": "2026-01-29",
+        "searches_ordered": "2026-02-02",
         "searches_received": None,
         "enquiries_raised": None,
         "enquiries_answered": None,
         "mortgage_offered": None,
         "survey_booked": None,
         "survey_complete": None,
-        "exchange_target": None,
-        "completion_target": None,
-        "chain": "—",
+        "exchange_target": "2026-04-10",
+        "completion_target": "2026-04-24",
+        "chain": "Miss Thompson selling flat in Newcastle (sale agreed). Vendor buying locally \u2014 chain of two.",
         "alert": None,
-        "next_action": '—',
-        "image_bg": 'linear-gradient(135deg,#2c3e50 0%,#3498db 100%)',
-        "image_url": '',
+        "next_action": "Book survey this week. Await Eden DC search results.",
+        "image_bg": "linear-gradient(135deg,#d4fc79 0%,#96e6a1 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?w=800&h=400&fit=crop",
         "milestones": [
             {"label": "Offer Accepted", "done": True},
-            {"label": "Memorandum Sent", "done": False},
+            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": False},
+            {"label": "Survey Complete", "done": False},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
+            {"label": "Exchange", "done": False},
+            {"label": "Completion", "done": False}
+        ]
+    },
+    {
+        "id": "newbiggin",
+        "address": "Newbiggin",
+        "location": "Stainmore",
+        "price": 225000,
+        "status": "on-track",
+        "status_label": "ON TRACK",
+        "progress": 45,
+        "duration_days": 22,
+        "target_days": 60,
+        "days_since_update": 2,
+        "card_checks": [
+            {"label": "Searches", "done": True},
+            {"label": "Survey", "done": False},
+            {"label": "Enquiries Raised", "done": False}
+        ],
+        "buyer": "Mr Jackson",
+        "buyer_phone": "07789 456789",
+        "buyer_solicitor": "Oglethorpe Sturton & Gillibrand, Lancaster",
+        "buyer_sol_phone": "01524 386500",
+        "seller_solicitor": "JW Dickinson, Penrith",
+        "seller_sol_phone": "01768 862631",
+        "offer_date": "2026-01-18",
+        "memo_sent": "2026-01-25",
+        "searches_ordered": "2026-01-28",
+        "searches_received": None,
+        "enquiries_raised": None,
+        "enquiries_answered": None,
+        "mortgage_offered": None,
+        "survey_booked": "2026-02-06",
+        "survey_complete": None,
+        "exchange_target": "2026-04-05",
+        "completion_target": "2026-04-19",
+        "chain": "Mr Jackson is a cash buyer from London. Vendor retiring \u2014 no upward chain.",
+        "alert": None,
+        "next_action": "Survey scheduled this week. Chase search results.",
+        "image_bg": "linear-gradient(135deg,#fdcbf1 0%,#e6dee9 100%)",
+        "image_url": "https://images.unsplash.com/photo-1600047509358-9dc75507daeb?w=800&h=400&fit=crop",
+        "milestones": [
+            {"label": "Offer Accepted", "done": True},
+            {"label": "Memorandum Sent", "done": True},
+            {"label": "Searches Ordered", "done": True},
+            {"label": "Searches Received", "done": False},
+            {"label": "Survey Complete", "done": False},
+            {"label": "Enquiries Raised", "done": False},
+            {"label": "Enquiries Answered", "done": False},
+            {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
         ]
     },
 ]
-
 
 
 # ─────────────────────────────────────────────────────────────
@@ -2919,53 +858,65 @@ SECTIONS = [
         "id": "needs-action",
         "icon": "\U0001F6A8",
         "title": "Needs Action",
-        "subtitle": "9 transactions requiring attention",
-        "avg_progress": 36,
+        "subtitle": "3 transactions requiring immediate attention",
+        "avg_progress": 55,
         "avg_color": "#e88a3a",
         "border_class": "stalled-banner",
-        "visible_ids": ['croft-house-lodge', 'edenlea-appleby', 'westgate-house'],
-        "hidden_ids": ['hill-top-barn', 'chapel-farm', 'town-head-chippy', 'caroline-cottage', 'romanway', 'school-house-cliburn'],
-        "extra_count": 0,
-    },
-    {
-        "id": "exchanged",
-        "icon": "\u2705",
-        "title": "Exchanged",
-        "subtitle": "4 exchanged",
-        "avg_progress": 90,
-        "avg_color": "#27ae60",
-        "border_class": "green-banner",
-        "visible_ids": ['14-howard-park', '3-regis-garth', '4-regis-garth'],
-        "hidden_ids": ['5-regis-garth'],
+        "visible_ids": ["stalled", "at-risk-1", "at-risk-2"],
+        "hidden_ids": ["kirk-thore", "temple-sowerby"],
         "extra_count": 0,
     },
     {
         "id": "this-week",
         "icon": "\U0001F4C5",
-        "title": "Active Pipeline",
-        "subtitle": "51 active transactions",
-        "avg_progress": 45,
+        "title": "This Week",
+        "subtitle": "5 expected completions",
+        "avg_progress": 82,
+        "avg_color": "#27ae60",
+        "border_class": "green-banner",
+        "visible_ids": ["on-track-1", "on-track-2", "on-track-3"],
+        "hidden_ids": ["langwathby", "clifton"],
+        "extra_count": 0,
+    },
+    {
+        "id": "this-month",
+        "icon": "\U0001F4CA",
+        "title": "This Month",
+        "subtitle": "12 expected completions",
+        "avg_progress": 68,
         "avg_color": "#27ae60",
         "border_class": "blue-banner",
-        "visible_ids": ['saddle-house', 'the-limes', 'barnfauld'],
-        "hidden_ids": ['station-house-cliburn', 'the-cottage-murton', 'plot-14-swallows-rise', 'plot-15-swallows-rise', 'unity-terrace', 'force-bank', 'rosedale-house', '19-low-byer-park', '22-church-road', 'wheatsheaf-house', 'ghyll-bank-farm', '5-parklands-crescent', '98-skinburness-road', 'sunny-cottage', 'knotts-mill', '27-otters-holt', '3-rectory-road', 'st-martins-gamblesby', 'south-view', 'alrigg-bank', '9-rectory-road', 'cloudbase', '22-fairhill-road', '1-south-esk', '52-primrose-drive', '1-anvil-close', 'thornleigh', 'greyber', 'southwaite-house', '1-fenton-house', '4-valley-view-drive', 'balwmacara', 'maple-house', '36-norfolk-place', '2-croft-view', '5-carleton-place', 'woodlands', 'squirrel-cottage', '9-loughrigg-park', 'aster-cottage', '2-regis-garth', 'plot-5-swallows-rise', 'plot-16-swallows-rise', 'plot-17-swallows-rise', 'plot-18-swallows-rise', 'plot-19-swallows-rise', 'plot-22-swallows-rise', 'plot-4-waverton'],
-        "extra_count": 0,
+        "visible_ids": ["lazonby", "melmerby", "glassonby"],
+        "hidden_ids": [],
+        "extra_count": 9,
+    },
+    {
+        "id": "this-quarter",
+        "icon": "\U0001F4C8",
+        "title": "This Quarter",
+        "subtitle": "28 expected completions",
+        "avg_progress": 45,
+        "avg_color": "#e88a3a",
+        "border_class": "amber-banner",
+        "visible_ids": ["skirwith", "blencarn", "newbiggin"],
+        "hidden_ids": [],
+        "extra_count": 25,
     },
 ]
 
 PIPELINE = {
-    "this_week":    {"count": 4,  "value": 25934076, "confidence": 95},
-    "this_month":   {"count": 51, "value": 25934076, "confidence": 80},
-    "this_quarter": {"count": 64, "value": 25934076, "confidence": 70},
+    "this_week":    {"count": 5,  "value": 1200000, "confidence": 95},
+    "this_month":   {"count": 12, "value": 2900000, "confidence": 80},
+    "this_quarter": {"count": 28, "value": 6800000, "confidence": 70},
 }
 
 STATS = {
-    "active": 64,
-    "on_track": 4,
-    "at_risk": 6,
+    "active": 24,
+    "on_track": 16,
+    "at_risk": 5,
     "action": 3,
-    "avg_days": 0,
-    "pipeline": 25934076,
+    "avg_days": 14.2,
+    "pipeline": 2900000,
 }
 
 
@@ -3891,15 +1842,15 @@ def build_ai_panel(prop):
 
 
 # ─────────────────────────────────────────────────────────────
-#  LIVE CRM — map API data to DASHBOARD_HTML variable shape
+#  LIVE CRM — map API data to DASHBOARD_HTML template shape
 # ─────────────────────────────────────────────────────────────
 
 STATUS_MAP = {
     "active": "on-track",
+    "exchanged": "on-track",
     "development": "on-track",
     "problem": "at-risk",
     "incomplete_chain": "stalled",
-    "exchanged": "on-track",
 }
 STATUS_LABELS = {"on-track": "ON TRACK", "at-risk": "AT RISK", "stalled": "STALLED"}
 
@@ -3915,141 +1866,233 @@ FALLBACK_GRADIENTS = [
 ]
 
 
-def _progress_pct(r):
+def _progress_from_record(r):
     """Estimate progress % from which milestone fields are populated."""
-    steps = [r.get("offer_accepted"), r.get("memo_sent"),
-             r.get("exchange_date"), r.get("completion_date")]
+    steps = [
+        r.get("offer_accepted"),
+        r.get("memo_sent"),
+        r.get("exchange_date"),
+        r.get("completion_date"),
+    ]
     done = sum(1 for s in steps if s)
     if r.get("status") == "exchanged":
         return 90
     return max(10, int(done / len(steps) * 80))
 
 
-def _map_property(r, idx):
-    """Map one API record to the exact dict shape DASHBOARD_HTML expects."""
-    status = STATUS_MAP.get(r.get("status", "active"), "on-track")
-    progress = _progress_pct(r)
+def _card_checks_from_record(r):
+    return [
+        {"label": "Memo Sent", "done": bool(r.get("memo_sent"))},
+        {"label": "Exchange", "done": bool(r.get("exchange_date"))},
+        {"label": "Completion", "done": bool(r.get("completion_date"))},
+    ]
+
+
+def _milestones_from_record(r):
+    return [
+        {"label": "Offer Accepted", "done": bool(r.get("offer_accepted"))},
+        {"label": "Memorandum Sent", "done": bool(r.get("memo_sent"))},
+        {"label": "Exchange", "done": bool(r.get("exchange_date"))},
+        {"label": "Completion", "done": bool(r.get("completion_date"))},
+    ]
+
+
+def _map_live_properties():
+    """Fetch from EATOC API and map to the dict shape DASHBOARD_HTML expects."""
+    raw, error = fetch_eatoc_properties()
+    if error:
+        return [], error
+    mapped = []
+    for i, r in enumerate(raw):
+        status = STATUS_MAP.get(r.get("status", "active"), "on-track")
+        progress = _progress_from_record(r)
+        mapped.append({
+            "id": r["id"],
+            "address": r.get("property_address", "Unknown"),
+            "location": (r.get("branch") or "").title(),
+            "price": r.get("sale_price") or r.get("fee") or 0,
+            "status": status,
+            "status_label": STATUS_LABELS.get(status, "ON TRACK"),
+            "progress": progress,
+            "duration_days": (datetime.utcnow() - datetime.strptime(r["created_at"][:19], "%Y-%m-%dT%H:%M:%S")).days if r.get("created_at") else 0,
+            "target_days": 60,
+            "days_since_update": 0,
+            "card_checks": _card_checks_from_record(r),
+            "milestones": _milestones_from_record(r),
+            "buyer": r.get("buyer_name") or "\u2014",
+            "buyer_phone": r.get("buyer_phone") or "\u2014",
+            "buyer_solicitor": r.get("buyer_solicitor") or "\u2014",
+            "buyer_sol_phone": "\u2014",
+            "seller_solicitor": r.get("vendor_solicitor") or "\u2014",
+            "seller_sol_phone": "\u2014",
+            "offer_date": r.get("offer_accepted"),
+            "memo_sent": r.get("memo_sent"),
+            "searches_ordered": None,
+            "searches_received": None,
+            "enquiries_raised": None,
+            "enquiries_answered": None,
+            "mortgage_offered": None,
+            "survey_booked": None,
+            "survey_complete": None,
+            "exchange_target": r.get("exchange_date"),
+            "completion_target": r.get("completion_date"),
+            "chain": "\u2014",
+            "alert": r.get("notes") if r.get("status") == "problem" else None,
+            "next_action": r.get("notes") or "\u2014",
+            "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
+            "image_url": r.get("image_url") or "",
+            # extra fields for detail page
+            "_raw_status": r.get("status"),
+            "_sewage_type": r.get("sewage_type") or "\u2014",
+            "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
+            "_surveyor": r.get("surveyor") or "\u2014",
+            "_buyer_email": r.get("buyer_email") or "\u2014",
+            "_vendor_name": r.get("vendor_name") or "\u2014",
+            "_vendor_phone": r.get("vendor_phone") or "\u2014",
+            "_vendor_email": r.get("vendor_email") or "\u2014",
+            "_nuvu_notes": r.get("nuvu_notes") or "\u2014",
+            "_staff_initials": r.get("staff_initials") or "\u2014",
+            "_fee": r.get("fee"),
+            "_invoice_status": r.get("invoice_status") or "\u2014",
+            "_beds": r.get("beds"),
+            "_baths": r.get("baths"),
+            "_property_type": r.get("property_type") or "\u2014",
+        })
+    return mapped, None
+
+
+def _crm_stats(props):
+    """Compute live stats from mapped properties."""
+    total = len(props)
+    exchanged = sum(1 for p in props if p.get("_raw_status") == "exchanged")
+    problems = sum(1 for p in props if p.get("_raw_status") == "problem")
+    incomplete = sum(1 for p in props if p.get("_raw_status") == "incomplete_chain")
+    active = total - exchanged
+    pipeline = sum(p["price"] for p in props if p["price"])
     return {
-        "id": r["id"],
-        "address": r.get("property_address", "Unknown"),
-        "location": (r.get("branch") or "").title(),
-        "price": r.get("sale_price") or r.get("fee") or 0,
-        "status": status,
-        "status_label": STATUS_LABELS.get(status, "ON TRACK"),
-        "progress": progress,
-        "duration_days": (datetime.utcnow() - datetime.strptime(
-            r["created_at"][:19], "%Y-%m-%dT%H:%M:%S")).days if r.get("created_at") else 0,
-        "target_days": 60,
-        "days_since_update": 0,
-        "card_checks": [
-            {"label": "Memo Sent", "done": bool(r.get("memo_sent"))},
-            {"label": "Exchange", "done": bool(r.get("exchange_date"))},
-            {"label": "Completion", "done": bool(r.get("completion_date"))},
-        ],
-        "milestones": [
-            {"label": "Offer Accepted", "done": bool(r.get("offer_accepted"))},
-            {"label": "Memorandum Sent", "done": bool(r.get("memo_sent"))},
-            {"label": "Exchange", "done": bool(r.get("exchange_date"))},
-            {"label": "Completion", "done": bool(r.get("completion_date"))},
-        ],
-        "buyer": r.get("buyer_name") or "\u2014",
-        "buyer_phone": r.get("buyer_phone") or "\u2014",
-        "buyer_solicitor": r.get("buyer_solicitor") or "\u2014",
-        "buyer_sol_phone": "\u2014",
-        "seller_solicitor": r.get("vendor_solicitor") or "\u2014",
-        "seller_sol_phone": "\u2014",
-        "offer_date": r.get("offer_accepted"),
-        "memo_sent": r.get("memo_sent"),
-        "searches_ordered": None,
-        "searches_received": None,
-        "enquiries_raised": None,
-        "enquiries_answered": None,
-        "mortgage_offered": None,
-        "survey_booked": None,
-        "survey_complete": None,
-        "exchange_target": r.get("exchange_date"),
-        "completion_target": r.get("completion_date"),
-        "chain": "\u2014",
-        "alert": r.get("notes") if r.get("status") == "problem" else None,
-        "next_action": r.get("notes") or "\u2014",
-        "image_bg": FALLBACK_GRADIENTS[idx % len(FALLBACK_GRADIENTS)],
-        "image_url": r.get("image_url") or "",
+        "active": active,
+        "on_track": exchanged,
+        "at_risk": problems,
+        "action": incomplete,
+        "avg_days": 0,
+        "pipeline": pipeline,
     }
 
 
-def _build_crm_data():
-    """Fetch live API data and return (properties, sections, stats, pipeline)
-    matching the exact variable shapes the / route passes to DASHBOARD_HTML."""
-    raw, error = fetch_eatoc_properties()
-    if error:
-        return None, None, None, None, error
+def _crm_sections(props):
+    """Group live properties into sections for the dashboard template."""
+    problems = [p for p in props if p["_raw_status"] == "problem"]
+    incomplete = [p for p in props if p["_raw_status"] == "incomplete_chain"]
+    exchanged = [p for p in props if p["_raw_status"] == "exchanged"]
+    active = [p for p in props if p["_raw_status"] in ("active", "development")]
 
-    props = [_map_property(r, i) for i, r in enumerate(raw)]
-
-    # Group by status — problems first, then active, then exchanged
-    problems = [p for p in props if p["status"] == "at-risk"]
-    stalled = [p for p in props if p["status"] == "stalled"]
-    on_track = [p for p in props if p["status"] == "on-track"]
-
-    def _sec(sid, icon, title, border, items):
+    def _section(sid, icon, title, subtitle, border, items):
         visible = items[:3]
         hidden = items[3:]
         avg = int(sum(p["progress"] for p in items) / len(items)) if items else 0
-        clr = "#e25555" if border == "stalled-banner" else "#e88a3a" if border == "amber-banner" else "#27ae60"
+        color = "#e25555" if border == "stalled-banner" else "#e88a3a" if border == "amber-banner" else "#27ae60"
         return {
-            "id": sid, "icon": icon, "title": title,
-            "subtitle": f"{len(items)} transactions",
-            "avg_progress": avg, "avg_color": clr, "border_class": border,
+            "id": sid, "icon": icon, "title": title, "subtitle": subtitle,
+            "avg_progress": avg, "avg_color": color, "border_class": border,
             "visible_ids": [], "hidden_ids": [],
             "visible": visible, "hidden": hidden,
             "extra_count": 0,
         }
 
     sections = []
-    if problems or stalled:
-        needs = problems + stalled
-        sections.append(_sec("needs-action", "\U0001F6A8", "Needs Action",
-                             "stalled-banner", needs))
-    if on_track:
-        sections.append(_sec("this-week", "\U0001F4C5", "Active Pipeline",
-                             "green-banner", on_track))
+    if problems or incomplete:
+        needs = problems + incomplete
+        sections.append(_section("needs-action", "\U0001F6A8", "Needs Action",
+                                 f"{len(needs)} transactions requiring attention", "stalled-banner", needs))
+    if exchanged:
+        sections.append(_section("exchanged", "\u2705", "Exchanged",
+                                 f"{len(exchanged)} exchanged", "green-banner", exchanged))
+    if active:
+        sections.append(_section("active", "\U0001F4C5", "Active Pipeline",
+                                 f"{len(active)} active transactions", "blue-banner", active))
+    return sections
 
-    # Stats — same keys as STATS dict used by /
-    total = len(props)
-    pipeline_val = sum(p["price"] for p in props if p["price"])
-    stats = {
-        "active": total,
-        "on_track": sum(1 for r in raw if r.get("status") == "exchanged"),
-        "at_risk": sum(1 for r in raw if r.get("status") == "problem"),
-        "action": sum(1 for r in raw if r.get("status") == "incomplete_chain"),
-        "avg_days": 0,
-        "pipeline": pipeline_val,
+
+# JS snippet appended after DASHBOARD_HTML to redirect card clicks to detail page
+CRM_OVERRIDE_JS = r"""
+<script>
+(function(){
+  var base = "{{ detail_base_url }}";
+  if (!base) return;
+  var PROPS = {{ properties_json|safe }};
+  for (var i = 0; i < PROPS.length; i++) {
+    (function(pid){
+      var card = document.getElementById("card-" + pid);
+      if (card) {
+        card.onclick = function(e) {
+          e.stopPropagation();
+          window.location.href = base + "/" + pid;
+        };
+      }
+    })(PROPS[i].id);
+  }
+
+  /* Update stats bar labels for CRM view */
+  var labels = {
+    "stat-on-track": "Exchanged",
+    "stat-at-risk": "Problems",
+    "stat-action": "Inc. Chain"
+  };
+  for (var id in labels) {
+    var el = document.getElementById(id);
+    if (el) {
+      var lbl = el.querySelector(".hs-lbl");
+      if (lbl) lbl.textContent = labels[id];
     }
-
-    # Pipeline — same keys as PIPELINE dict used by /
-    pipeline = {
-        "this_week":    {"count": stats["on_track"], "value": pipeline_val, "confidence": 95},
-        "this_month":   {"count": stats["active"], "value": pipeline_val, "confidence": 80},
-        "this_quarter": {"count": total, "value": pipeline_val, "confidence": 70},
-    }
-
-    return props, sections, stats, pipeline, None
+  }
+})();
+</script>
+"""
 
 
 @app.route("/crm")
 def crm_dashboard():
-    """Render DASHBOARD_HTML with live EATOC data — identical layout to /."""
-    props, sections, stats, pipeline, error = _build_crm_data()
+    """Live CRM dashboard using NUVU design with real property data."""
+    props, error = _map_live_properties()
     if error:
         return f"<h2>Error fetching live data</h2><pre>{error}</pre>", 500
 
-    return render_template_string(
-        DASHBOARD_HTML,
+    stats = _crm_stats(props)
+    sections = _crm_sections(props)
+
+    pipeline = {
+        "this_week": {"count": stats["on_track"], "value": stats["pipeline"], "confidence": 90},
+        "this_month": {"count": stats["active"], "value": stats["pipeline"], "confidence": 75},
+        "this_quarter": {"count": len(props), "value": stats["pipeline"], "confidence": 60},
+    }
+
+    html = render_template_string(
+        DASHBOARD_HTML + CRM_OVERRIDE_JS,
         sections=sections,
         stats=stats,
         pipeline=pipeline,
         properties_json=json.dumps(props),
+        detail_base_url="/crm/property",
     )
+    return html
+
+
+@app.route("/crm/property/<prop_id>")
+def crm_property_detail(prop_id):
+    """Full-page detail view for a single CRM property."""
+    props, error = _map_live_properties()
+    if error:
+        return f"<h2>Error fetching live data</h2><pre>{error}</pre>", 500
+
+    prop = None
+    for p in props:
+        if p["id"] == prop_id:
+            prop = p
+            break
+    if not prop:
+        return "<h2>Property not found</h2>", 404
+
+    return render_template_string(DETAIL_HTML, p=prop)
 
 
 @app.route("/api/crm/notes/<prop_id>", methods=["POST"])
@@ -4068,6 +2111,239 @@ def save_crm_note(prop_id):
         return jsonify({"ok": True})
     except http_requests.RequestException as e:
         return jsonify({"error": str(e)}), 502
+
+
+# ─────────────────────────────────────────────────────────────
+#  DETAIL PAGE TEMPLATE — same CSS vars / fonts as DASHBOARD
+# ─────────────────────────────────────────────────────────────
+
+DETAIL_HTML = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ p.address }} — NUVU</title>
+<link rel="icon" href="/static/logo.png">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0f1b2d;--navy-lt:#162236;--navy-md:#1c2e4a;--navy-card:#182842;
+  --lime:#c4e233;--lime-dk:#a3bf1a;
+  --red:#e25555;--red-chip:#e84545;
+  --amber:#e88a3a;--amber-chip:#e8873a;
+  --green:#27ae60;--green-chip:#2fa868;
+  --blue:#3b82f6;
+  --white:#ffffff;--off-white:#f4f6f9;
+  --txt:#1e293b;--txt-mid:#475569;--txt-light:#94a3b8;
+  --card-shadow:0 2px 12px rgba(0,0,0,.08);
+  --t:.22s ease;
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--off-white);color:var(--txt);min-height:100vh}
+
+/* back bar */
+.back-bar{background:var(--navy);padding:16px 32px;display:flex;align-items:center;gap:12px}
+.back-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--lime);font-size:.88rem;font-weight:700;text-decoration:none;
+  padding:8px 18px;border-radius:8px;border:1px solid rgba(196,226,51,.3);
+  transition:all var(--t);
+}
+.back-btn:hover{background:rgba(196,226,51,.12);border-color:var(--lime)}
+
+/* hero photo */
+.detail-hero{position:relative;width:100%;height:320px;overflow:hidden;background:var(--navy)}
+.detail-hero img{width:100%;height:100%;object-fit:cover}
+.detail-hero-overlay{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(15,27,45,.85));
+  padding:40px 32px 24px;
+}
+.detail-hero-overlay h1{font-size:1.6rem;font-weight:800;color:var(--white);margin-bottom:4px}
+.detail-hero-overlay .detail-loc{font-size:.88rem;color:rgba(255,255,255,.6)}
+.detail-hero-overlay .detail-price{font-size:1.4rem;font-weight:900;color:var(--lime);margin-top:8px}
+.detail-chip{
+  position:absolute;top:20px;right:24px;
+  padding:6px 16px;border-radius:6px;
+  font-size:.72rem;font-weight:800;letter-spacing:.8px;color:var(--white);
+}
+.chip-stalled{background:var(--red-chip)}
+.chip-at-risk{background:var(--amber-chip)}
+.chip-on-track{background:var(--green-chip)}
+
+/* content */
+.detail-content{max-width:900px;margin:0 auto;padding:32px}
+
+/* progress */
+.detail-prog{margin-bottom:28px}
+.detail-prog-bar{width:100%;height:10px;border-radius:5px;background:#e8ecf1;overflow:hidden}
+.detail-prog-fill{height:100%;border-radius:5px}
+.detail-prog-fill.clr-stalled{background:var(--red)}
+.detail-prog-fill.clr-at-risk{background:var(--amber)}
+.detail-prog-fill.clr-on-track{background:var(--green)}
+.detail-prog-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--txt-light);margin-top:6px}
+
+/* cards */
+.detail-card{
+  background:var(--white);border-radius:14px;border:1px solid #e8ecf1;
+  box-shadow:var(--card-shadow);padding:24px;margin-bottom:20px;
+}
+.detail-card h3{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* milestones */
+.ms-list{display:flex;flex-direction:column}
+.ms-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.85rem}
+.ms-item:last-child{border-bottom:none}
+.ms-ic{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.65rem}
+.ms-ic.done{background:var(--green);color:#fff}
+.ms-ic.pending{background:#f1f5f9;border:2px solid #cbd5e1;color:transparent}
+.ms-lb{color:var(--txt)}
+.ms-lb.done-lb{color:var(--txt-light);text-decoration:line-through}
+.ms-date{margin-left:auto;font-size:.78rem;color:var(--txt-light);font-weight:600}
+
+/* alert box */
+.alert-box{
+  padding:14px 18px;border-radius:10px;margin-bottom:20px;
+  font-size:.88rem;line-height:1.5;display:flex;gap:10px;align-items:flex-start;
+}
+.alert-red{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+.alert-amber{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.alert-green{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+
+/* next action */
+.next-box{background:#f8fafc;border:1px solid #e8ecf1;border-radius:10px;padding:14px 18px;margin-bottom:20px}
+.next-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--green);font-weight:700;margin-bottom:4px}
+.next-txt{font-size:.88rem;color:var(--txt);line-height:1.5}
+
+/* detail grid */
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px}
+.d-r{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.85rem}
+.d-r:last-child{border-bottom:none}
+.d-l{color:var(--txt-light)}
+.d-v{font-weight:600;color:var(--txt);text-align:right}
+
+/* two col layout */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+@media(max-width:700px){
+  .detail-hero{height:220px}
+  .detail-content{padding:20px 16px}
+  .det-grid,.two-col{grid-template-columns:1fr}
+  .back-bar{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="back-bar">
+  <a class="back-btn" href="/crm">&larr; Back to Dashboard</a>
+</div>
+
+<div class="detail-hero">
+  {% if p.image_url %}
+  <img src="{{ p.image_url }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}">
+  {% else %}
+  <div style="width:100%;height:100%;background:{{ p.image_bg }}"></div>
+  {% endif %}
+  <span class="detail-chip chip-{{ p.status }}">{{ p.status_label }}</span>
+  <div class="detail-hero-overlay">
+    <h1>{{ p.address }}</h1>
+    <div class="detail-loc">{{ p.location }}{% if p._property_type and p._property_type != '\u2014' %} &bull; {{ p._property_type }}{% endif %}{% if p._beds %} &bull; {{ p._beds }} bed{% endif %}{% if p._baths %} &bull; {{ p._baths }} bath{% endif %}</div>
+    {% if p.price %}<div class="detail-price">&pound;{{ "{:,.0f}".format(p.price) }}</div>{% endif %}
+  </div>
+</div>
+
+<div class="detail-content">
+
+  <!-- Progress bar -->
+  <div class="detail-prog">
+    <div class="detail-prog-bar"><div class="detail-prog-fill clr-{{ p.status }}" style="width:{{ p.progress }}%"></div></div>
+    <div class="detail-prog-labels"><span>Offer Accepted</span><span>{{ p.progress }}% complete</span><span>Completion</span></div>
+  </div>
+
+  <!-- Alert -->
+  {% if p.alert %}
+  <div class="alert-box {% if p.status == 'stalled' %}alert-red{% elif p.status == 'at-risk' %}alert-amber{% else %}alert-green{% endif %}">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>{{ p.alert }}</span>
+  </div>
+  {% endif %}
+
+  <!-- Next Action -->
+  <div class="next-box">
+    <div class="next-lbl">Next Action</div>
+    <div class="next-txt">{{ p.next_action }}</div>
+  </div>
+
+  <div class="two-col">
+    <!-- Milestones -->
+    <div class="detail-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Milestones
+      </h3>
+      <div class="ms-list">
+        {% for ms in p.milestones %}
+        <div class="ms-item">
+          <span class="ms-ic {{ 'done' if ms.done else 'pending' }}">{% if ms.done %}&#x2713;{% endif %}</span>
+          <span class="ms-lb {{ 'done-lb' if ms.done else '' }}">{{ ms.label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Contacts & details -->
+    <div class="detail-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Contacts &amp; Details
+      </h3>
+      <div class="det-grid">
+        <div class="d-r"><span class="d-l">Buyer</span><span class="d-v">{{ p.buyer }}</span></div>
+        <div class="d-r"><span class="d-l">Buyer Phone</span><span class="d-v">{{ p.buyer_phone }}</span></div>
+        <div class="d-r"><span class="d-l">Buyer Solicitor</span><span class="d-v">{{ p.buyer_solicitor }}</span></div>
+        <div class="d-r"><span class="d-l">Vendor</span><span class="d-v">{{ p._vendor_name }}</span></div>
+        <div class="d-r"><span class="d-l">Vendor Phone</span><span class="d-v">{{ p._vendor_phone }}</span></div>
+        <div class="d-r"><span class="d-l">Vendor Solicitor</span><span class="d-v">{{ p.seller_solicitor }}</span></div>
+        <div class="d-r"><span class="d-l">Mortgage Broker</span><span class="d-v">{{ p._mortgage_broker }}</span></div>
+        <div class="d-r"><span class="d-l">Surveyor</span><span class="d-v">{{ p._surveyor }}</span></div>
+        <div class="d-r"><span class="d-l">Sewage Type</span><span class="d-v">{{ p._sewage_type }}</span></div>
+        <div class="d-r"><span class="d-l">Staff</span><span class="d-v">{{ p._staff_initials }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dates & timeline -->
+  <div class="detail-card">
+    <h3>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Timeline
+    </h3>
+    <div class="det-grid">
+      <div class="d-r"><span class="d-l">Offer Accepted</span><span class="d-v">{{ p.offer_date or '\u2014' }}</span></div>
+      <div class="d-r"><span class="d-l">Memo Sent</span><span class="d-v">{{ p.memo_sent or '\u2014' }}</span></div>
+      <div class="d-r"><span class="d-l">Exchange Date</span><span class="d-v">{{ p.exchange_target or '\u2014' }}</span></div>
+      <div class="d-r"><span class="d-l">Completion Date</span><span class="d-v">{{ p.completion_target or '\u2014' }}</span></div>
+      <div class="d-r"><span class="d-l">Fee</span><span class="d-v">&pound;{{ "{:,.2f}".format(p._fee) if p._fee else '\u2014' }}</span></div>
+      <div class="d-r"><span class="d-l">Invoice Status</span><span class="d-v">{{ p._invoice_status }}</span></div>
+    </div>
+  </div>
+
+  <!-- NUVU Notes -->
+  {% if p._nuvu_notes and p._nuvu_notes != '\u2014' %}
+  <div class="detail-card">
+    <h3>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--txt-mid)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      NUVU Notes
+    </h3>
+    <div style="font-size:.88rem;line-height:1.6;color:var(--txt)">{{ p._nuvu_notes }}</div>
+  </div>
+  {% endif %}
+
+</div>
+
+</body>
+</html>"""
 
 
 # ─────────────────────────────────────────────────────────────

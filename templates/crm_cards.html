@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NUVU &mdash; Live CRM Properties</title>
+<link rel="icon" href="/static/logo.png">
+<style>
+/* ═══ RESET ═══════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0f1b2d;--navy-lt:#162236;--navy-md:#1c2e4a;--navy-card:#182842;
+  --lime:#c4e233;--lime-dk:#a3bf1a;
+  --red:#e25555;--red-chip:#e84545;
+  --amber:#e88a3a;--amber-chip:#e8873a;
+  --green:#27ae60;--green-chip:#2fa868;
+  --blue:#3b82f6;
+  --white:#ffffff;--off-white:#f4f6f9;
+  --txt:#1e293b;--txt-mid:#475569;--txt-light:#94a3b8;
+  --card-shadow:0 2px 12px rgba(0,0,0,.08);
+  --t:.22s ease;
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--off-white);color:var(--txt);min-height:100vh}
+
+/* ═══ HERO ════════════════════════════════════════════════ */
+.hero{position:relative;width:100%;height:480px;overflow:hidden;background:var(--navy)}
+.hero-img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* NUVU badge — top right */
+.hero-badge{
+  position:absolute;top:28px;right:32px;
+  background:rgba(15,27,45,.88);backdrop-filter:blur(12px);
+  border-radius:14px;padding:18px 28px 14px;
+  display:flex;flex-direction:column;align-items:center;
+  border:1px solid rgba(255,255,255,.08);
+}
+.hero-badge-top{display:flex;align-items:center;gap:14px}
+.hero-badge img{width:48px;height:48px;border-radius:10px}
+.hero-badge-top h1{font-size:2rem;font-weight:900;color:var(--white);letter-spacing:12px;line-height:1;margin:0;text-indent:12px}
+.hero-badge-strapline{font-size:.6rem;color:var(--lime);text-transform:uppercase;letter-spacing:3px;font-weight:600;margin-top:8px;text-align:center;white-space:nowrap}
+
+/* Stats overlay — floating rounded card over hero */
+.hero-stats{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 64px);max-width:1400px;
+  background:#1a2332;
+  border-radius:16px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;justify-content:center;padding:0;
+}
+.hs{
+  flex:1;max-width:220px;text-align:center;padding:22px 16px;
+  border-right:1px solid rgba(255,255,255,.08);
+  cursor:pointer;transition:background var(--t);
+}
+.hs:last-child{border-right:none}
+.hs:hover{background:rgba(255,255,255,.05);border-radius:4px}
+.hs-val{font-size:2.1rem;font-weight:900;color:var(--white);line-height:1}
+.hs-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:1.8px;color:rgba(255,255,255,.55);margin-top:6px;font-weight:600}
+
+/* ═══ PIPELINE FORECAST ═══════════════════════════════════ */
+.pipeline-section{
+  background:var(--navy);padding:36px 40px 40px;cursor:pointer;
+  transition:background .2s ease;
+}
+.pipeline-section:hover{background:#0d1826}
+.pipeline-header{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  max-width:1280px;margin:0 auto 24px;
+}
+.pipeline-title{font-size:1.25rem;font-weight:800;color:var(--white);display:flex;align-items:center;gap:10px}
+.pipeline-sub{font-size:.82rem;color:rgba(255,255,255,.45);margin-top:4px}
+.ahead-badge{
+  background:rgba(196,226,51,.12);color:var(--lime);
+  padding:7px 16px;border-radius:20px;font-size:.82rem;font-weight:700;
+  display:flex;align-items:center;gap:6px;
+}
+.pipeline-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  max-width:1280px;margin:0 auto;
+}
+.pipe-card{
+  background:var(--navy-lt);border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;padding:22px 24px;
+}
+.pipe-period{font-size:.68rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.45);font-weight:600;margin-bottom:10px}
+.pipe-count{font-size:2rem;font-weight:900;color:var(--white);line-height:1}
+.pipe-value{font-size:1.05rem;font-weight:800;color:var(--lime);margin-top:4px}
+.pipe-bar{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:14px;overflow:hidden}
+.pipe-bar-fill{height:100%;border-radius:3px;background:var(--lime)}
+.pipe-confidence{font-size:.75rem;color:rgba(255,255,255,.4);margin-top:8px}
+
+/* ═══ MAIN CONTENT ════════════════════════════════════════ */
+.content{max-width:1280px;margin:0 auto;padding:0 32px 60px}
+
+/* ═══ SECTION HEADERS ═════════════════════════════════════ */
+.section-banner{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:28px 0 20px;
+  border-left:4px solid transparent;
+  padding-left:20px;margin-left:-24px;
+}
+.section-banner.stalled-banner{border-left-color:var(--red)}
+.section-banner.risk-banner{border-left-color:var(--amber)}
+.section-banner.green-banner{border-left-color:var(--green)}
+.section-banner.blue-banner{border-left-color:var(--blue)}
+.section-banner.amber-banner{border-left-color:var(--amber)}
+.section-banner-left h2{font-size:1.3rem;font-weight:800;color:var(--txt);display:flex;align-items:center;gap:10px}
+.section-banner-left p{font-size:.88rem;color:var(--txt-light);margin-top:2px}
+
+/* Section avg progress bar */
+.section-avg{display:flex;align-items:center;gap:12px}
+.avg-label{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--txt-light);font-weight:600;white-space:nowrap}
+.avg-bar-wrap{display:flex;align-items:center;gap:8px}
+.avg-bar{width:120px;height:8px;border-radius:4px;background:#e8ecf1;overflow:hidden}
+.avg-bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.avg-pct{font-size:.85rem;font-weight:800;color:var(--txt);min-width:35px}
+
+/* ═══ CARD GRID ═══════════════════════════════════════════ */
+.card-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  margin-bottom:12px;
+}
+
+/* ═══ PROPERTY CARD — white, photo top ════════════════════ */
+.prop-card{
+  background:var(--white);border-radius:16px;overflow:hidden;
+  box-shadow:var(--card-shadow);cursor:pointer;
+  transition:all var(--t);border:1px solid #e8ecf1;
+}
+.prop-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 32px rgba(0,0,0,.12);
+}
+
+/* photo area */
+.card-photo{
+  height:160px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.card-photo-bg{width:100%;height:100%;object-fit:cover}
+.card-chip{
+  position:absolute;top:12px;right:12px;
+  padding:5px 14px;border-radius:6px;
+  font-size:.68rem;font-weight:800;letter-spacing:.8px;color:var(--white);
+}
+.chip-stalled{background:var(--red-chip)}
+.chip-at-risk{background:var(--amber-chip)}
+.chip-on-track{background:var(--green-chip)}
+
+/* card body */
+.card-body{padding:18px 22px 20px}
+.card-name{font-size:1.05rem;font-weight:700;color:var(--txt);margin-bottom:14px}
+
+/* progress + duration row */
+.card-progress-row{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+
+/* SVG progress ring */
+.ring-wrap{position:relative;width:64px;height:64px;flex-shrink:0}
+.ring-wrap svg{width:64px;height:64px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:#e2e8f0;stroke-width:5}
+.ring-fg{fill:none;stroke-width:5;stroke-linecap:round}
+.ring-fg.clr-stalled{stroke:var(--red)}
+.ring-fg.clr-at-risk{stroke:var(--amber)}
+.ring-fg.clr-on-track{stroke:var(--lime)}
+.ring-pct{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800;color:var(--txt);
+}
+
+/* duration block */
+.card-duration .dur-label{font-size:.65rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt-light);font-weight:600}
+.card-duration .dur-val{font-size:1.3rem;font-weight:800;color:var(--txt);line-height:1.2}
+.card-duration .dur-target{font-size:.78rem;color:var(--txt-light)}
+
+/* checklist */
+.card-checks{display:flex;flex-direction:column;gap:6px}
+.chk{display:flex;align-items:center;gap:8px;font-size:.85rem}
+.chk-done{color:var(--green);font-weight:600}
+.chk-pending{color:var(--txt-light)}
+.chk-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem}
+.chk-icon.done{background:var(--green);color:#fff}
+.chk-icon.pending{background:#e8ecf1;border:1.5px solid #cbd5e1;color:transparent}
+
+/* ═══ SHOW MORE ═══════════════════════════════════════════ */
+.show-more-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px;margin:8px 0 24px;
+  background:var(--white);border:1px dashed #cbd5e1;border-radius:12px;
+  color:var(--txt-mid);font-size:.88rem;font-weight:600;cursor:pointer;
+  transition:all var(--t);
+}
+.show-more-btn:hover{border-color:var(--green);color:var(--green);background:#f0fdf4}
+.show-more-btn svg{transition:transform var(--t)}
+.show-more-btn.expanded svg{transform:rotate(180deg)}
+.show-more-panel{display:none;margin-bottom:24px}
+.show-more-panel.open{display:block}
+
+/* extra summary (for larger counts) */
+.extra-summary{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;margin-top:16px;
+  background:var(--white);border:1px solid #e8ecf1;border-radius:12px;
+  color:var(--txt-mid);font-size:.88rem;
+}
+.extra-note{font-size:.78rem;color:var(--txt-light);font-style:italic}
+
+/* ═══ MODAL ═══════════════════════════════════════════════ */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+  z-index:2000;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--white);border-radius:18px;
+  width:100%;max-width:620px;max-height:85vh;overflow-y:auto;
+  box-shadow:0 30px 80px rgba(0,0,0,.3);animation:modalIn .25s ease;
+  color:var(--txt);
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal::-webkit-scrollbar{width:5px}
+.modal::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+
+/* modal header */
+.m-hdr{padding:18px 22px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.m-hdr h2{font-size:1.15rem;font-weight:800}
+.m-hdr .m-loc{font-size:.8rem;color:var(--txt-light);margin-top:2px}
+.m-price{font-size:1.2rem;font-weight:800;color:var(--green)}
+.m-close{
+  width:34px;height:34px;border-radius:50%;
+  background:#f1f5f9;border:1px solid #e2e8f0;
+  color:var(--txt-mid);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--t);margin-left:10px;flex-shrink:0;
+}
+.m-close:hover{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* progress bar */
+.m-prog{padding:12px 22px 0}
+.m-prog-bar{width:100%;height:6px;border-radius:3px;background:#e8ecf1;overflow:hidden}
+.m-prog-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.m-prog-fill.clr-stalled{background:var(--red)}
+.m-prog-fill.clr-at-risk{background:var(--amber)}
+.m-prog-fill.clr-on-track{background:var(--green)}
+.m-prog-labels{display:flex;justify-content:space-between;font-size:.65rem;color:var(--txt-light);margin-top:4px}
+
+/* body */
+.m-body{padding:10px 22px 0}
+.m-div{border:none;border-top:1px solid #e8ecf1;margin:10px 0}
+
+/* alert */
+.m-alert{padding:10px 14px;border-radius:8px;margin-bottom:10px;font-size:.82rem;line-height:1.45;display:flex;gap:8px;align-items:flex-start}
+.m-alert svg{flex-shrink:0;margin-top:2px}
+.m-alert-red{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+.m-alert-amber{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.m-alert-green{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+
+/* next action */
+.m-next{background:#f8fafc;border:1px solid #e8ecf1;border-radius:8px;padding:10px 14px;margin-bottom:10px}
+.m-next-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--green);font-weight:700;margin-bottom:3px}
+.m-next-txt{font-size:.82rem;color:var(--txt);line-height:1.45}
+
+/* action buttons */
+.m-actions{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.m-btn{flex:1;min-width:100px;padding:9px 12px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all var(--t);border:none}
+.m-btn svg{width:15px;height:15px}
+.m-btn-call{background:var(--lime);color:var(--navy)}
+.m-btn-call:hover{background:var(--lime-dk)}
+.m-btn-done{background:var(--green);color:#fff}
+.m-btn-done:hover{background:#219a52}
+.m-btn-outline{background:transparent;color:var(--txt);border:1px solid #d1d5db}
+.m-btn-outline:hover{border-color:var(--green);color:var(--green)}
+
+/* milestones */
+.m-ms h3{font-size:.82rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.ms-list{display:flex;flex-direction:column}
+.ms-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:.78rem}
+.ms-item:last-child{border-bottom:none}
+.ms-ic{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.6rem}
+.ms-ic.done{background:var(--green);color:#fff}
+.ms-ic.pending{background:#f1f5f9;border:2px solid #cbd5e1;color:transparent}
+.ms-ic.na{background:#f1f5f9;color:var(--txt-light);font-size:.55rem;font-weight:700}
+.ms-lb{color:var(--txt)}
+.ms-lb.done-lb{color:var(--txt-light);text-decoration:line-through}
+
+/* expandable details */
+.m-det-toggle{
+  width:100%;background:#f8fafc;border:1px solid #e8ecf1;
+  border-radius:8px;padding:10px 14px;margin-bottom:4px;
+  color:var(--txt);font-size:.82rem;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;transition:all var(--t);
+}
+.m-det-toggle:hover{border-color:var(--green)}
+.m-det-toggle svg{transition:transform var(--t)}
+.m-det-toggle.expanded svg{transform:rotate(180deg)}
+.m-det-panel{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.m-det-panel.expanded{max-height:650px}
+.m-det-inner{padding:14px 0 4px}
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+.d-r{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;font-size:.75rem}
+.d-r:last-child{border-bottom:none}
+.d-l{color:var(--txt-light)}
+.d-v{font-weight:600;color:var(--txt);text-align:right}
+.d-full{grid-column:1/-1;padding:10px 0 2px}
+.d-full-l{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--txt-light);margin-bottom:3px}
+.d-full-v{font-size:.82rem;color:var(--txt);line-height:1.5}
+
+.m-footer{padding:6px 22px 16px}
+
+/* ═══ ANALYTICS MODAL ════════════════════════════════════ */
+.analytics-chart{
+  height:200px;background:linear-gradient(135deg,var(--navy-lt),var(--navy-md));
+  border-radius:12px;display:flex;align-items:flex-end;justify-content:center;
+  gap:20px;padding:24px 32px;margin-bottom:16px;
+}
+.analytics-chart .bar{
+  width:40px;border-radius:6px 6px 0 0;background:var(--lime);opacity:.8;
+  transition:opacity .2s;position:relative;
+}
+.analytics-chart .bar:hover{opacity:1}
+.analytics-chart .bar span{
+  position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+  font-size:.65rem;color:var(--lime);font-weight:700;white-space:nowrap;
+}
+.analytics-coming{text-align:center;color:var(--txt-light);font-size:.88rem;margin:12px 0 16px;font-style:italic}
+.analytics-rows{display:flex;flex-direction:column;gap:8px}
+.anal-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf1;
+}
+.anal-row-label{font-size:.85rem;font-weight:600;color:var(--txt)}
+.anal-row-value{font-size:.82rem;color:var(--txt-mid)}
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════ */
+@media(max-width:960px){.card-grid{grid-template-columns:repeat(2,1fr)}.pipeline-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){
+  .hero{height:320px}
+  .hero-badge{top:16px;right:16px;padding:12px 18px}
+  .hero-badge img{width:36px;height:36px}
+  .hero-badge-text h1{font-size:1.3rem}
+  .hs{padding:14px 10px}.hs-val{font-size:1.4rem}
+  .pipeline-section{padding:24px 20px}
+  .pipeline-grid,.card-grid{grid-template-columns:1fr}
+  .content{padding:0 16px 40px}
+  .section-banner{flex-direction:column;align-items:flex-start;gap:8px}
+  .section-avg{margin-top:4px}
+  .modal{border-radius:14px}
+  .m-hdr,.m-body,.m-prog,.m-footer{padding-left:16px;padding-right:16px}
+  .det-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+{# ═══ STATUS MAPPING ════════════════════════════════════ #}
+{% macro status_cls(st) %}{% if st == 'problem' %}stalled{% elif st == 'incomplete_chain' %}at-risk{% else %}on-track{% endif %}{% endmacro %}
+
+{# ═══ PROPERTY CARD MACRO ═══════════════════════════════ #}
+{% macro prop_card(p, ai) %}
+{% set st = (p.status or 'active')|lower %}
+{% set cls = status_cls(st)|trim %}
+{% set milestones = [
+  ('Offer Accepted', p.offer_accepted),
+  ('Memo Sent', p.memo_sent),
+  ('Solicitors Instructed', p.buyer_solicitor or p.vendor_solicitor),
+  ('Survey', p.surveyor),
+  ('Exchange', p.exchange_date),
+  ('Completion', p.completion_date)
+] %}
+{% set ns = namespace(done=0) %}
+{% for label, val in milestones %}{% if val is not none and val != '' and val %}{% set ns.done = ns.done + 1 %}{% endif %}{% endfor %}
+{% set progress = ((ns.done / milestones|length) * 100)|int %}
+<div class="prop-card" id="card-{{ p.id }}" data-status="{{ st }}">
+  <div class="card-photo" style="background:linear-gradient(135deg,var(--navy-md),var(--navy-lt))">
+    {% if p.image_url %}
+    <img class="card-photo-bg" src="{{ p.image_url }}" alt="{{ p.property_address }}">
+    {% endif %}
+    <span class="card-chip chip-{{ cls }}">{{ (p.status or 'ACTIVE')|upper }}</span>
+  </div>
+  <div class="card-body">
+    <div class="card-name">{{ p.property_address or 'Unknown Address' }}</div>
+    <div class="card-progress-row">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 64 64">
+          <circle class="ring-bg" cx="32" cy="32" r="27"/>
+          <circle class="ring-fg clr-{{ cls }}" cx="32" cy="32" r="27"
+            stroke-dasharray="{{ (2 * 3.14159 * 27)|round(1) }}"
+            stroke-dashoffset="{{ ((100 - progress) / 100 * 2 * 3.14159 * 27)|round(1) }}"/>
+        </svg>
+        <span class="ring-pct">{{ progress }}%</span>
+      </div>
+      <div class="card-duration">
+        <div class="dur-label">Milestones</div>
+        <div class="dur-val">{{ ns.done }} of {{ milestones|length }}</div>
+        {% if p.sale_price %}<div class="dur-target">&pound;{{ "{:,.0f}".format(p.sale_price|float) }}</div>{% endif %}
+      </div>
+    </div>
+    <div class="card-checks">
+      {% for label, val in milestones %}
+      {% set is_done = val is not none and val != '' and val %}
+      <div class="chk {{ 'chk-done' if is_done else 'chk-pending' }}">
+        <span class="chk-icon {{ 'done' if is_done else 'pending' }}">{% if is_done %}&#x2713;{% endif %}</span>
+        {{ label }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ── Solicitor & detail rows ─────────────────────── #}
+  {% if p.buyer_solicitor or p.vendor_solicitor or p.buyer_name or p.mortgage_broker %}
+  <div class="m-det-inner" style="padding:0 22px 12px">
+    <div class="det-grid">
+      {% if p.buyer_name %}<div class="d-r"><span class="d-l">Buyer</span><span class="d-v">{{ p.buyer_name }}</span></div>{% endif %}
+      {% if p.buyer_solicitor %}<div class="d-r"><span class="d-l">Buyer Solicitor</span><span class="d-v">{{ p.buyer_solicitor }}</span></div>{% endif %}
+      {% if p.vendor_solicitor %}<div class="d-r"><span class="d-l">Vendor Solicitor</span><span class="d-v">{{ p.vendor_solicitor }}</span></div>{% endif %}
+      {% if p.mortgage_broker %}<div class="d-r"><span class="d-l">Mortgage Broker</span><span class="d-v">{{ p.mortgage_broker }}</span></div>{% endif %}
+      {% if p.fee %}<div class="d-r"><span class="d-l">Fee</span><span class="d-v">&pound;{{ "{:,.2f}".format(p.fee|float) }}</span></div>{% endif %}
+      {% if p.staff_initials %}<div class="d-r"><span class="d-l">Staff</span><span class="d-v">{{ p.staff_initials }}</span></div>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── AI Panel — uses pipeline card structure ─────── #}
+  {% if ai %}
+  <div class="pipeline-section" style="padding:16px 22px;border-radius:0 0 16px 16px;cursor:default">
+    <div class="pipeline-grid" style="max-width:100%">
+      <div class="pipe-card">
+        <div class="pipe-period">&#x2713; Done</div>
+        {% if ai.done %}
+          {% for item in ai.done %}
+          <div class="pipe-confidence" style="margin-top:4px">&#x203A; {{ item }}</div>
+          {% endfor %}
+        {% else %}
+          <div class="pipe-confidence" style="font-style:italic">No actions yet</div>
+        {% endif %}
+      </div>
+      <div class="pipe-card">
+        <div class="pipe-period">&rarr; Next</div>
+        {% if ai.todo %}
+          {% for item in ai.todo %}
+          <div class="pipe-confidence" style="margin-top:4px">&#x203A; {{ item }}</div>
+          {% endfor %}
+        {% else %}
+          <div class="pipe-confidence" style="font-style:italic">All caught up</div>
+        {% endif %}
+      </div>
+      <div class="pipe-card">
+        <div class="pipe-period">&#x26A0; Human</div>
+        {% if ai.human %}
+          {% for item in ai.human %}
+          <div class="pipe-confidence" style="margin-top:4px">&#x203A; {{ item }}</div>
+          {% endfor %}
+        {% else %}
+          <div class="pipe-confidence" style="font-style:italic">No issues</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endmacro %}
+
+{# ═══ COMPUTE STATS ═════════════════════════════════════ #}
+{% set active_count = properties|selectattr('status','equalto','active')|list|length %}
+{% set exchanged_count = properties|selectattr('status','equalto','exchanged')|list|length %}
+{% set problem_count = properties|selectattr('status','equalto','problem')|list|length %}
+{% set chain_count = properties|selectattr('status','equalto','incomplete_chain')|list|length %}
+{% set ns_pipe = namespace(total=0) %}
+{% for p in properties %}{% if p.sale_price %}{% set ns_pipe.total = ns_pipe.total + p.sale_price|float %}{% endif %}{% endfor %}
+
+<!-- ═══ HERO ══════════════════════════════════════════════ -->
+<div class="hero">
+  <img class="hero-img" src="/static/street-scene.PNG" alt="NUVU sold boards">
+  <div class="hero-badge">
+    <div class="hero-badge-top">
+      <img src="/static/logo.png" alt="NUVU">
+      <h1>NUVU</h1>
+    </div>
+    <div class="hero-badge-strapline">Live Sales Progression</div>
+  </div>
+  <div class="hero-stats">
+    <div class="hs" id="stat-total"><div class="hs-val">{{ properties|length }}</div><div class="hs-lbl">Total</div></div>
+    <div class="hs" id="stat-active"><div class="hs-val">{{ active_count }}</div><div class="hs-lbl">Active</div></div>
+    <div class="hs" id="stat-exchanged"><div class="hs-val">{{ exchanged_count }}</div><div class="hs-lbl">Exchanged</div></div>
+    <div class="hs" id="stat-problems"><div class="hs-val">{{ problem_count }}</div><div class="hs-lbl">Problems</div></div>
+    <div class="hs" id="stat-chain"><div class="hs-val">{{ chain_count }}</div><div class="hs-lbl">Chain</div></div>
+    <div class="hs" id="stat-pipeline"><div class="hs-val">&pound;{{ "%.1f"|format(ns_pipe.total / 1000000) }}M</div><div class="hs-lbl">Pipeline</div></div>
+  </div>
+</div>
+
+<!-- ═══ PIPELINE FORECAST — CRM status breakdown ════════ -->
+<div class="pipeline-section" id="pipelineSection">
+  <div class="pipeline-header">
+    <div>
+      <div class="pipeline-title">&#x1F4CA; CRM Pipeline</div>
+      <div class="pipeline-sub">Click to view full analytics &bull; Live EATOC data</div>
+    </div>
+    {% if problem_count == 0 %}
+    <div class="ahead-badge">&#x26A1; All clear &mdash; no problems</div>
+    {% else %}
+    <div class="ahead-badge">&#x26A0; {{ problem_count }} problem{{ 's' if problem_count != 1 }} flagged</div>
+    {% endif %}
+  </div>
+  <div class="pipeline-grid">
+    <div class="pipe-card">
+      <div class="pipe-period">Active</div>
+      <div class="pipe-count">{{ active_count }}</div>
+      <div class="pipe-value">In progression</div>
+      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ (active_count / (properties|length or 1) * 100)|int }}%"></div></div>
+      <div class="pipe-confidence">{{ (active_count / (properties|length or 1) * 100)|int }}% of pipeline</div>
+    </div>
+    <div class="pipe-card">
+      <div class="pipe-period">Exchanged</div>
+      <div class="pipe-count">{{ exchanged_count }}</div>
+      <div class="pipe-value">Contracts exchanged</div>
+      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ (exchanged_count / (properties|length or 1) * 100)|int }}%"></div></div>
+      <div class="pipe-confidence">{{ (exchanged_count / (properties|length or 1) * 100)|int }}% of pipeline</div>
+    </div>
+    <div class="pipe-card">
+      <div class="pipe-period">Requires Attention</div>
+      <div class="pipe-count">{{ problem_count + chain_count }}</div>
+      <div class="pipe-value">{{ problem_count }} problems &bull; {{ chain_count }} chain issues</div>
+      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ ((problem_count + chain_count) / (properties|length or 1) * 100)|int }}%"></div></div>
+      <div class="pipe-confidence">{{ ((problem_count + chain_count) / (properties|length or 1) * 100)|int }}% of pipeline</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN CONTENT ═════════════════════════════════════ -->
+<div class="content">
+
+  <div class="section-banner green-banner">
+    <div class="section-banner-left">
+      <h2>&#x1F3E0; EATOC CRM Properties</h2>
+      <p>{{ properties|length }} properties currently in live progression</p>
+    </div>
+    <div class="section-banner-right">
+      <div class="section-avg">
+        <div class="avg-label">Data Source</div>
+        <div class="ahead-badge" style="font-size:.72rem;padding:5px 12px">&#x26A1; Live API</div>
+      </div>
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="m-alert m-alert-red">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>Could not fetch live data: {{ error }}</span>
+  </div>
+  {% endif %}
+
+  {# ── Filter bar — using stats bar pills ───────────── #}
+  <div class="m-actions" style="margin-bottom:16px">
+    <button class="m-btn m-btn-done" data-filter="all">All ({{ properties|length }})</button>
+    <button class="m-btn m-btn-outline" data-filter="active">Active</button>
+    <button class="m-btn m-btn-outline" data-filter="exchanged">Exchanged</button>
+    <button class="m-btn m-btn-outline" data-filter="problem">Problem</button>
+    <button class="m-btn m-btn-outline" data-filter="incomplete_chain">Incomplete Chain</button>
+  </div>
+
+  <div class="card-grid" id="cardGrid">
+    {% for p in properties %}
+    {% set ai = ai_panels[p.id|string] if ai_panels else {} %}
+    {{ prop_card(p, ai) }}
+    {% endfor %}
+  </div>
+
+  {% if not properties %}
+  <div class="extra-summary">
+    <span>No properties found. Check the API connection.</span>
+    <span class="extra-note">EATOC CRM may be offline</span>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ═══ PROPERTY MODAL ══════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox">
+    <div class="m-hdr">
+      <div>
+        <h2 id="mAddr"></h2>
+        <div class="m-loc" id="mLoc"></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <div class="m-price" id="mPrice"></div>
+        <button class="m-close" id="mCloseBtn">&times;</button>
+      </div>
+    </div>
+
+    <div class="m-prog">
+      <div class="m-prog-bar"><div class="m-prog-fill" id="mProgFill"></div></div>
+      <div class="m-prog-labels"><span>Offer Accepted</span><span id="mProgPct"></span><span>Completion</span></div>
+    </div>
+
+    <div class="m-body">
+      <hr class="m-div">
+      <div id="mAlertBox" class="m-alert" style="display:none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="mAlertTxt"></span>
+      </div>
+      <div class="m-next">
+        <div class="m-next-lbl">Progression Notes</div>
+        <div class="m-next-txt" id="mNextAction"></div>
+      </div>
+      <div class="m-actions">
+        <button class="m-btn m-btn-call" id="mBtnCall">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          <span id="mCallLbl">Call Buyer</span>
+        </button>
+        <button class="m-btn m-btn-done" id="mBtnDone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Mark Done
+        </button>
+        <button class="m-btn m-btn-outline" id="mBtnEmail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email
+        </button>
+      </div>
+      <hr class="m-div">
+      <div class="m-ms">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Milestones
+        </h3>
+        <div class="ms-list" id="mMsList"></div>
+      </div>
+      <hr class="m-div">
+
+      {# ── AI Insights in modal ───────────────────────── #}
+      <div id="mAiPanel"></div>
+
+      <hr class="m-div">
+      <button class="m-det-toggle" id="mDetToggle">
+        Full Details
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="m-det-panel" id="mDetPanel">
+        <div class="m-det-inner">
+          <div class="det-grid" id="mDetGrid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="m-footer"></div>
+  </div>
+</div>
+
+<!-- ═══ ANALYTICS MODAL ═════════════════════════════════ -->
+<div class="modal-overlay" id="analyticsOverlay">
+  <div class="modal" style="max-width:700px">
+    <div class="m-hdr">
+      <div>
+        <h2>CRM Pipeline Analytics</h2>
+        <div class="m-loc">Live data from EATOC CRM</div>
+      </div>
+      <button class="m-close" id="analyticsCloseBtn">&times;</button>
+    </div>
+    <div class="m-body" style="padding-bottom:20px">
+      <hr class="m-div">
+      <div class="analytics-coming">Full analytics coming soon</div>
+      <div class="analytics-rows">
+        <div class="anal-row">
+          <span class="anal-row-label">Total Properties</span>
+          <span class="anal-row-value">{{ properties|length }}</span>
+        </div>
+        <div class="anal-row">
+          <span class="anal-row-label">Active</span>
+          <span class="anal-row-value">{{ active_count }} properties</span>
+        </div>
+        <div class="anal-row">
+          <span class="anal-row-label">Exchanged</span>
+          <span class="anal-row-value">{{ exchanged_count }} properties</span>
+        </div>
+        <div class="anal-row">
+          <span class="anal-row-label">Problems</span>
+          <span class="anal-row-value">{{ problem_count }} properties</span>
+        </div>
+        <div class="anal-row">
+          <span class="anal-row-label">Pipeline Value</span>
+          <span class="anal-row-value" style="color:var(--green);font-weight:700">&pound;{{ "%.1f"|format(ns_pipe.total / 1000000) }}M</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ JAVASCRIPT ═══════════════════════════════════════ -->
+<script>
+(function(){
+  "use strict";
+
+  var PROPS = {{ properties|tojson|safe }};
+  var AI_PANELS = {{ ai_panels|tojson|safe }};
+  var currentProp = null;
+
+  /* ── DOM refs ─────────────────────────────────── */
+  var overlay   = document.getElementById("modalOverlay");
+  var modalBox  = document.getElementById("modalBox");
+  var closeBtn  = document.getElementById("mCloseBtn");
+  var mAddr     = document.getElementById("mAddr");
+  var mLoc      = document.getElementById("mLoc");
+  var mPrice    = document.getElementById("mPrice");
+  var mProgFill = document.getElementById("mProgFill");
+  var mProgPct  = document.getElementById("mProgPct");
+  var mAlertBox = document.getElementById("mAlertBox");
+  var mAlertTxt = document.getElementById("mAlertTxt");
+  var mNextAction = document.getElementById("mNextAction");
+  var mCallLbl  = document.getElementById("mCallLbl");
+  var mBtnCall  = document.getElementById("mBtnCall");
+  var mBtnDone  = document.getElementById("mBtnDone");
+  var mBtnEmail = document.getElementById("mBtnEmail");
+  var mMsList   = document.getElementById("mMsList");
+  var mAiPanel  = document.getElementById("mAiPanel");
+  var mDetToggle = document.getElementById("mDetToggle");
+  var mDetPanel  = document.getElementById("mDetPanel");
+  var mDetGrid   = document.getElementById("mDetGrid");
+
+  function fmt(d){
+    if(!d) return "\u2014";
+    var dt=new Date(d);
+    return dt.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+  }
+  function price(n){ return n ? "\u00a3"+Number(n).toLocaleString() : "\u2014"; }
+  function statusCls(s){
+    s=(s||"").toLowerCase();
+    if(s==="problem") return "stalled";
+    if(s==="incomplete_chain") return "at-risk";
+    return "on-track";
+  }
+  function fillCls(s){ return "clr-"+statusCls(s); }
+  function alertCls(s){
+    var c=statusCls(s);
+    return c==="stalled"?"m-alert-red":c==="at-risk"?"m-alert-amber":"m-alert-green";
+  }
+
+  /* ── compute progress from milestones ──────────── */
+  function calcProgress(p){
+    var ms=[p.offer_accepted, p.memo_sent, (p.buyer_solicitor||p.vendor_solicitor), p.surveyor, p.exchange_date, p.completion_date];
+    var done=0;
+    for(var i=0;i<ms.length;i++){if(ms[i]!==null&&ms[i]!==""&&ms[i])done++;}
+    return Math.round(done/ms.length*100);
+  }
+
+  /* ── build milestone list ──────────────────────── */
+  function milestoneItems(p){
+    return [
+      {label:"Offer Accepted", val:p.offer_accepted},
+      {label:"Memo Sent", val:p.memo_sent},
+      {label:"Solicitors Instructed", val:p.buyer_solicitor||p.vendor_solicitor},
+      {label:"Survey", val:p.surveyor},
+      {label:"Exchange", val:p.exchange_date},
+      {label:"Completion", val:p.completion_date}
+    ];
+  }
+
+  /* ── open modal ───────────────────────────────── */
+  function openModal(id){
+    var p=null;
+    for(var i=0;i<PROPS.length;i++){if(String(PROPS[i].id)===String(id)){p=PROPS[i];break;}}
+    if(!p)return;
+    currentProp=p;
+
+    mAddr.textContent=p.property_address||"Unknown Address";
+    mLoc.textContent=(p.status||"Active").toUpperCase()+(p.property_type?" \u2022 "+p.property_type:"");
+    mPrice.textContent=price(p.sale_price);
+
+    var prog=calcProgress(p);
+    mProgFill.style.width=prog+"%";
+    mProgFill.className="m-prog-fill "+fillCls(p.status);
+    mProgPct.textContent=prog+"% complete";
+
+    /* alert for problem / chain statuses */
+    var st=(p.status||"").toLowerCase();
+    if(st==="problem"||st==="incomplete_chain"){
+      mAlertBox.style.display="flex";
+      mAlertBox.className="m-alert "+alertCls(p.status);
+      mAlertTxt.textContent=st==="problem"?"Property flagged as PROBLEM \u2014 review and resolve":"Incomplete chain detected \u2014 identify and resolve chain break";
+    }else{
+      mAlertBox.style.display="none";
+    }
+
+    mNextAction.textContent=p.nuvu_notes||p.notes||"No notes recorded";
+    mCallLbl.textContent="Call "+(p.buyer_name||"Buyer");
+
+    /* milestones */
+    var items=milestoneItems(p);
+    var h="";
+    for(var m=0;m<items.length;m++){
+      var done=items[m].val!==null&&items[m].val!==""&&items[m].val;
+      var ic=done?"ms-ic done":"ms-ic pending";
+      var tx=done?"\u2713":"";
+      var lc=done?"ms-lb done-lb":"ms-lb";
+      h+='<div class="ms-item"><span class="'+ic+'">'+tx+'</span><span class="'+lc+'">'+items[m].label+'</span></div>';
+    }
+    mMsList.innerHTML=h;
+
+    /* AI panel in modal */
+    var ai=AI_PANELS[String(p.id)]||{};
+    var ah="";
+    if(ai.done||ai.todo||ai.human){
+      ah+='<div class="m-next"><div class="m-next-lbl">AI Insights</div>';
+      if(ai.done&&ai.done.length){ah+='<div class="m-next-txt" style="margin-bottom:6px"><strong>\u2713 Done:</strong> '+ai.done.join(" \u2022 ")+'</div>';}
+      if(ai.todo&&ai.todo.length){ah+='<div class="m-next-txt" style="margin-bottom:6px"><strong>\u2192 Next:</strong> '+ai.todo.join(" \u2022 ")+'</div>';}
+      if(ai.human&&ai.human.length){ah+='<div class="m-next-txt"><strong>\u26A0 Human:</strong> '+ai.human.join(" \u2022 ")+'</div>';}
+      ah+='</div>';
+    }
+    mAiPanel.innerHTML=ah;
+
+    /* detail grid */
+    var rows=[];
+    if(p.buyer_name) rows.push(["Buyer",p.buyer_name]);
+    if(p.buyer_solicitor) rows.push(["Buyer Solicitor",p.buyer_solicitor]);
+    if(p.vendor_solicitor) rows.push(["Vendor Solicitor",p.vendor_solicitor]);
+    if(p.mortgage_broker) rows.push(["Mortgage Broker",p.mortgage_broker]);
+    if(p.surveyor) rows.push(["Surveyor",p.surveyor]);
+    if(p.fee) rows.push(["Fee","\u00a3"+Number(p.fee).toLocaleString()]);
+    if(p.property_type) rows.push(["Type",p.property_type]);
+    if(p.beds) rows.push(["Bedrooms",p.beds]);
+    if(p.sewage_type) rows.push(["Sewage",p.sewage_type]);
+    if(p.staff_initials) rows.push(["Staff",p.staff_initials]);
+    if(p.offer_accepted) rows.push(["Offer Accepted",p.offer_accepted]);
+    if(p.memo_sent) rows.push(["Memo Sent",p.memo_sent]);
+    if(p.exchange_date) rows.push(["Exchange Date",p.exchange_date]);
+    if(p.completion_date) rows.push(["Completion Date",p.completion_date]);
+
+    var dh="";
+    for(var r=0;r<rows.length;r++){
+      dh+='<div class="d-r"><span class="d-l">'+rows[r][0]+'</span><span class="d-v">'+rows[r][1]+'</span></div>';
+    }
+    mDetGrid.innerHTML=dh;
+
+    mDetPanel.classList.remove("expanded");
+    mDetToggle.classList.remove("expanded");
+
+    overlay.classList.add("open");
+    document.body.style.overflow="hidden";
+  }
+
+  function closeModal(){
+    overlay.classList.remove("open");
+    document.body.style.overflow="";
+    currentProp=null;
+  }
+
+  /* ── PROPERTY MODAL — event handlers ──────────── */
+  closeBtn.onclick=function(e){e.stopPropagation();closeModal();};
+  overlay.onclick=function(e){if(e.target===overlay)closeModal();};
+  modalBox.onclick=function(e){e.stopPropagation();};
+  document.onkeydown=function(e){
+    if(e.key==="Escape"){closeModal();closeAnalytics();}
+  };
+  mDetToggle.onclick=function(){mDetPanel.classList.toggle("expanded");mDetToggle.classList.toggle("expanded");};
+  mBtnCall.onclick=function(){if(currentProp)alert("Calling "+(currentProp.buyer_name||"Buyer"));};
+  mBtnDone.onclick=function(){if(currentProp)alert("Marked done for "+(currentProp.property_address||"property"));};
+  mBtnEmail.onclick=function(){if(currentProp)alert("Opening email for "+(currentProp.property_address||"property")+" progression.");};
+
+  /* ── CARD CLICK HANDLERS ──────────────────────── */
+  for(var i=0;i<PROPS.length;i++){
+    (function(pid){
+      var card=document.getElementById("card-"+pid);
+      if(card){card.onclick=function(){openModal(pid);};}
+    })(PROPS[i].id);
+  }
+
+  /* ── FILTER BUTTONS ────────────────────────────── */
+  var filterBtns=document.querySelectorAll("[data-filter]");
+  for(var f=0;f<filterBtns.length;f++){
+    filterBtns[f].addEventListener("click",function(){
+      for(var j=0;j<filterBtns.length;j++){
+        filterBtns[j].className="m-btn m-btn-outline";
+      }
+      this.className="m-btn m-btn-done";
+      var filter=this.dataset.filter;
+      var cards=document.querySelectorAll(".prop-card");
+      for(var k=0;k<cards.length;k++){
+        cards[k].style.display=(filter==="all"||cards[k].dataset.status===filter)?"":"none";
+      }
+    });
+  }
+
+  /* ── HERO STATS — filter on click ──────────────── */
+  var statFilters={
+    "stat-active":"active",
+    "stat-exchanged":"exchanged",
+    "stat-problems":"problem",
+    "stat-chain":"incomplete_chain",
+    "stat-total":"all",
+    "stat-pipeline":"all"
+  };
+  var statKeys=Object.keys(statFilters);
+  for(var s=0;s<statKeys.length;s++){
+    (function(statId,filterVal){
+      var el=document.getElementById(statId);
+      if(el){
+        el.onclick=function(){
+          var cards=document.querySelectorAll(".prop-card");
+          for(var k=0;k<cards.length;k++){
+            cards[k].style.display=(filterVal==="all"||cards[k].dataset.status===filterVal)?"":"none";
+          }
+          for(var j=0;j<filterBtns.length;j++){
+            filterBtns[j].className=(filterBtns[j].dataset.filter===filterVal)?"m-btn m-btn-done":"m-btn m-btn-outline";
+          }
+          var content=document.querySelector(".content");
+          if(content)content.scrollIntoView({behavior:"smooth",block:"start"});
+        };
+      }
+    })(statKeys[s],statFilters[statKeys[s]]);
+  }
+
+  /* ── ANALYTICS MODAL ──────────────────────────── */
+  var analyticsOverlay=document.getElementById("analyticsOverlay");
+  var analyticsCloseBtn=document.getElementById("analyticsCloseBtn");
+  var pipelineSection=document.getElementById("pipelineSection");
+
+  function closeAnalytics(){
+    analyticsOverlay.classList.remove("open");
+    document.body.style.overflow="";
+  }
+
+  pipelineSection.onclick=function(){
+    analyticsOverlay.classList.add("open");
+    document.body.style.overflow="hidden";
+  };
+  analyticsCloseBtn.onclick=function(e){e.stopPropagation();closeAnalytics();};
+  analyticsOverlay.onclick=function(e){if(e.target===analyticsOverlay)closeAnalytics();};
+
+})();
+</script>
+</body>
+</html>

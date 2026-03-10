@@ -74,6 +74,12 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Chased Harper & Lane by phone — no answer, left voicemail",
+            "Vendor solicitor confirmed title pack sent 3 weeks ago",
+            "Buyer mortgage broker says application stalled — awaiting valuation",
+            "Emailed Harper & Lane again requesting update on enquiries"
         ]
     },
     {
@@ -125,6 +131,12 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Survey flagged damp in west gable wall — awaiting contractor quote",
+            "Buyer requested \u00a312,000 reduction following survey findings",
+            "Called sellers to discuss — they want to see contractor report first",
+            "Sellers relocating to France, need resolution this week or buyer may walk"
         ]
     },
     {
@@ -176,6 +188,11 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Local authority searches delayed \u2014 Eden DC backlog estimated 4 weeks",
+            "Chased Oglethorpe Sturton to book survey — awaiting buyer availability",
+            "Chain above has lost their buyer \u2014 monitoring situation closely"
         ]
     },
     {
@@ -227,6 +244,11 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "No survey booked after 52 days \u2014 escalated to branch manager",
+            "Called Mr Henderson directly — confirmed still interested but busy with work",
+            "Buyer solicitor not responding to chaser calls \u2014 sent formal letter"
         ]
     },
     {
@@ -278,6 +300,12 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Mortgage valuation came in \u00a315,000 below asking price",
+            "Lender may reduce offer \u2014 discussing with buyer's broker",
+            "Buyer willing to bridge \u00a35,000 if vendor meets halfway",
+            "Vendor considering \u2014 awaiting response by Friday"
         ]
     },
     # ── THIS WEEK ───────────────────────────────────────────
@@ -330,6 +358,12 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": True},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Mortgage offer received, all parties notified",
+            "Searches came back clean, no issues",
+            "Completion date provisionally agreed \u2014 7th March",
+            "Confirm exchange date with both solicitors \u2014 target 21 Feb"
         ]
     },
     {
@@ -381,6 +415,12 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": None},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Memorandum of sale issued to all parties",
+            "Mr Atkinson confirmed as cash buyer \u2014 no mortgage required",
+            "Enquiries raised by buyer solicitor \u2014 14 questions outstanding",
+            "Chase Bendles for contract approval"
         ]
     },
     {
@@ -432,6 +472,11 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Searches came back clean, no issues flagged",
+            "Survey completed \u2014 no significant defects found",
+            "Chase Burnetts to raise enquiries now survey is back"
         ]
     },
     {
@@ -483,6 +528,12 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": True},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Exchange expected this week \u2014 both sides confirmed ready",
+            "Completion date agreed \u2014 14th February",
+            "Buyers confirmed they want to complete by Valentine's Day",
+            "Final check with Burnetts on completion statement"
         ]
     },
     {
@@ -534,6 +585,11 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": True},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Final contract review underway with both solicitors",
+            "Miss Armstrong relocating from Manchester \u2014 removal firm booked",
+            "Chase Harper & Lane for exchange date confirmation"
         ]
     },
     # ── THIS MONTH ──────────────────────────────────────────
@@ -586,6 +642,12 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Enquiries answered \u2014 all parties satisfied",
+            "Chase mortgage offer \u2014 valuation was last week",
+            "Mitchells' Lancaster sale exchanged \u2014 chain clear below",
+            "Vendor confirmed annexe ready for move-in"
         ]
     },
     {
@@ -637,6 +699,11 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": None},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Searches received \u2014 clean, no issues",
+            "Survey complete \u2014 minor pointing work noted, not material",
+            "Bendles to raise enquiries this week now searches are back"
         ]
     },
     {
@@ -688,6 +755,11 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Enquiries raised \u2014 chasing seller solicitor for answers",
+            "Mortgage application submitted by Scotts",
+            "Vendor retiring to Spain \u2014 flexible on completion date"
         ]
     },
     # ── THIS QUARTER ────────────────────────────────────────
@@ -740,6 +812,11 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Survey booked for next week with local surveyor",
+            "Awaiting search results from Eden DC",
+            "Vendor wants completion by Easter \u2014 timeline tight but achievable"
         ]
     },
     {
@@ -791,6 +868,11 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Memorandum of sale issued to all parties",
+            "Searches ordered with Eden DC \u2014 expect 3-4 week turnaround",
+            "Miss Thompson's Newcastle flat sale progressing well"
         ]
     },
     {
@@ -842,6 +924,12 @@ PROPERTIES = [
             {"label": "Mortgage Offer", "done": False},
             {"label": "Exchange", "done": False},
             {"label": "Completion", "done": False}
+        ],
+        "activity": [
+            "Mr Jackson confirmed as cash buyer from London \u2014 no chain",
+            "Survey scheduled for this week",
+            "Chasing search results from Eden DC",
+            "Vendor retiring \u2014 no upward chain, flexible on dates"
         ]
     },
 ]
@@ -1242,6 +1330,10 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ms-lb{color:var(--txt)}
 .ms-lb.done-lb{color:var(--txt-light);text-decoration:line-through}
 
+/* activity notes */
+.act-item{background:#f8fafc;border:1px solid #e8ecf1;border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:.8rem;line-height:1.45;color:var(--txt)}
+.act-idx{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--txt-light);font-weight:600}
+
 /* expandable details */
 .m-det-toggle{
   width:100%;background:#f8fafc;border:1px solid #e8ecf1;
@@ -1508,6 +1600,14 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         <div class="ms-list" id="mMsList"></div>
       </div>
       <hr class="m-div">
+      <div class="m-ms">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--txt-mid)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Notes &amp; Activity
+        </h3>
+        <div id="mActivityList"></div>
+      </div>
+      <hr class="m-div">
       <button class="m-det-toggle" id="mDetToggle">
         Full Details
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
@@ -1646,6 +1746,14 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       h+='<div class="ms-item"><span class="'+ic+'">'+tx+'</span><span class="'+lc+'">'+ms.label+'</span></div>';
     }
     mMsList.innerHTML=h;
+
+    var ah="";
+    if(p.activity&&p.activity.length){
+      for(var a=0;a<p.activity.length;a++){
+        ah+='<div class="act-item"><div class="act-idx">Update '+(a+1)+'</div>'+p.activity[a]+'</div>';
+      }
+    }
+    document.getElementById("mActivityList").innerHTML=ah;
 
     var rows=[
       ["Buyer",p.buyer],["Buyer Phone",p.buyer_phone],

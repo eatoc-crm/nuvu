@@ -15,15 +15,16 @@ import json
 import os
 import requests as http_requests
 from datetime import datetime
+from db_supabase import fetch_sales_progression, fetch_pipeline_data
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
 
 # ─────────────────────────────────────────────────────────────
-#  PROPERTY DATA — Sales Progression Pipeline
+#  HARDCODED SAMPLE DATA REMOVED — now using live Supabase queries
 # ─────────────────────────────────────────────────────────────
 
-PROPERTIES = [
+_REMOVED_PROPERTIES = [
     # ── NEEDS ACTION ────────────────────────────────────────
     {
         "id": "stalled",
@@ -939,9 +940,9 @@ PROPERTIES = [
 #  SECTIONS — define the 4 dashboard sections
 # ─────────────────────────────────────────────────────────────
 
-PROPS_BY_ID = {p["id"]: p for p in PROPERTIES}
+PROPS_BY_ID = {p["id"]: p for p in _REMOVED_PROPERTIES}
 
-SECTIONS = [
+_REMOVED_SECTIONS = [
     {
         "id": "needs-action",
         "icon": "\U0001F6A8",
@@ -992,13 +993,13 @@ SECTIONS = [
     },
 ]
 
-PIPELINE = {
+_REMOVED_PIPELINE = {
     "this_week":    {"count": 5,  "value": 1200000, "confidence": 95},
     "this_month":   {"count": 12, "value": 2900000, "confidence": 80},
     "this_quarter": {"count": 28, "value": 6800000, "confidence": 70},
 }
 
-STATS = {
+_REMOVED_STATS = {
     "active": 24,
     "on_track": 16,
     "at_risk": 5,
@@ -1012,30 +1013,161 @@ STATS = {
 #  ROUTES
 # ─────────────────────────────────────────────────────────────
 
+def _build_live_dashboard_data():
+    """Query Supabase and build PROPERTIES, SECTIONS, PIPELINE, STATS for the dashboard."""
+    # Fetch all non-completed records
+    rows = fetch_sales_progression(['active', 'exchanged', 'problem', 'incomplete_chain', 'development'])
+
+    properties = []
+    for i, r in enumerate(rows):
+        status = STATUS_MAP.get(r.get("status", "active"), "on-track")
+        progress = _progress_from_record(r)
+        created = r.get("created_at")
+        if created:
+            if hasattr(created, "strftime"):
+                duration = (datetime.utcnow() - created.replace(tzinfo=None)).days
+            else:
+                duration = (datetime.utcnow() - datetime.strptime(str(created)[:19], "%Y-%m-%dT%H:%M:%S")).days
+        else:
+            duration = 0
+
+        prop_id = str(r.get("id", f"prop-{i}"))
+        properties.append({
+            "id": prop_id,
+            "address": r.get("property_address", "Unknown"),
+            "location": (r.get("branch") or "").title() or "Eden Valley",
+            "price": float(r.get("sale_price") or r.get("fee") or 0),
+            "status": status,
+            "status_label": STATUS_LABELS.get(status, "ON TRACK"),
+            "progress": progress,
+            "duration_days": duration,
+            "target_days": 60,
+            "days_since_update": 0,
+            "card_checks": _card_checks_from_record(r),
+            "milestones": _milestones_from_record(r),
+            "buyer": r.get("buyer_name") or "\u2014",
+            "buyer_phone": r.get("buyer_phone") or "\u2014",
+            "buyer_solicitor": r.get("buyer_solicitor") or "\u2014",
+            "buyer_sol_phone": "\u2014",
+            "seller_solicitor": r.get("vendor_solicitor") or "\u2014",
+            "seller_sol_phone": "\u2014",
+            "offer_date": r.get("offer_accepted"),
+            "memo_sent": r.get("memo_sent"),
+            "searches_ordered": None,
+            "searches_received": None,
+            "enquiries_raised": None,
+            "enquiries_answered": None,
+            "mortgage_offered": None,
+            "survey_booked": None,
+            "survey_complete": None,
+            "exchange_target": r.get("exchange_date"),
+            "completion_target": r.get("completion_date"),
+            "chain": "\u2014",
+            "alert": r.get("notes") if r.get("status") == "problem" else None,
+            "next_action": r.get("notes") or "\u2014",
+            "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
+            "image_url": "",
+            "activity": [],
+            "_raw_status": r.get("status"),
+            "_fee": r.get("fee"),
+            "_staff_initials": r.get("staff_initials") or "\u2014",
+            "_nuvu_notes": r.get("nuvu_notes") or "\u2014",
+            "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
+            "_surveyor": r.get("surveyor") or "\u2014",
+            "_buyer_email": r.get("buyer_email") or "\u2014",
+            "_vendor_name": r.get("vendor_name") or "\u2014",
+            "_vendor_phone": r.get("vendor_phone") or "\u2014",
+            "_vendor_email": r.get("vendor_email") or "\u2014",
+            "_sewage_type": r.get("sewage_type") or "\u2014",
+            "_invoice_status": r.get("invoice_status") or "\u2014",
+        })
+
+    # Build stats
+    total = len(properties)
+    exchanged = sum(1 for p in properties if p["_raw_status"] == "exchanged")
+    problems = sum(1 for p in properties if p["_raw_status"] == "problem")
+    incomplete = sum(1 for p in properties if p["_raw_status"] == "incomplete_chain")
+    active_count = total - exchanged
+    pipeline_value = sum(p["price"] for p in properties if p["price"])
+
+    stats = {
+        "active": total,
+        "on_track": exchanged,
+        "at_risk": problems,
+        "action": incomplete,
+        "avg_days": round(sum(p["duration_days"] for p in properties) / max(total, 1), 1),
+        "pipeline": pipeline_value,
+    }
+
+    # Build sections
+    prob_props = [p for p in properties if p["_raw_status"] == "problem"]
+    inc_props = [p for p in properties if p["_raw_status"] == "incomplete_chain"]
+    exch_props = [p for p in properties if p["_raw_status"] == "exchanged"]
+    active_props = [p for p in properties if p["_raw_status"] in ("active", "development")]
+
+    def _make_section(sid, icon, title, subtitle, border, items):
+        visible = items[:3]
+        hidden = items[3:]
+        avg = int(sum(p["progress"] for p in items) / len(items)) if items else 0
+        color = "#e25555" if border == "stalled-banner" else "#e88a3a" if border == "amber-banner" else "#27ae60"
+        return {
+            "id": sid, "icon": icon, "title": title, "subtitle": subtitle,
+            "avg_progress": avg, "avg_color": color, "border_class": border,
+            "visible_ids": [], "hidden_ids": [],
+            "visible": visible, "hidden": hidden,
+            "extra_count": max(0, len(items) - 6),
+        }
+
+    sections = []
+    if prob_props or inc_props:
+        needs = prob_props + inc_props
+        sections.append(_make_section("needs-action", "\U0001F6A8", "Needs Action",
+                                      f"{len(needs)} transactions requiring attention", "stalled-banner", needs))
+    if exch_props:
+        sections.append(_make_section("exchanged", "\u2705", "Exchanged",
+                                      f"{len(exch_props)} exchanged — approaching completion", "green-banner", exch_props))
+    if active_props:
+        sections.append(_make_section("active", "\U0001F4C5", "Active Pipeline",
+                                      f"{len(active_props)} active transactions", "blue-banner", active_props))
+
+    # Pipeline forecast
+    pipeline = {
+        "this_week":    {"count": len(exch_props), "value": sum(p["price"] for p in exch_props), "confidence": 95},
+        "this_month":   {"count": len(active_props), "value": pipeline_value, "confidence": 75},
+        "this_quarter": {"count": total, "value": pipeline_value, "confidence": 60},
+    }
+
+    return properties, sections, stats, pipeline
+
+
 @app.route("/")
 def dashboard():
-    sections_data = []
-    for sec in SECTIONS:
-        s = dict(sec)
-        s["visible"] = [PROPS_BY_ID[pid] for pid in sec["visible_ids"] if pid in PROPS_BY_ID]
-        s["hidden"] = [PROPS_BY_ID[pid] for pid in sec["hidden_ids"] if pid in PROPS_BY_ID]
-        sections_data.append(s)
+    try:
+        properties, sections, stats, pipeline = _build_live_dashboard_data()
+    except Exception as e:
+        # Fallback: show error
+        return f"<h2>Error loading live data</h2><pre>{e}</pre>", 500
 
     return render_template_string(
         DASHBOARD_HTML,
-        sections=sections_data,
-        stats=STATS,
-        pipeline=PIPELINE,
-        properties_json=json.dumps(PROPERTIES),
+        sections=sections,
+        stats=stats,
+        pipeline=pipeline,
+        properties_json=json.dumps(properties, default=str),
     )
 
 
 @app.route("/api/property/<prop_id>")
 def api_property(prop_id):
-    prop = PROPS_BY_ID.get(prop_id)
-    if not prop:
-        return jsonify({"error": "Not found"}), 404
-    return jsonify(prop)
+    try:
+        properties, _, _, _ = _build_live_dashboard_data()
+        props_by_id = {p["id"]: p for p in properties}
+        prop = props_by_id.get(prop_id)
+        if not prop:
+            return jsonify({"error": "Not found"}), 404
+        return jsonify(prop)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ─────────────────────────────────────────────────────────────

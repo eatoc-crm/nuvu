@@ -1724,7 +1724,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 }
 .search-input{
   width:100%;box-sizing:border-box;
-  padding:14px 16px 14px 52px;
+  padding:14px 16px 14px 48px;
   font-size:1rem;font-family:inherit;
   background:var(--navy-lt);color:#fff;
   border:1px solid rgba(255,255,255,.12);border-radius:10px;
@@ -1733,7 +1733,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .search-input::placeholder{color:var(--txt-light)}
 .search-input:focus{border-color:var(--lime);box-shadow:0 0 0 3px rgba(196,226,51,.15)}
 .search-icon{
-  position:absolute;left:56px;top:50%;transform:translateY(-50%);
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
   pointer-events:none;color:var(--txt-light);
 }
 .search-no-match{

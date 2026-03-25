@@ -15,7 +15,7 @@ import json
 import os
 import requests as http_requests
 from datetime import datetime
-from db_supabase import fetch_sales_progression, fetch_pipeline_data, fetch_sales_pipeline, supabase as sb
+from db_supabase import fetch_sales_progression, fetch_pipeline_data, fetch_sales_pipeline, fetch_property_images, supabase as sb
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
@@ -1052,9 +1052,37 @@ def _build_live_dashboard_data():
     """
     from datetime import date as _date
 
-    # 1. Fetch both tables
+    # 1. Fetch all three tables
     pipe_rows = fetch_sales_pipeline()
     prog_rows = fetch_sales_progression()  # all rows, no status filter
+    img_rows = fetch_property_images()
+
+    # 1b. Build image lookup — keyed by alto ref AND normalized address
+    _img_by_ref = {}
+    _img_by_addr = {}
+    for row in img_rows:
+        # Resolve best URL: image_url first, then photo_urls[1] (skip index 0)
+        url = (row.get("image_url") or "").strip() or None
+        if not url:
+            urls = row.get("photo_urls") or []
+            if isinstance(urls, list) and len(urls) > 1:
+                url = (urls[1] or "").strip() or None
+        if not url:
+            continue
+        ref = (row.get("ref") or "").strip()
+        if ref:
+            _img_by_ref[ref] = url
+        addr = _normalize_addr(row.get("address") or "")
+        if addr:
+            _img_by_addr[addr] = url
+
+    def _resolve_image(pipe_row):
+        """Find the best image URL for a pipeline property."""
+        ref = (pipe_row.get("alto_ref") or "").strip()
+        if ref and ref in _img_by_ref:
+            return _img_by_ref[ref]
+        addr = _normalize_addr(pipe_row.get("property_address") or "")
+        return _img_by_addr.get(addr, "")
 
     # 2. Build progression lookup by normalized address
     prog_lookup = {}
@@ -1080,12 +1108,8 @@ def _build_live_dashboard_data():
         # Find matching progression row
         prog = _match_pipeline(addr, prog_lookup, prog_norm_keys)
 
-        # Status: prefer progression (has finer detail) if available and valid
-        prog_status = prog.get("status") if prog else None
-        if prog_status in ("active", "exchanged", "problem", "incomplete_chain", "development"):
-            raw_status = prog_status
-        else:
-            raw_status = PIPE_STATUS_MAP.get(pipe.get("status", ""), "active")
+        # Status: from pipeline only
+        raw_status = PIPE_STATUS_MAP.get(pipe.get("status", ""), "active")
 
         # Price from pipeline.current_price
         price = float(pipe.get("current_price") or 0)
@@ -1150,7 +1174,7 @@ def _build_live_dashboard_data():
             "alert": r.get("notes") if raw_status == "problem" else None,
             "next_action": r.get("notes") or "\u2014",
             "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
-            "image_url": "",
+            "image_url": _resolve_image(pipe),
             "activity": [],
             # Notes for modal display
             "notes": r.get("notes") or "",
@@ -1687,6 +1711,33 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   .modal{border-radius:14px}
   .m-hdr,.m-body,.m-prog,.m-footer{padding-left:16px;padding-right:16px}
   .det-grid{grid-template-columns:1fr}
+  .search-wrap{padding:10px 16px}
+  .search-input{font-size:.95rem;padding:12px 14px 12px 40px}
+}
+
+/* ── Search bar ─────────────────────────────────────────── */
+.search-wrap{
+  position:sticky;top:0;z-index:90;
+  background:var(--navy);
+  padding:12px 40px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.search-input{
+  width:100%;box-sizing:border-box;
+  padding:14px 16px 14px 44px;
+  font-size:1rem;font-family:inherit;
+  background:var(--navy-lt);color:#fff;
+  border:1px solid rgba(255,255,255,.12);border-radius:10px;
+  outline:none;transition:border var(--t),box-shadow var(--t);
+}
+.search-input::placeholder{color:var(--txt-light)}
+.search-input:focus{border-color:var(--lime);box-shadow:0 0 0 3px rgba(196,226,51,.15)}
+.search-icon{
+  position:absolute;left:56px;top:50%;transform:translateY(-50%);
+  pointer-events:none;color:var(--txt-light);
+}
+.search-no-match{
+  text-align:center;padding:32px 0;color:var(--txt-light);font-style:italic;display:none;
 }
 </style>
 </head>
@@ -1696,7 +1747,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 {% macro prop_card(p) %}
 <div class="prop-card" id="card-{{ p.id }}">
   <div class="card-photo">
-    {% if p.image_url %}<img class="card-photo-bg" src="{{ p.image_url|safe }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}">{% else %}<div class="card-photo-bg" style="background:{{ p.image_bg }}"></div>{% endif %}
+    {% if p.image_url %}<img class="card-photo-bg" src="{{ p.image_url|safe }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="card-photo-bg" style="background:var(--navy-md);display:none"></div>{% else %}<div class="card-photo-bg" style="background:var(--navy-md)"></div>{% endif %}
     <span class="card-chip chip-{{ p.status }}">{{ p.status_label }}</span>
   </div>
   <div class="card-body">
@@ -1787,8 +1838,17 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   </div>
 </div>
 
+<!-- ═══ SEARCH BAR (sticky) ════════════════════════════════ -->
+<div class="search-wrap" id="searchWrap">
+  <div style="position:relative;max-width:640px;margin:0 auto">
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search by address, buyer or solicitor..." autocomplete="off">
+  </div>
+</div>
+
 <!-- ═══ MAIN CONTENT — 4 SECTIONS ═══════════════════════ -->
 <div class="content">
+<div class="search-no-match" id="searchNoMatch">No properties found</div>
 
   {% for sec in sections %}
   <div id="section-{{ sec.id }}">
@@ -2160,6 +2220,67 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       }
     })(statKeys[k],statMap[statKeys[k]]);
   }
+
+  /* ── SEARCH — client-side filter ──────────────────────── */
+  var searchInput=document.getElementById("searchInput");
+  var searchNoMatch=document.getElementById("searchNoMatch");
+  var allCards=document.querySelectorAll(".prop-card");
+  var allSections=document.querySelectorAll(".content > div[id^='section-']");
+  var allShowMore=document.querySelectorAll(".show-more-btn, .show-more-panel");
+
+  function doSearch(){
+    var q=searchInput.value.trim().toLowerCase();
+    if(q.length>0&&q.length<2){return;}
+
+    if(q.length<2){
+      /* restore full view */
+      for(var i=0;i<allCards.length;i++) allCards[i].style.display="";
+      for(var i=0;i<allSections.length;i++) allSections[i].style.display="";
+      for(var i=0;i<allShowMore.length;i++) allShowMore[i].style.display="";
+      /* collapse show-more panels back to default */
+      var panels=document.querySelectorAll(".show-more-panel");
+      for(var i=0;i<panels.length;i++) panels[i].classList.remove("open");
+      var smBtns=document.querySelectorAll(".show-more-btn");
+      for(var i=0;i<smBtns.length;i++) smBtns[i].classList.remove("expanded");
+      searchNoMatch.style.display="none";
+      return;
+    }
+
+    var matchIds={};
+    for(var i=0;i<PROPS.length;i++){
+      var p=PROPS[i];
+      var hay=(p.address||"")+" "+(p.buyer||"")+" "+(p.buyer_solicitor||"");
+      if(hay.toLowerCase().indexOf(q)!==-1) matchIds[p.id]=true;
+    }
+
+    var anyVisible=false;
+    for(var i=0;i<allCards.length;i++){
+      var cid=allCards[i].id.replace("card-","");
+      if(matchIds[cid]){allCards[i].style.display="";anyVisible=true;}
+      else{allCards[i].style.display="none";}
+    }
+
+    /* hide section banners that have zero visible cards */
+    for(var i=0;i<allSections.length;i++){
+      var cards=allSections[i].querySelectorAll(".prop-card");
+      var hasVisible=false;
+      for(var j=0;j<cards.length;j++){
+        if(cards[j].style.display!=="none"){hasVisible=true;break;}
+      }
+      allSections[i].style.display=hasVisible?"":"none";
+    }
+
+    /* hide show-more toggles during search */
+    for(var i=0;i<allShowMore.length;i++) allShowMore[i].style.display="none";
+
+    /* expand all hidden panels so matches inside them are visible */
+    var panels=document.querySelectorAll(".show-more-panel");
+    for(var i=0;i<panels.length;i++) panels[i].classList.add("open");
+
+    searchNoMatch.style.display=anyVisible?"none":"block";
+  }
+
+  searchInput.addEventListener("input",doSearch);
 
 })();
 </script>

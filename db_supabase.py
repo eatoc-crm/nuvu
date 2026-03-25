@@ -67,3 +67,13 @@ def fetch_solicitors():
         .execute()
         .data
     )
+
+
+def fetch_property_images():
+    """Fetch image columns from properties table for card thumbnails."""
+    return (
+        supabase.table("properties")
+        .select("ref,address,image_url,photo_urls")
+        .execute()
+        .data
+    )

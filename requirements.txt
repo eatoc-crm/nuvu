@@ -1,5 +1,5 @@
 flask
 gunicorn
 requests
-psycopg2-binary
+supabase
 python-dotenv

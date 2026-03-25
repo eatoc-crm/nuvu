@@ -1,31 +1,21 @@
 """
 NUVU — Supabase Database Connection
 ====================================
-Connects to the Supabase PostgreSQL database using credentials
-from environment variables (loaded via .env for local dev).
+Connects to Supabase via the supabase-py HTTPS client.
 
 Usage:
-    from db_supabase import get_connection, fetch_sales_progression
+    from db_supabase import fetch_sales_progression, fetch_pipeline_data
 """
 
 import os
-import psycopg2
-import psycopg2.extras
 from dotenv import load_dotenv
+from supabase import create_client
 
 load_dotenv()
 
-
-def get_connection():
-    """Return a psycopg2 connection to the Supabase database."""
-    return psycopg2.connect(
-        host=os.environ.get("SUPABASE_DB_HOST", "db.grosqsxnwhuvazgbjwan.supabase.co"),
-        port=os.environ.get("SUPABASE_DB_PORT", "5432"),
-        dbname=os.environ.get("SUPABASE_DB_NAME", "postgres"),
-        user=os.environ.get("SUPABASE_DB_USER", "postgres"),
-        password=os.environ.get("SUPABASE_DB_PASSWORD", ""),
-        sslmode="require",
-    )
+_url = os.environ.get("SUPABASE_URL", "")
+_key = os.environ.get("SUPABASE_ANON_KEY", "")
+supabase = create_client(_url, _key)
 
 
 def fetch_sales_progression(status_filter=None):
@@ -33,45 +23,36 @@ def fetch_sales_progression(status_filter=None):
 
     Args:
         status_filter: Optional status string or list of statuses to filter by.
-                      e.g. 'active' or ['active', 'exchanged', 'problem']
 
     Returns:
         List of dicts, one per row.
     """
-    conn = get_connection()
-    try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            if status_filter:
-                if isinstance(status_filter, str):
-                    status_filter = [status_filter]
-                cur.execute(
-                    "SELECT * FROM sales_progression WHERE status IN %s ORDER BY created_at DESC",
-                    (tuple(status_filter),),
-                )
-            else:
-                cur.execute("SELECT * FROM sales_progression ORDER BY created_at DESC")
-            return [dict(row) for row in cur.fetchall()]
-    finally:
-        conn.close()
+    query = supabase.table("sales_progression").select("*")
+    if status_filter:
+        if isinstance(status_filter, str):
+            status_filter = [status_filter]
+        query = query.in_("status", status_filter)
+    query = query.order("created_at", desc=True)
+    return query.execute().data
 
 
 def fetch_pipeline_data():
     """Fetch pipeline table data for fee/value forecasting."""
-    conn = get_connection()
-    try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("SELECT * FROM pipeline ORDER BY created_at DESC")
-            return [dict(row) for row in cur.fetchall()]
-    finally:
-        conn.close()
+    return (
+        supabase.table("pipeline")
+        .select("*")
+        .order("created_at", desc=True)
+        .execute()
+        .data
+    )
 
 
 def fetch_solicitors():
     """Fetch all solicitors."""
-    conn = get_connection()
-    try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("SELECT * FROM solicitors ORDER BY firm_name")
-            return [dict(row) for row in cur.fetchall()]
-    finally:
-        conn.close()
+    return (
+        supabase.table("solicitors")
+        .select("*")
+        .order("firm_name")
+        .execute()
+        .data
+    )

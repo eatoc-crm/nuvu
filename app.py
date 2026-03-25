@@ -1138,6 +1138,7 @@ def _build_live_dashboard_data():
             # Internal fields
             "_raw_status": r.get("status"),
             "_fee": r.get("fee"),
+            "_pipe_fee": float(pipe.get("fee") or 0) if pipe else 0,
             "_staff_initials": r.get("staff_initials") or "\u2014",
             "_est_comp_date": est_comp_date.isoformat() if est_comp_date else None,
             "_date_agreed": str(date_agreed_str) if date_agreed_str else None,
@@ -1241,7 +1242,10 @@ def _build_live_dashboard_data():
     )
     at_risk_count = sum(1 for p in properties if p["_raw_status"] == "problem")
     action_count = len(needs_action)
-    pipeline_value = sum(p["price"] for p in active_props if p["price"])
+    # All non-completed, non-exchanged properties for pipeline totals
+    pipeline_props = [p for p in properties if p["_raw_status"] not in ("exchanged",)]
+    property_pipeline = sum(p["price"] for p in pipeline_props if p["price"])
+    fee_pipeline = sum(p["_pipe_fee"] for p in pipeline_props if p["_pipe_fee"])
 
     stats = {
         "active": active_count,
@@ -1249,15 +1253,19 @@ def _build_live_dashboard_data():
         "at_risk": at_risk_count,
         "action": action_count,
         "exchanged": exchanged_count,
-        "pipeline": pipeline_value,
+        "fee_pipeline": fee_pipeline,
+        "property_pipeline": property_pipeline,
     }
 
     # 7. Pipeline forecast (using section counts)
     pipeline = {
-        "this_week": {"count": len(sec_this_month), "value": sum(p["price"] for p in sec_this_month), "confidence": 90},
-        "this_month": {"count": len(sec_two_months), "value": sum(p["price"] for p in sec_two_months), "confidence": 75},
+        "this_week": {"count": len(sec_this_month), "value": sum(p["price"] for p in sec_this_month),
+                      "fee": sum(p["_pipe_fee"] for p in sec_this_month), "confidence": 90},
+        "this_month": {"count": len(sec_two_months), "value": sum(p["price"] for p in sec_two_months),
+                       "fee": sum(p["_pipe_fee"] for p in sec_two_months), "confidence": 75},
         "this_quarter": {"count": len(sec_this_quarter) + len(sec_active_pipeline),
-                         "value": pipeline_value, "confidence": 60},
+                         "value": property_pipeline,
+                         "fee": fee_pipeline, "confidence": 60},
     }
 
     return properties, sections, stats, pipeline
@@ -1711,7 +1719,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="hs" id="stat-at-risk"><div class="hs-val">{{ stats.at_risk }}</div><div class="hs-lbl">At Risk</div></div>
     <div class="hs" id="stat-action"><div class="hs-val">{{ stats.action }}</div><div class="hs-lbl">Action</div></div>
     <div class="hs" id="stat-exchanged"><div class="hs-val">{{ stats.exchanged }}</div><div class="hs-lbl">Exchanged</div></div>
-    <div class="hs" id="stat-pipeline"><div class="hs-val">&pound;{{ "%.1f" | format(stats.pipeline / 1000000) }}M</div><div class="hs-lbl">Pipeline</div></div>
+    <div class="hs" id="stat-fee-pipeline"><div class="hs-val">&pound;{{ "{:,.0f}".format(stats.fee_pipeline) }}</div><div class="hs-lbl">Fee Pipeline</div></div>
+    <div class="hs" id="stat-pipeline"><div class="hs-val">&pound;{{ "%.1f" | format(stats.property_pipeline / 1000000) }}M</div><div class="hs-lbl">Property Pipeline</div></div>
   </div>
 </div>
 
@@ -1729,6 +1738,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       <div class="pipe-period">This Week</div>
       <div class="pipe-count">{{ pipeline.this_week.count }}</div>
       <div class="pipe-value">&pound;{{ "%.1f" | format(pipeline.this_week.value / 1000000) }}M</div>
+      <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_week.fee) }}</div>
       <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.this_week.confidence }}%"></div></div>
       <div class="pipe-confidence">{{ pipeline.this_week.confidence }}% Confidence</div>
     </div>
@@ -1736,6 +1746,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       <div class="pipe-period">This Month</div>
       <div class="pipe-count">{{ pipeline.this_month.count }}</div>
       <div class="pipe-value">&pound;{{ "%.1f" | format(pipeline.this_month.value / 1000000) }}M</div>
+      <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_month.fee) }}</div>
       <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.this_month.confidence }}%"></div></div>
       <div class="pipe-confidence">{{ pipeline.this_month.confidence }}% Confidence</div>
     </div>
@@ -1743,6 +1754,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       <div class="pipe-period">This Quarter</div>
       <div class="pipe-count">{{ pipeline.this_quarter.count }}</div>
       <div class="pipe-value">&pound;{{ "%.1f" | format(pipeline.this_quarter.value / 1000000) }}M</div>
+      <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_quarter.fee) }}</div>
       <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.this_quarter.confidence }}%"></div></div>
       <div class="pipe-confidence">{{ pipeline.this_quarter.confidence }}% Confidence</div>
     </div>
@@ -2107,6 +2119,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     "stat-at-risk":"section-needs-action",
     "stat-action":"section-needs-action",
     "stat-exchanged":"section-this-month",
+    "stat-fee-pipeline":"section-active-pipeline",
     "stat-pipeline":"section-active-pipeline"
   };
   var statKeys=Object.keys(statMap);
@@ -2337,14 +2350,16 @@ def _crm_stats(props):
     problems = sum(1 for p in props if p.get("_raw_status") == "problem")
     incomplete = sum(1 for p in props if p.get("_raw_status") == "incomplete_chain")
     active = total - exchanged
-    pipeline = sum(p["price"] for p in props if p["price"])
+    property_pipeline = sum(p["price"] for p in props if p["price"])
+    fee_pipeline = sum(p.get("_fee") or 0 for p in props if p.get("_fee"))
     return {
         "active": active,
         "on_track": exchanged,
         "at_risk": problems,
         "action": incomplete,
-        "avg_days": 0,
-        "pipeline": pipeline,
+        "exchanged": exchanged,
+        "fee_pipeline": fee_pipeline,
+        "property_pipeline": property_pipeline,
     }
 
 
@@ -2430,9 +2445,9 @@ def crm_dashboard():
     sections = _crm_sections(props)
 
     pipeline = {
-        "this_week": {"count": stats["on_track"], "value": stats["pipeline"], "confidence": 90},
-        "this_month": {"count": stats["active"], "value": stats["pipeline"], "confidence": 75},
-        "this_quarter": {"count": len(props), "value": stats["pipeline"], "confidence": 60},
+        "this_week": {"count": stats["on_track"], "value": stats["property_pipeline"], "fee": stats["fee_pipeline"], "confidence": 90},
+        "this_month": {"count": stats["active"], "value": stats["property_pipeline"], "fee": stats["fee_pipeline"], "confidence": 75},
+        "this_quarter": {"count": len(props), "value": stats["property_pipeline"], "fee": stats["fee_pipeline"], "confidence": 60},
     }
 
     html = render_template_string(

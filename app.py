@@ -2516,29 +2516,45 @@ def api_intake():
 
     addr = data["property_address"].strip()
     date_agreed = data.get("date_agreed") or None
+    alto_ref = (data.get("alto_ref") or "").strip() or None
+
+    # --- Upsert sales_pipeline ---
+    pipeline_row = {
+        "property_address": addr,
+        "postcode": data.get("postcode") or None,
+        "current_price": data.get("current_price") or None,
+        "fee": data.get("fee") or None,
+        "fee_pct": data.get("fee_pct") or None,
+        "date_agreed": date_agreed,
+        "buyers_solicitor": data.get("buyers_solicitor") or None,
+        "vendors_solicitor": data.get("vendors_solicitor") or None,
+        "negotiator": data.get("negotiator") or None,
+        "agreed_by": data.get("agreed_by") or None,
+        "our_ref": data.get("our_ref") or None,
+        "alto_ref": alto_ref,
+        "status": "Under Offer",
+    }
+
+    conflict_col = "alto_ref" if alto_ref else "property_address"
+    try:
+        sb.table("sales_pipeline").upsert(
+            pipeline_row, on_conflict=conflict_col
+        ).execute()
+    except Exception as e:
+        return jsonify({"error": f"sales_pipeline upsert failed: {e}"}), 500
 
     # --- Upsert sales_progression ---
     progression_row = {
         "property_address": addr,
-        "postcode": data.get("postcode") or None,
-        "current_price": data.get("current_price") or None,
-        "date_agreed": date_agreed,
+        "status": "Under Offer",
+        "offer_accepted": date_agreed,
         "buyer_name": data.get("buyer_name") or None,
         "buyer_email": data.get("buyer_email") or None,
         "buyer_phone": data.get("buyer_phone") or None,
         "vendor_name": data.get("vendor_name") or None,
         "vendor_email": data.get("vendor_email") or None,
         "vendor_phone": data.get("vendor_phone") or None,
-        "buyers_solicitor": data.get("buyers_solicitor") or None,
-        "vendors_solicitor": data.get("vendors_solicitor") or None,
-        "mortgage_broker": data.get("mortgage_broker") or None,
-        "negotiator": data.get("negotiator") or None,
-        "agreed_by": data.get("agreed_by") or None,
-        "alto_ref": data.get("alto_ref") or None,
-        "our_ref": data.get("our_ref") or None,
         "notes": data.get("notes") or None,
-        "status": "Under Offer",
-        "offer_accepted": date_agreed,
     }
 
     try:
@@ -2547,29 +2563,6 @@ def api_intake():
         ).execute()
     except Exception as e:
         return jsonify({"error": f"sales_progression upsert failed: {e}"}), 500
-
-    # --- Upsert sales_pipeline (if alto_ref present) ---
-    alto_ref = data.get("alto_ref", "").strip()
-    if alto_ref:
-        pipeline_row = {
-            "alto_ref": alto_ref,
-            "property_address": addr,
-            "current_price": data.get("current_price") or None,
-            "date_agreed": date_agreed,
-            "buyers_solicitor": data.get("buyers_solicitor") or None,
-            "vendors_solicitor": data.get("vendors_solicitor") or None,
-            "negotiator": data.get("negotiator") or None,
-            "agreed_by": data.get("agreed_by") or None,
-        }
-        try:
-            sb.table("sales_pipeline").upsert(
-                pipeline_row, on_conflict="alto_ref"
-            ).execute()
-        except Exception as e:
-            return jsonify({
-                "error": f"sales_pipeline upsert failed: {e}",
-                "sales_progression": "ok",
-            }), 500
 
     return jsonify({"success": True, "property": addr}), 200
 

@@ -1712,7 +1712,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   .m-hdr,.m-body,.m-prog,.m-footer{padding-left:16px;padding-right:16px}
   .det-grid{grid-template-columns:1fr}
   .search-wrap{padding:10px 16px}
-  .search-input{font-size:.95rem;padding:12px 14px 12px 40px}
+  .search-input{font-size:.95rem;padding:12px 14px 12px 48px}
 }
 
 /* ── Search bar ─────────────────────────────────────────── */
@@ -1724,7 +1724,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 }
 .search-input{
   width:100%;box-sizing:border-box;
-  padding:14px 16px 14px 44px;
+  padding:14px 16px 14px 52px;
   font-size:1rem;font-family:inherit;
   background:var(--navy-lt);color:#fff;
   border:1px solid rgba(255,255,255,.12);border-radius:10px;
@@ -2226,7 +2226,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   var searchNoMatch=document.getElementById("searchNoMatch");
   var allCards=document.querySelectorAll(".prop-card");
   var allSections=document.querySelectorAll(".content > div[id^='section-']");
-  var allShowMore=document.querySelectorAll(".show-more-btn, .show-more-panel");
+  var allShowMoreBtns=document.querySelectorAll(".show-more-btn");
+  var allShowMorePanels=document.querySelectorAll(".show-more-panel");
 
   function doSearch(){
     var q=searchInput.value.trim().toLowerCase();
@@ -2236,12 +2237,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       /* restore full view */
       for(var i=0;i<allCards.length;i++) allCards[i].style.display="";
       for(var i=0;i<allSections.length;i++) allSections[i].style.display="";
-      for(var i=0;i<allShowMore.length;i++) allShowMore[i].style.display="";
-      /* collapse show-more panels back to default */
-      var panels=document.querySelectorAll(".show-more-panel");
-      for(var i=0;i<panels.length;i++) panels[i].classList.remove("open");
-      var smBtns=document.querySelectorAll(".show-more-btn");
-      for(var i=0;i<smBtns.length;i++) smBtns[i].classList.remove("expanded");
+      for(var i=0;i<allShowMoreBtns.length;i++){allShowMoreBtns[i].style.display="";allShowMoreBtns[i].classList.remove("expanded");}
+      for(var i=0;i<allShowMorePanels.length;i++){allShowMorePanels[i].style.display="";allShowMorePanels[i].classList.remove("open");}
       searchNoMatch.style.display="none";
       return;
     }
@@ -2270,12 +2267,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       allSections[i].style.display=hasVisible?"":"none";
     }
 
-    /* hide show-more toggles during search */
-    for(var i=0;i<allShowMore.length;i++) allShowMore[i].style.display="none";
-
-    /* expand all hidden panels so matches inside them are visible */
-    var panels=document.querySelectorAll(".show-more-panel");
-    for(var i=0;i<panels.length;i++) panels[i].classList.add("open");
+    /* hide show-more buttons and expand panels so all matches are visible */
+    for(var i=0;i<allShowMoreBtns.length;i++) allShowMoreBtns[i].style.display="none";
+    for(var i=0;i<allShowMorePanels.length;i++){allShowMorePanels[i].style.display="";allShowMorePanels[i].classList.add("open");}
 
     searchNoMatch.style.display=anyVisible?"none":"block";
   }

@@ -15,7 +15,7 @@ import json
 import os
 import requests as http_requests
 from datetime import datetime
-from db_supabase import fetch_sales_progression, fetch_pipeline_data, fetch_sales_pipeline
+from db_supabase import fetch_sales_progression, fetch_pipeline_data, fetch_sales_pipeline, supabase as sb
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
@@ -2495,6 +2495,83 @@ def save_crm_note(prop_id):
         return jsonify({"ok": True})
     except http_requests.RequestException as e:
         return jsonify({"error": str(e)}), 502
+
+
+# ─────────────────────────────────────────────────────────────
+#  INTAKE API — external CRM pushes Under Offer properties
+# ─────────────────────────────────────────────────────────────
+
+@app.route("/api/intake", methods=["POST"])
+def api_intake():
+    """Receive a property payload when it goes Under Offer."""
+    # --- Auth ---
+    expected_key = os.environ.get("NUVU_API_KEY", "dbe-nuvu-2026")
+    provided_key = request.headers.get("X-NUVU-API-KEY", "")
+    if not provided_key or provided_key != expected_key:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True)
+    if not data or not data.get("property_address", "").strip():
+        return jsonify({"error": "property_address is required"}), 400
+
+    addr = data["property_address"].strip()
+    date_agreed = data.get("date_agreed") or None
+
+    # --- Upsert sales_progression ---
+    progression_row = {
+        "property_address": addr,
+        "postcode": data.get("postcode") or None,
+        "current_price": data.get("current_price") or None,
+        "date_agreed": date_agreed,
+        "buyer_name": data.get("buyer_name") or None,
+        "buyer_email": data.get("buyer_email") or None,
+        "buyer_phone": data.get("buyer_phone") or None,
+        "vendor_name": data.get("vendor_name") or None,
+        "vendor_email": data.get("vendor_email") or None,
+        "vendor_phone": data.get("vendor_phone") or None,
+        "buyers_solicitor": data.get("buyers_solicitor") or None,
+        "vendors_solicitor": data.get("vendors_solicitor") or None,
+        "mortgage_broker": data.get("mortgage_broker") or None,
+        "negotiator": data.get("negotiator") or None,
+        "agreed_by": data.get("agreed_by") or None,
+        "alto_ref": data.get("alto_ref") or None,
+        "our_ref": data.get("our_ref") or None,
+        "notes": data.get("notes") or None,
+        "status": "Under Offer",
+        "offer_accepted": date_agreed,
+    }
+
+    try:
+        sb.table("sales_progression").upsert(
+            progression_row, on_conflict="property_address"
+        ).execute()
+    except Exception as e:
+        return jsonify({"error": f"sales_progression upsert failed: {e}"}), 500
+
+    # --- Upsert sales_pipeline (if alto_ref present) ---
+    alto_ref = data.get("alto_ref", "").strip()
+    if alto_ref:
+        pipeline_row = {
+            "alto_ref": alto_ref,
+            "property_address": addr,
+            "current_price": data.get("current_price") or None,
+            "date_agreed": date_agreed,
+            "buyers_solicitor": data.get("buyers_solicitor") or None,
+            "vendors_solicitor": data.get("vendors_solicitor") or None,
+            "negotiator": data.get("negotiator") or None,
+            "agreed_by": data.get("agreed_by") or None,
+        }
+        try:
+            sb.table("sales_pipeline").upsert(
+                pipeline_row, on_conflict="alto_ref"
+            ).execute()
+        except Exception as e:
+            return jsonify({
+                "error": f"sales_pipeline upsert failed: {e}",
+                "sales_progression": "ok",
+            }), 500
+
+    return jsonify({"success": True, "property": addr}), 200
 
 
 # ─────────────────────────────────────────────────────────────

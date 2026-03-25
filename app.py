@@ -1161,13 +1161,13 @@ def _build_live_dashboard_data():
             "seller_sol_phone": "\u2014",
             "offer_date": r.get("offer_accepted"),
             "memo_sent": r.get("memo_sent"),
-            "searches_ordered": None,
-            "searches_received": None,
-            "enquiries_raised": None,
-            "enquiries_answered": None,
-            "mortgage_offered": None,
-            "survey_booked": None,
-            "survey_complete": None,
+            "searches_ordered": r.get("searches_ordered"),
+            "searches_received": r.get("searches_received"),
+            "enquiries_raised": r.get("enquiries_raised"),
+            "enquiries_answered": r.get("enquiries_answered"),
+            "mortgage_offered": r.get("mortgage_offered"),
+            "survey_booked": r.get("survey_booked"),
+            "survey_complete": r.get("survey_complete"),
             "exchange_target": r.get("exchange_date"),
             "completion_target": r.get("completion_date"),
             "chain": "\u2014",
@@ -1182,6 +1182,7 @@ def _build_live_dashboard_data():
             "buyer_solicitor_notes": r.get("buyer_solicitor_notes") or "",
             "seller_solicitor_notes": r.get("seller_solicitor_notes") or "",
             # Internal fields
+            "_progression_id": r.get("id"),
             "_raw_status": raw_status,
             "_fee": r.get("fee"),
             "_pipe_fee": float(pipe.get("fee") or 0),
@@ -1640,8 +1641,31 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ms-ic.done{background:var(--green);color:#fff}
 .ms-ic.pending{background:#f1f5f9;border:2px solid #cbd5e1;color:transparent}
 .ms-ic.na{background:#f1f5f9;color:var(--txt-light);font-size:.55rem;font-weight:700}
-.ms-lb{color:var(--txt)}
+.ms-lb{color:var(--txt);flex:1}
 .ms-lb.done-lb{color:var(--txt-light);text-decoration:line-through}
+.ms-date{font-size:.7rem;color:var(--txt-light);margin-left:auto;white-space:nowrap}
+.ms-edit-btn{background:none;border:1px solid #d1d5db;border-radius:5px;padding:2px 8px;font-size:.65rem;color:var(--txt-mid);cursor:pointer;transition:all var(--t);flex-shrink:0}
+.ms-edit-btn:hover{border-color:var(--green);color:var(--green)}
+.ms-edit-form{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
+.ms-edit-form input[type=date]{font-size:.72rem;padding:2px 6px;border:1px solid #d1d5db;border-radius:5px;color:var(--txt)}
+.ms-edit-form button{padding:2px 8px;border-radius:5px;font-size:.65rem;font-weight:600;cursor:pointer;border:none}
+.ms-save-btn{background:var(--green);color:#fff}
+.ms-cancel-btn{background:#f1f5f9;color:var(--txt-mid)}
+.ms-pending-lb{color:var(--txt-light);font-style:italic}
+
+/* note editor */
+.note-block{background:#f8fafc;border:1px solid #e8ecf1;border-radius:8px;padding:10px 14px;margin-bottom:8px}
+.note-block-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.note-block-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--txt-light);font-weight:600}
+.note-edit-btn{background:none;border:1px solid #d1d5db;border-radius:5px;padding:2px 10px;font-size:.65rem;color:var(--txt-mid);cursor:pointer;transition:all var(--t)}
+.note-edit-btn:hover{border-color:var(--green);color:var(--green)}
+.note-block-txt{font-size:.82rem;line-height:1.5;color:var(--txt);white-space:pre-wrap}
+.note-block-txt.empty{color:var(--txt-light);font-style:italic}
+.note-textarea{width:100%;min-height:60px;font-size:.82rem;font-family:inherit;line-height:1.5;border:1px solid #d1d5db;border-radius:6px;padding:8px 10px;resize:vertical;color:var(--txt)}
+.note-textarea:focus{outline:none;border-color:var(--green)}
+.note-actions{display:flex;gap:6px;margin-top:6px}
+.note-save-btn{background:var(--green);color:#fff;border:none;border-radius:5px;padding:4px 14px;font-size:.72rem;font-weight:600;cursor:pointer}
+.note-cancel-btn{background:#f1f5f9;color:var(--txt-mid);border:none;border-radius:5px;padding:4px 14px;font-size:.72rem;cursor:pointer}
 
 /* activity notes */
 .act-item{background:#f8fafc;border:1px solid #e8ecf1;border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:.8rem;line-height:1.45;color:var(--txt)}
@@ -2059,6 +2083,18 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     var dt=new Date(d);
     return dt.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
   }
+  function patchProgression(progId,field,value,onSuccess){
+    var body={};body[field]=value;
+    fetch("/api/progression/"+progId,{
+      method:"PATCH",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(body)
+    }).then(function(r){return r.json();}).then(function(j){
+      if(j.ok){if(onSuccess)onSuccess();}
+      else{alert("Save failed: "+(j.error||"Unknown error"));}
+    }).catch(function(e){alert("Network error: "+e.message);});
+  }
+
   function price(n){ return "\u00a3"+n.toLocaleString(); }
   function fillCls(s){ return s==="stalled"?"clr-stalled":s==="at-risk"?"clr-at-risk":"clr-on-track"; }
   function alertCls(s){ return s==="stalled"?"m-alert-red":s==="at-risk"?"m-alert-amber":"m-alert-green"; }
@@ -2095,24 +2131,98 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       var ic,tx,lc;
       if(ms.done===true){ic="ms-ic done";tx="\u2713";lc="ms-lb done-lb";}
       else if(ms.done===null){ic="ms-ic na";tx="N/A";lc="ms-lb";}
-      else{ic="ms-ic pending";tx="";lc="ms-lb";}
-      var dateStr=ms.date?' <span style="color:var(--txt-light);font-size:.72rem;margin-left:4px">'+ms.date+'</span>':"";
-      h+='<div class="ms-item"><span class="'+ic+'">'+tx+'</span><span class="'+lc+'">'+ms.label+dateStr+'</span></div>';
+      else{ic="ms-ic pending";tx="";lc="ms-lb ms-pending-lb";}
+      var dateStr=ms.date?' <span class="ms-date">'+fmt(ms.date)+'</span>':"";
+      var editBtn=p._progression_id?'<button class="ms-edit-btn" data-field="'+ms.field+'" data-idx="'+m+'">Edit</button>':"";
+      h+='<div class="ms-item" id="ms-row-'+m+'"><span class="'+ic+'">'+tx+'</span><span class="'+lc+'">'+ms.label+'</span>'+dateStr+editBtn+'</div>';
     }
     mMsList.innerHTML=h;
 
+    /* milestone edit button handlers */
+    var editBtns=mMsList.querySelectorAll(".ms-edit-btn");
+    for(var eb=0;eb<editBtns.length;eb++){
+      (function(btn){
+        btn.onclick=function(e){
+          e.stopPropagation();
+          var field=btn.getAttribute("data-field");
+          var idx=btn.getAttribute("data-idx");
+          var row=document.getElementById("ms-row-"+idx);
+          var ms=currentProp.milestones[idx];
+          var curVal=ms.date||"";
+          row.innerHTML='<span class="ms-ic pending"></span><span class="ms-lb">'+ms.label+'</span>'+
+            '<div class="ms-edit-form"><input type="date" id="ms-date-'+idx+'" value="'+curVal+'">'+
+            '<button class="ms-save-btn" id="ms-sv-'+idx+'">Save</button>'+
+            '<button class="ms-cancel-btn" id="ms-cn-'+idx+'">Cancel</button></div>';
+          document.getElementById("ms-sv-"+idx).onclick=function(ev){
+            ev.stopPropagation();
+            var val=document.getElementById("ms-date-"+idx).value;
+            patchProgression(currentProp._progression_id,field,val,function(){
+              ms.date=val||"";
+              ms.done=!!val;
+              openModal(currentProp.id);
+            });
+          };
+          document.getElementById("ms-cn-"+idx).onclick=function(ev){
+            ev.stopPropagation();
+            openModal(currentProp.id);
+          };
+        };
+      })(editBtns[eb]);
+    }
+
+    /* notes section */
+    var noteFields=[
+      {key:"notes",label:"General Notes"},
+      {key:"nuvu_notes",label:"NUVU Notes"},
+      {key:"buyer_solicitor_notes",label:"Buyer Solicitor Notes"},
+      {key:"seller_solicitor_notes",label:"Seller Solicitor Notes"}
+    ];
     var ah="";
-    if(p.notes){ah+='<div class="act-item"><div class="act-idx">Notes</div>'+p.notes+'</div>';}
-    if(p.nuvu_notes){ah+='<div class="act-item"><div class="act-idx">NUVU Notes</div>'+p.nuvu_notes+'</div>';}
-    if(p.buyer_solicitor_notes){ah+='<div class="act-item"><div class="act-idx">Buyer Solicitor Notes</div>'+p.buyer_solicitor_notes+'</div>';}
-    if(p.seller_solicitor_notes){ah+='<div class="act-item"><div class="act-idx">Seller Solicitor Notes</div>'+p.seller_solicitor_notes+'</div>';}
+    for(var nf=0;nf<noteFields.length;nf++){
+      var n=noteFields[nf];
+      var val=p[n.key]||"";
+      var editBtn2=p._progression_id?'<button class="note-edit-btn" data-nkey="'+n.key+'" data-nidx="'+nf+'">Edit</button>':"";
+      ah+='<div class="note-block" id="note-blk-'+nf+'">'+
+        '<div class="note-block-hdr"><span class="note-block-lbl">'+n.label+'</span>'+editBtn2+'</div>'+
+        '<div class="note-block-txt'+(val?'':' empty')+'" id="note-txt-'+nf+'">'+(val||'No notes yet')+'</div></div>';
+    }
     if(p.activity&&p.activity.length){
       for(var a=0;a<p.activity.length;a++){
         ah+='<div class="act-item"><div class="act-idx">'+p.activity[a].date+'</div>'+p.activity[a].text+'</div>';
       }
     }
-    if(!ah){ah='<div class="act-item" style="color:var(--txt-light);font-style:italic">No notes recorded</div>';}
     document.getElementById("mActivityList").innerHTML=ah;
+
+    /* note edit handlers */
+    var noteBtns=document.querySelectorAll(".note-edit-btn");
+    for(var nb=0;nb<noteBtns.length;nb++){
+      (function(btn){
+        btn.onclick=function(e){
+          e.stopPropagation();
+          var nkey=btn.getAttribute("data-nkey");
+          var nidx=btn.getAttribute("data-nidx");
+          var blk=document.getElementById("note-blk-"+nidx);
+          var curVal=currentProp[nkey]||"";
+          var nfObj=noteFields[nidx];
+          blk.innerHTML='<div class="note-block-hdr"><span class="note-block-lbl">'+nfObj.label+'</span></div>'+
+            '<textarea class="note-textarea" id="note-ta-'+nidx+'">'+curVal+'</textarea>'+
+            '<div class="note-actions"><button class="note-save-btn" id="note-sv-'+nidx+'">Save</button>'+
+            '<button class="note-cancel-btn" id="note-cn-'+nidx+'">Cancel</button></div>';
+          document.getElementById("note-sv-"+nidx).onclick=function(ev){
+            ev.stopPropagation();
+            var val=document.getElementById("note-ta-"+nidx).value;
+            patchProgression(currentProp._progression_id,nkey,val,function(){
+              currentProp[nkey]=val;
+              openModal(currentProp.id);
+            });
+          };
+          document.getElementById("note-cn-"+nidx).onclick=function(ev){
+            ev.stopPropagation();
+            openModal(currentProp.id);
+          };
+        };
+      })(noteBtns[nb]);
+    }
 
     var rows=[
       ["Buyer",p.buyer],["Buyer Phone",p.buyer_phone],
@@ -2394,6 +2504,10 @@ def _progress_from_record(r):
     steps = [
         r.get("offer_accepted"),
         r.get("memo_sent"),
+        r.get("searches_ordered"),
+        r.get("mortgage_offered"),
+        r.get("enquiries_raised"),
+        r.get("enquiries_answered"),
         r.get("exchange_date"),
         r.get("completion_date"),
     ]
@@ -2413,10 +2527,14 @@ def _card_checks_from_record(r):
 
 def _milestones_from_record(r):
     return [
-        {"label": "Offer Accepted", "done": bool(r.get("offer_accepted")), "date": r.get("offer_accepted") or ""},
-        {"label": "Memorandum Sent", "done": bool(r.get("memo_sent")), "date": r.get("memo_sent") or ""},
-        {"label": "Exchange", "done": bool(r.get("exchange_date")), "date": r.get("exchange_date") or ""},
-        {"label": "Completion", "done": bool(r.get("completion_date")), "date": r.get("completion_date") or ""},
+        {"label": "Offer Accepted", "field": "offer_accepted", "done": bool(r.get("offer_accepted")), "date": r.get("offer_accepted") or ""},
+        {"label": "Memo Sent", "field": "memo_sent", "done": bool(r.get("memo_sent")), "date": r.get("memo_sent") or ""},
+        {"label": "Searches Ordered", "field": "searches_ordered", "done": bool(r.get("searches_ordered")), "date": r.get("searches_ordered") or ""},
+        {"label": "Mortgage Offer Received", "field": "mortgage_offered", "done": bool(r.get("mortgage_offered")), "date": r.get("mortgage_offered") or ""},
+        {"label": "Enquiries Raised", "field": "enquiries_raised", "done": bool(r.get("enquiries_raised")), "date": r.get("enquiries_raised") or ""},
+        {"label": "Enquiries Satisfied", "field": "enquiries_answered", "done": bool(r.get("enquiries_answered")), "date": r.get("enquiries_answered") or ""},
+        {"label": "Exchange", "field": "exchange_date", "done": bool(r.get("exchange_date")), "date": r.get("exchange_date") or ""},
+        {"label": "Completion", "field": "completion_date", "done": bool(r.get("completion_date")), "date": r.get("completion_date") or ""},
     ]
 
 
@@ -2450,21 +2568,26 @@ def _map_live_properties():
             "seller_sol_phone": "\u2014",
             "offer_date": r.get("offer_accepted"),
             "memo_sent": r.get("memo_sent"),
-            "searches_ordered": None,
-            "searches_received": None,
-            "enquiries_raised": None,
-            "enquiries_answered": None,
-            "mortgage_offered": None,
-            "survey_booked": None,
-            "survey_complete": None,
+            "searches_ordered": r.get("searches_ordered"),
+            "searches_received": r.get("searches_received"),
+            "enquiries_raised": r.get("enquiries_raised"),
+            "enquiries_answered": r.get("enquiries_answered"),
+            "mortgage_offered": r.get("mortgage_offered"),
+            "survey_booked": r.get("survey_booked"),
+            "survey_complete": r.get("survey_complete"),
             "exchange_target": r.get("exchange_date"),
             "completion_target": r.get("completion_date"),
             "chain": "\u2014",
             "alert": r.get("notes") if r.get("status") == "problem" else None,
             "next_action": r.get("notes") or "\u2014",
+            "notes": r.get("notes") or "",
+            "nuvu_notes": r.get("nuvu_notes") or "",
+            "buyer_solicitor_notes": r.get("buyer_solicitor_notes") or "",
+            "seller_solicitor_notes": r.get("seller_solicitor_notes") or "",
             "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
             "image_url": r.get("image_url") or "",
             # extra fields for detail page
+            "_progression_id": r.get("id"),
             "_raw_status": r.get("status"),
             "_sewage_type": r.get("sewage_type") or "\u2014",
             "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
@@ -2639,6 +2762,39 @@ def save_crm_note(prop_id):
 
 
 # ─────────────────────────────────────────────────────────────
+#  PATCH API — update milestone dates and notes on progression
+# ─────────────────────────────────────────────────────────────
+
+ALLOWED_PATCH_FIELDS = {
+    "offer_accepted", "memo_sent", "searches_ordered", "mortgage_offered",
+    "enquiries_raised", "enquiries_answered", "exchange_date", "completion_date",
+    "notes", "nuvu_notes", "buyer_solicitor_notes", "seller_solicitor_notes",
+}
+
+
+@app.route("/api/progression/<prog_id>", methods=["PATCH"])
+def patch_progression(prog_id):
+    """Update one or more fields on a sales_progression row."""
+    data = request.get_json(force=True)
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    updates = {}
+    for key, val in data.items():
+        if key in ALLOWED_PATCH_FIELDS:
+            updates[key] = val if val else None
+
+    if not updates:
+        return jsonify({"error": "No valid fields to update"}), 400
+
+    try:
+        sb.table("sales_progression").update(updates).eq("id", prog_id).execute()
+        return jsonify({"ok": True, "updated": list(updates.keys())})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ─────────────────────────────────────────────────────────────
 #  INTAKE API — external CRM pushes Under Offer properties
 # ─────────────────────────────────────────────────────────────
 
@@ -2792,9 +2948,29 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ms-ic{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.65rem}
 .ms-ic.done{background:var(--green);color:#fff}
 .ms-ic.pending{background:#f1f5f9;border:2px solid #cbd5e1;color:transparent}
-.ms-lb{color:var(--txt)}
+.ms-lb{color:var(--txt);flex:1}
 .ms-lb.done-lb{color:var(--txt-light);text-decoration:line-through}
-.ms-date{margin-left:auto;font-size:.78rem;color:var(--txt-light);font-weight:600}
+.ms-pending-lb{color:var(--txt-light);font-style:italic}
+.ms-date{margin-left:auto;font-size:.78rem;color:var(--txt-light);font-weight:600;white-space:nowrap}
+.ms-edit-btn{background:none;border:1px solid #d1d5db;border-radius:5px;padding:2px 8px;font-size:.65rem;color:var(--txt-mid);cursor:pointer;transition:all var(--t);flex-shrink:0}
+.ms-edit-btn:hover{border-color:var(--green);color:var(--green)}
+.ms-edit-form{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
+.ms-edit-form input[type=date]{font-size:.72rem;padding:2px 6px;border:1px solid #d1d5db;border-radius:5px;color:var(--txt)}
+.ms-edit-form button{padding:2px 8px;border-radius:5px;font-size:.65rem;font-weight:600;cursor:pointer;border:none}
+.ms-save-btn{background:var(--green);color:#fff}
+.ms-cancel-btn{background:#f1f5f9;color:var(--txt-mid)}
+.note-block{background:#f8fafc;border:1px solid #e8ecf1;border-radius:8px;padding:10px 14px;margin-bottom:8px}
+.note-block-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.note-block-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--txt-light);font-weight:600}
+.note-edit-btn{background:none;border:1px solid #d1d5db;border-radius:5px;padding:2px 10px;font-size:.65rem;color:var(--txt-mid);cursor:pointer;transition:all var(--t)}
+.note-edit-btn:hover{border-color:var(--green);color:var(--green)}
+.note-block-txt{font-size:.82rem;line-height:1.5;color:var(--txt);white-space:pre-wrap}
+.note-block-txt.empty{color:var(--txt-light);font-style:italic}
+.note-textarea{width:100%;min-height:60px;font-size:.82rem;font-family:inherit;line-height:1.5;border:1px solid #d1d5db;border-radius:6px;padding:8px 10px;resize:vertical;color:var(--txt)}
+.note-textarea:focus{outline:none;border-color:var(--green)}
+.note-actions{display:flex;gap:6px;margin-top:6px}
+.note-save-btn{background:var(--green);color:#fff;border:none;border-radius:5px;padding:4px 14px;font-size:.72rem;font-weight:600;cursor:pointer}
+.note-cancel-btn{background:#f1f5f9;color:var(--txt-mid);border:none;border-radius:5px;padding:4px 14px;font-size:.72rem;cursor:pointer}
 
 /* alert box */
 .alert-box{
@@ -2879,9 +3055,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       </h3>
       <div class="ms-list">
         {% for ms in p.milestones %}
-        <div class="ms-item">
+        <div class="ms-item" id="dms-row-{{ loop.index0 }}">
           <span class="ms-ic {{ 'done' if ms.done else 'pending' }}">{% if ms.done %}&#x2713;{% endif %}</span>
-          <span class="ms-lb {{ 'done-lb' if ms.done else '' }}">{{ ms.label }}</span>
+          <span class="ms-lb {{ 'done-lb' if ms.done else 'ms-pending-lb' }}">{{ ms.label }}</span>
+          {% if ms.date %}<span class="ms-date">{{ ms.date }}</span>{% endif %}
+          {% if p._progression_id %}<button class="ms-edit-btn" data-field="{{ ms.field }}" data-idx="{{ loop.index0 }}">Edit</button>{% endif %}
         </div>
         {% endfor %}
       </div>
@@ -2924,18 +3102,91 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     </div>
   </div>
 
-  <!-- NUVU Notes -->
-  {% if p._nuvu_notes and p._nuvu_notes != '\u2014' %}
+  <!-- Notes -->
   <div class="detail-card">
     <h3>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--txt-mid)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      NUVU Notes
+      Notes
     </h3>
-    <div style="font-size:.88rem;line-height:1.6;color:var(--txt)">{{ p._nuvu_notes }}</div>
+    <div id="d-notes-list">
+      {% set note_fields = [("notes","General Notes"),("nuvu_notes","NUVU Notes"),("buyer_solicitor_notes","Buyer Solicitor Notes"),("seller_solicitor_notes","Seller Solicitor Notes")] %}
+      {% for key, label in note_fields %}
+      <div class="note-block" id="d-note-blk-{{ loop.index0 }}">
+        <div class="note-block-hdr"><span class="note-block-lbl">{{ label }}</span>{% if p._progression_id %}<button class="note-edit-btn" data-nkey="{{ key }}" data-nidx="{{ loop.index0 }}">Edit</button>{% endif %}</div>
+        <div class="note-block-txt{{ ' empty' if not p[key] }}" id="d-note-txt-{{ loop.index0 }}">{{ p[key] or 'No notes yet' }}</div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
-  {% endif %}
 
 </div>
+
+<script>
+(function(){
+  var progId = "{{ p._progression_id or '' }}";
+  if (!progId) return;
+
+  function patchField(field, value, onSuccess) {
+    var body = {}; body[field] = value;
+    fetch("/api/progression/" + progId, {
+      method: "PATCH",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(body)
+    }).then(function(r){ return r.json(); }).then(function(j){
+      if (j.ok) { if (onSuccess) onSuccess(); }
+      else { alert("Save failed: " + (j.error || "Unknown error")); }
+    }).catch(function(e){ alert("Network error: " + e.message); });
+  }
+
+  /* milestone edit */
+  var msBtns = document.querySelectorAll(".ms-edit-btn");
+  for (var i = 0; i < msBtns.length; i++) {
+    (function(btn){
+      btn.onclick = function() {
+        var field = btn.getAttribute("data-field");
+        var idx = btn.getAttribute("data-idx");
+        var row = document.getElementById("dms-row-" + idx);
+        var label = row.querySelector(".ms-lb").textContent;
+        var dateEl = row.querySelector(".ms-date");
+        var curVal = dateEl ? dateEl.textContent : "";
+        row.innerHTML = '<span class="ms-ic pending"></span><span class="ms-lb">' + label + '</span>' +
+          '<div class="ms-edit-form"><input type="date" id="dms-date-' + idx + '" value="' + curVal + '">' +
+          '<button class="ms-save-btn" id="dms-sv-' + idx + '">Save</button>' +
+          '<button class="ms-cancel-btn" id="dms-cn-' + idx + '">Cancel</button></div>';
+        document.getElementById("dms-sv-" + idx).onclick = function() {
+          var val = document.getElementById("dms-date-" + idx).value;
+          patchField(field, val, function(){ location.reload(); });
+        };
+        document.getElementById("dms-cn-" + idx).onclick = function() { location.reload(); };
+      };
+    })(msBtns[i]);
+  }
+
+  /* note edit */
+  var noteBtns = document.querySelectorAll(".note-edit-btn");
+  for (var n = 0; n < noteBtns.length; n++) {
+    (function(btn){
+      btn.onclick = function() {
+        var nkey = btn.getAttribute("data-nkey");
+        var nidx = btn.getAttribute("data-nidx");
+        var blk = document.getElementById("d-note-blk-" + nidx);
+        var txtEl = document.getElementById("d-note-txt-" + nidx);
+        var curVal = txtEl.classList.contains("empty") ? "" : txtEl.textContent;
+        var label = blk.querySelector(".note-block-lbl").textContent;
+        blk.innerHTML = '<div class="note-block-hdr"><span class="note-block-lbl">' + label + '</span></div>' +
+          '<textarea class="note-textarea" id="d-note-ta-' + nidx + '">' + curVal + '</textarea>' +
+          '<div class="note-actions"><button class="note-save-btn" id="d-note-sv-' + nidx + '">Save</button>' +
+          '<button class="note-cancel-btn" id="d-note-cn-' + nidx + '">Cancel</button></div>';
+        document.getElementById("d-note-sv-" + nidx).onclick = function() {
+          var val = document.getElementById("d-note-ta-" + nidx).value;
+          patchField(nkey, val, function(){ location.reload(); });
+        };
+        document.getElementById("d-note-cn-" + nidx).onclick = function() { location.reload(); };
+      };
+    })(noteBtns[n]);
+  }
+})();
+</script>
 
 </body>
 </html>"""

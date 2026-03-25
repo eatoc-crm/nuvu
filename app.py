@@ -15,7 +15,7 @@ import json
 import os
 import requests as http_requests
 from datetime import datetime
-from db_supabase import fetch_sales_progression, fetch_pipeline_data
+from db_supabase import fetch_sales_progression, fetch_pipeline_data, fetch_sales_pipeline
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
@@ -1013,30 +1013,92 @@ _REMOVED_STATS = {
 #  ROUTES
 # ─────────────────────────────────────────────────────────────
 
+def _normalize_addr(addr):
+    """Normalize address for fuzzy matching between tables."""
+    return " ".join(addr.lower().replace(",", " ").replace(".", " ").split())
+
+
+def _match_pipeline(prog_addr, pipe_lookup, pipe_norm_keys):
+    """Find matching pipeline record for a progression address."""
+    norm = _normalize_addr(prog_addr)
+    # Exact match
+    if norm in pipe_lookup:
+        return pipe_lookup[norm]
+    # Substring: progression addr contained in pipeline addr or vice versa
+    for key in pipe_norm_keys:
+        if norm in key or key in norm:
+            return pipe_lookup[key]
+    # First-word match (e.g. "Greyber" vs "The Farmhouse  Grayber")
+    words = norm.split()
+    first = words[0] if words else ""
+    if len(first) > 3:
+        for key in pipe_norm_keys:
+            if first in key:
+                return pipe_lookup[key]
+    # Try second word if first is a number (e.g. "14 howard park")
+    if len(words) > 1 and words[0].isdigit():
+        fragment = " ".join(words[:2])
+        for key in pipe_norm_keys:
+            if fragment in key:
+                return pipe_lookup[key]
+    return None
+
+
 def _build_live_dashboard_data():
     """Query Supabase and build PROPERTIES, SECTIONS, PIPELINE, STATS for the dashboard."""
-    # Fetch all non-completed records
-    rows = fetch_sales_progression(['active', 'exchanged', 'problem', 'incomplete_chain', 'development'])
+    from datetime import date as _date
 
+    # 1. Fetch both tables
+    prog_rows = fetch_sales_progression(
+        ["active", "exchanged", "problem", "incomplete_chain", "development"]
+    )
+    pipe_rows = fetch_sales_pipeline()
+
+    # 2. Build pipeline lookup by normalized address
+    pipe_lookup = {}
+    for pr in pipe_rows:
+        key = _normalize_addr(pr.get("property_address", ""))
+        pipe_lookup[key] = pr
+    pipe_norm_keys = list(pipe_lookup.keys())
+
+    today = _date.today()
+
+    # 3. Build property list with joined data
     properties = []
-    for i, r in enumerate(rows):
+    for i, r in enumerate(prog_rows):
+        pipe = _match_pipeline(r.get("property_address", ""), pipe_lookup, pipe_norm_keys)
+
+        # Price from pipeline.current_price
+        price = float(pipe.get("current_price") or 0) if pipe else 0
+
+        # Duration = today - pipeline.date_agreed
+        duration = 0
+        date_agreed_str = pipe.get("date_agreed") if pipe else None
+        if date_agreed_str:
+            try:
+                agreed = datetime.strptime(str(date_agreed_str), "%Y-%m-%d").date()
+                duration = (today - agreed).days
+            except Exception:
+                pass
+
+        # est_completion from pipeline
+        est_comp_str = pipe.get("est_completion") if pipe else None
+        est_comp_date = None
+        if est_comp_str:
+            try:
+                est_comp_date = datetime.strptime(str(est_comp_str), "%Y-%m-%d").date()
+            except Exception:
+                pass
+
         status = STATUS_MAP.get(r.get("status", "active"), "on-track")
         progress = _progress_from_record(r)
-        created = r.get("created_at")
-        if created:
-            if hasattr(created, "strftime"):
-                duration = (datetime.utcnow() - created.replace(tzinfo=None)).days
-            else:
-                duration = (datetime.utcnow() - datetime.strptime(str(created)[:19], "%Y-%m-%dT%H:%M:%S")).days
-        else:
-            duration = 0
-
         prop_id = str(r.get("id", f"prop-{i}"))
+
         properties.append({
             "id": prop_id,
             "address": r.get("property_address", "Unknown"),
             "location": (r.get("branch") or "").title() or "Eden Valley",
-            "price": float(r.get("sale_price") or r.get("fee") or 0),
+            "price": price,
             "status": status,
             "status_label": STATUS_LABELS.get(status, "ON TRACK"),
             "progress": progress,
@@ -1068,10 +1130,17 @@ def _build_live_dashboard_data():
             "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
             "image_url": "",
             "activity": [],
+            # Notes for modal display
+            "notes": r.get("notes") or "",
+            "nuvu_notes": r.get("nuvu_notes") or "",
+            "buyer_solicitor_notes": r.get("buyer_solicitor_notes") or "",
+            "seller_solicitor_notes": r.get("seller_solicitor_notes") or "",
+            # Internal fields
             "_raw_status": r.get("status"),
             "_fee": r.get("fee"),
             "_staff_initials": r.get("staff_initials") or "\u2014",
-            "_nuvu_notes": r.get("nuvu_notes") or "\u2014",
+            "_est_comp_date": est_comp_date.isoformat() if est_comp_date else None,
+            "_date_agreed": str(date_agreed_str) if date_agreed_str else None,
             "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
             "_surveyor": r.get("surveyor") or "\u2014",
             "_buyer_email": r.get("buyer_email") or "\u2014",
@@ -1082,29 +1151,51 @@ def _build_live_dashboard_data():
             "_invoice_status": r.get("invoice_status") or "\u2014",
         })
 
-    # Build stats
-    total = len(properties)
-    exchanged = sum(1 for p in properties if p["_raw_status"] == "exchanged")
-    problems = sum(1 for p in properties if p["_raw_status"] == "problem")
-    incomplete = sum(1 for p in properties if p["_raw_status"] == "incomplete_chain")
-    active_count = total - exchanged
-    pipeline_value = sum(p["price"] for p in properties if p["price"])
+    # 4. Classify into sections
+    needs_action = []
+    sec_this_month = []
+    sec_two_months = []
+    sec_this_quarter = []
+    sec_active_pipeline = []
+    exchanged_count = 0
 
-    stats = {
-        "active": total,
-        "on_track": exchanged,
-        "at_risk": problems,
-        "action": incomplete,
-        "avg_days": round(sum(p["duration_days"] for p in properties) / max(total, 1), 1),
-        "pipeline": pipeline_value,
-    }
+    for p in properties:
+        raw = p["_raw_status"]
 
-    # Build sections
-    prob_props = [p for p in properties if p["_raw_status"] == "problem"]
-    inc_props = [p for p in properties if p["_raw_status"] == "incomplete_chain"]
-    exch_props = [p for p in properties if p["_raw_status"] == "exchanged"]
-    active_props = [p for p in properties if p["_raw_status"] in ("active", "development")]
+        # Exchanged: count only, not shown in sections
+        if raw == "exchanged":
+            exchanged_count += 1
+            continue
 
+        est = p.get("_est_comp_date")
+        est_date = datetime.strptime(est, "%Y-%m-%d").date() if est else None
+        days_to_comp = (est_date - today).days if est_date else None
+
+        # Needs Action check
+        is_needs_action = False
+        if raw in ("problem", "incomplete_chain"):
+            is_needs_action = True
+        elif raw == "active" and p.get("offer_date") and not p.get("memo_sent"):
+            if p.get("_date_agreed"):
+                try:
+                    agreed = datetime.strptime(p["_date_agreed"], "%Y-%m-%d").date()
+                    if (today - agreed).days > 7:
+                        is_needs_action = True
+                except Exception:
+                    pass
+
+        if is_needs_action:
+            needs_action.append(p)
+        elif raw in ("active", "development") and days_to_comp is not None and days_to_comp <= 30:
+            sec_this_month.append(p)
+        elif raw in ("active", "development") and days_to_comp is not None and days_to_comp <= 60:
+            sec_two_months.append(p)
+        elif raw in ("active", "development") and days_to_comp is not None and days_to_comp <= 90:
+            sec_this_quarter.append(p)
+        else:
+            sec_active_pipeline.append(p)
+
+    # 5. Build section dicts
     def _make_section(sid, icon, title, subtitle, border, items):
         visible = items[:3]
         hidden = items[3:]
@@ -1115,26 +1206,58 @@ def _build_live_dashboard_data():
             "avg_progress": avg, "avg_color": color, "border_class": border,
             "visible_ids": [], "hidden_ids": [],
             "visible": visible, "hidden": hidden,
-            "extra_count": max(0, len(items) - 6),
+            "extra_count": 0,
         }
 
     sections = []
-    if prob_props or inc_props:
-        needs = prob_props + inc_props
-        sections.append(_make_section("needs-action", "\U0001F6A8", "Needs Action",
-                                      f"{len(needs)} transactions requiring attention", "stalled-banner", needs))
-    if exch_props:
-        sections.append(_make_section("exchanged", "\u2705", "Exchanged",
-                                      f"{len(exch_props)} exchanged — approaching completion", "green-banner", exch_props))
-    if active_props:
-        sections.append(_make_section("active", "\U0001F4C5", "Active Pipeline",
-                                      f"{len(active_props)} active transactions", "blue-banner", active_props))
+    if needs_action:
+        sections.append(_make_section(
+            "needs-action", "\U0001F6A8", "Needs Action",
+            f"{len(needs_action)} transactions requiring attention", "stalled-banner", needs_action))
+    if sec_this_month:
+        sections.append(_make_section(
+            "this-month", "\U0001F4C5", "This Month",
+            f"{len(sec_this_month)} completing within 30 days", "green-banner", sec_this_month))
+    if sec_two_months:
+        sections.append(_make_section(
+            "two-months", "\U0001F4CA", "Two Months",
+            f"{len(sec_two_months)} completing in 31\u201360 days", "blue-banner", sec_two_months))
+    if sec_this_quarter:
+        sections.append(_make_section(
+            "this-quarter", "\U0001F4C8", "This Quarter",
+            f"{len(sec_this_quarter)} completing in 61\u201390 days", "amber-banner", sec_this_quarter))
+    if sec_active_pipeline:
+        sections.append(_make_section(
+            "active-pipeline", "\U0001F3E0", "Active Pipeline",
+            f"{len(sec_active_pipeline)} active transactions", "blue-banner", sec_active_pipeline))
 
-    # Pipeline forecast
+    # 6. Stats
+    active_props = [p for p in properties if p["_raw_status"] == "active"]
+    active_count = len(active_props)
+    on_track_count = sum(
+        1 for p in active_props
+        if p.get("_est_comp_date")
+        and (datetime.strptime(p["_est_comp_date"], "%Y-%m-%d").date() - today).days > 30
+    )
+    at_risk_count = sum(1 for p in properties if p["_raw_status"] == "problem")
+    action_count = len(needs_action)
+    pipeline_value = sum(p["price"] for p in active_props if p["price"])
+
+    stats = {
+        "active": active_count,
+        "on_track": on_track_count,
+        "at_risk": at_risk_count,
+        "action": action_count,
+        "exchanged": exchanged_count,
+        "pipeline": pipeline_value,
+    }
+
+    # 7. Pipeline forecast (using section counts)
     pipeline = {
-        "this_week":    {"count": len(exch_props), "value": sum(p["price"] for p in exch_props), "confidence": 95},
-        "this_month":   {"count": len(active_props), "value": pipeline_value, "confidence": 75},
-        "this_quarter": {"count": total, "value": pipeline_value, "confidence": 60},
+        "this_week": {"count": len(sec_this_month), "value": sum(p["price"] for p in sec_this_month), "confidence": 90},
+        "this_month": {"count": len(sec_two_months), "value": sum(p["price"] for p in sec_two_months), "confidence": 75},
+        "this_quarter": {"count": len(sec_this_quarter) + len(sec_active_pipeline),
+                         "value": pipeline_value, "confidence": 60},
     }
 
     return properties, sections, stats, pipeline
@@ -1539,7 +1662,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 {% macro prop_card(p) %}
 <div class="prop-card" id="card-{{ p.id }}">
   <div class="card-photo">
-    <img class="card-photo-bg" src="{{ p.image_url|safe }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}">
+    {% if p.image_url %}<img class="card-photo-bg" src="{{ p.image_url|safe }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}">{% else %}<div class="card-photo-bg" style="background:{{ p.image_bg }}"></div>{% endif %}
     <span class="card-chip chip-{{ p.status }}">{{ p.status_label }}</span>
   </div>
   <div class="card-body">
@@ -1587,7 +1710,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="hs" id="stat-on-track"><div class="hs-val">{{ stats.on_track }}</div><div class="hs-lbl">On Track</div></div>
     <div class="hs" id="stat-at-risk"><div class="hs-val">{{ stats.at_risk }}</div><div class="hs-lbl">At Risk</div></div>
     <div class="hs" id="stat-action"><div class="hs-val">{{ stats.action }}</div><div class="hs-lbl">Action</div></div>
-    <div class="hs" id="stat-avg-days"><div class="hs-val">{{ stats.avg_days }}</div><div class="hs-lbl">Avg Days</div></div>
+    <div class="hs" id="stat-exchanged"><div class="hs-val">{{ stats.exchanged }}</div><div class="hs-lbl">Exchanged</div></div>
     <div class="hs" id="stat-pipeline"><div class="hs-val">&pound;{{ "%.1f" | format(stats.pipeline / 1000000) }}M</div><div class="hs-lbl">Pipeline</div></div>
   </div>
 </div>
@@ -1875,16 +1998,22 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       if(ms.done===true){ic="ms-ic done";tx="\u2713";lc="ms-lb done-lb";}
       else if(ms.done===null){ic="ms-ic na";tx="N/A";lc="ms-lb";}
       else{ic="ms-ic pending";tx="";lc="ms-lb";}
-      h+='<div class="ms-item"><span class="'+ic+'">'+tx+'</span><span class="'+lc+'">'+ms.label+'</span></div>';
+      var dateStr=ms.date?' <span style="color:var(--txt-light);font-size:.72rem;margin-left:4px">'+ms.date+'</span>':"";
+      h+='<div class="ms-item"><span class="'+ic+'">'+tx+'</span><span class="'+lc+'">'+ms.label+dateStr+'</span></div>';
     }
     mMsList.innerHTML=h;
 
     var ah="";
+    if(p.notes){ah+='<div class="act-item"><div class="act-idx">Notes</div>'+p.notes+'</div>';}
+    if(p.nuvu_notes){ah+='<div class="act-item"><div class="act-idx">NUVU Notes</div>'+p.nuvu_notes+'</div>';}
+    if(p.buyer_solicitor_notes){ah+='<div class="act-item"><div class="act-idx">Buyer Solicitor Notes</div>'+p.buyer_solicitor_notes+'</div>';}
+    if(p.seller_solicitor_notes){ah+='<div class="act-item"><div class="act-idx">Seller Solicitor Notes</div>'+p.seller_solicitor_notes+'</div>';}
     if(p.activity&&p.activity.length){
       for(var a=0;a<p.activity.length;a++){
         ah+='<div class="act-item"><div class="act-idx">'+p.activity[a].date+'</div>'+p.activity[a].text+'</div>';
       }
     }
+    if(!ah){ah='<div class="act-item" style="color:var(--txt-light);font-style:italic">No notes recorded</div>';}
     document.getElementById("mActivityList").innerHTML=ah;
 
     var rows=[
@@ -1939,7 +2068,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   }
 
   /* ── SHOW MORE TOGGLE HANDLERS ────────────────────── */
-  var sectionIds=["needs-action","this-week","this-month","this-quarter"];
+  var sectionIds=["needs-action","this-month","two-months","this-quarter","active-pipeline"];
   for(var s=0;s<sectionIds.length;s++){
     (function(sid){
       var btn=document.getElementById("showMore-"+sid);
@@ -1973,12 +2102,12 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
   /* ── STATS BAR — scroll to sections ───────────────── */
   var statMap={
-    "stat-active":"section-this-quarter",
-    "stat-on-track":"section-this-week",
+    "stat-active":"section-active-pipeline",
+    "stat-on-track":"section-this-month",
     "stat-at-risk":"section-needs-action",
     "stat-action":"section-needs-action",
-    "stat-avg-days":"section-this-month",
-    "stat-pipeline":"section-this-quarter"
+    "stat-exchanged":"section-this-month",
+    "stat-pipeline":"section-active-pipeline"
   };
   var statKeys=Object.keys(statMap);
   for(var k=0;k<statKeys.length;k++){
@@ -2130,10 +2259,10 @@ def _card_checks_from_record(r):
 
 def _milestones_from_record(r):
     return [
-        {"label": "Offer Accepted", "done": bool(r.get("offer_accepted"))},
-        {"label": "Memorandum Sent", "done": bool(r.get("memo_sent"))},
-        {"label": "Exchange", "done": bool(r.get("exchange_date"))},
-        {"label": "Completion", "done": bool(r.get("completion_date"))},
+        {"label": "Offer Accepted", "done": bool(r.get("offer_accepted")), "date": r.get("offer_accepted") or ""},
+        {"label": "Memorandum Sent", "done": bool(r.get("memo_sent")), "date": r.get("memo_sent") or ""},
+        {"label": "Exchange", "done": bool(r.get("exchange_date")), "date": r.get("exchange_date") or ""},
+        {"label": "Completion", "done": bool(r.get("completion_date")), "date": r.get("completion_date") or ""},
     ]
 
 

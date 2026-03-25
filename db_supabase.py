@@ -47,6 +47,17 @@ def fetch_pipeline_data():
     )
 
 
+def fetch_sales_pipeline():
+    """Fetch all records from sales_pipeline table."""
+    return (
+        supabase.table("sales_pipeline")
+        .select("*")
+        .order("created_at", desc=True)
+        .execute()
+        .data
+    )
+
+
 def fetch_solicitors():
     """Fetch all solicitors."""
     return (

@@ -1045,35 +1045,54 @@ def _match_pipeline(prog_addr, pipe_lookup, pipe_norm_keys):
 
 
 def _build_live_dashboard_data():
-    """Query Supabase and build PROPERTIES, SECTIONS, PIPELINE, STATS for the dashboard."""
+    """Query Supabase and build PROPERTIES, SECTIONS, PIPELINE, STATS for the dashboard.
+
+    Starts from sales_pipeline (source of truth) and joins sales_progression
+    for milestone/status detail. Only properties in sales_pipeline appear.
+    """
     from datetime import date as _date
 
     # 1. Fetch both tables
-    prog_rows = fetch_sales_progression(
-        ["active", "exchanged", "problem", "incomplete_chain", "development"]
-    )
     pipe_rows = fetch_sales_pipeline()
+    prog_rows = fetch_sales_progression()  # all rows, no status filter
 
-    # 2. Build pipeline lookup by normalized address
-    pipe_lookup = {}
-    for pr in pipe_rows:
+    # 2. Build progression lookup by normalized address
+    prog_lookup = {}
+    for pr in prog_rows:
         key = _normalize_addr(pr.get("property_address", ""))
-        pipe_lookup[key] = pr
-    pipe_norm_keys = list(pipe_lookup.keys())
+        prog_lookup[key] = pr
+    prog_norm_keys = list(prog_lookup.keys())
 
     today = _date.today()
 
-    # 3. Build property list with joined data
+    # Map pipeline status strings to progression-style statuses
+    PIPE_STATUS_MAP = {
+        "Under Offer (SSTC)": "active",
+        "Under Offer": "active",
+        "Exchanged": "exchanged",
+    }
+
+    # 3. Build property list — iterate over pipeline, join progression
     properties = []
-    for i, r in enumerate(prog_rows):
-        pipe = _match_pipeline(r.get("property_address", ""), pipe_lookup, pipe_norm_keys)
+    for i, pipe in enumerate(pipe_rows):
+        addr = pipe.get("property_address", "")
+
+        # Find matching progression row
+        prog = _match_pipeline(addr, prog_lookup, prog_norm_keys)
+
+        # Status: prefer progression (has finer detail) if available and valid
+        prog_status = prog.get("status") if prog else None
+        if prog_status in ("active", "exchanged", "problem", "incomplete_chain", "development"):
+            raw_status = prog_status
+        else:
+            raw_status = PIPE_STATUS_MAP.get(pipe.get("status", ""), "active")
 
         # Price from pipeline.current_price
-        price = float(pipe.get("current_price") or 0) if pipe else 0
+        price = float(pipe.get("current_price") or 0)
 
         # Duration = today - pipeline.date_agreed
         duration = 0
-        date_agreed_str = pipe.get("date_agreed") if pipe else None
+        date_agreed_str = pipe.get("date_agreed")
         if date_agreed_str:
             try:
                 agreed = datetime.strptime(str(date_agreed_str), "%Y-%m-%d").date()
@@ -1082,7 +1101,7 @@ def _build_live_dashboard_data():
                 pass
 
         # est_completion from pipeline
-        est_comp_str = pipe.get("est_completion") if pipe else None
+        est_comp_str = pipe.get("est_completion")
         est_comp_date = None
         if est_comp_str:
             try:
@@ -1090,13 +1109,16 @@ def _build_live_dashboard_data():
             except Exception:
                 pass
 
-        status = STATUS_MAP.get(r.get("status", "active"), "on-track")
-        progress = _progress_from_record(r)
-        prop_id = str(r.get("id", f"prop-{i}"))
+        status = STATUS_MAP.get(raw_status, "on-track")
+        progress = _progress_from_record(prog) if prog else 10
+        prop_id = str(prog.get("id", f"prop-{i}")) if prog else f"pipe-{i}"
+
+        # Use progression fields where available, fall back to pipeline
+        r = prog or {}
 
         properties.append({
             "id": prop_id,
-            "address": r.get("property_address", "Unknown"),
+            "address": addr or "Unknown",
             "location": (r.get("branch") or "").title() or "Eden Valley",
             "price": price,
             "status": status,
@@ -1109,9 +1131,9 @@ def _build_live_dashboard_data():
             "milestones": _milestones_from_record(r),
             "buyer": r.get("buyer_name") or "\u2014",
             "buyer_phone": r.get("buyer_phone") or "\u2014",
-            "buyer_solicitor": r.get("buyer_solicitor") or "\u2014",
+            "buyer_solicitor": r.get("buyer_solicitor") or pipe.get("buyers_solicitor") or "\u2014",
             "buyer_sol_phone": "\u2014",
-            "seller_solicitor": r.get("vendor_solicitor") or "\u2014",
+            "seller_solicitor": r.get("vendor_solicitor") or pipe.get("vendors_solicitor") or "\u2014",
             "seller_sol_phone": "\u2014",
             "offer_date": r.get("offer_accepted"),
             "memo_sent": r.get("memo_sent"),
@@ -1125,7 +1147,7 @@ def _build_live_dashboard_data():
             "exchange_target": r.get("exchange_date"),
             "completion_target": r.get("completion_date"),
             "chain": "\u2014",
-            "alert": r.get("notes") if r.get("status") == "problem" else None,
+            "alert": r.get("notes") if raw_status == "problem" else None,
             "next_action": r.get("notes") or "\u2014",
             "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
             "image_url": "",
@@ -1136,10 +1158,10 @@ def _build_live_dashboard_data():
             "buyer_solicitor_notes": r.get("buyer_solicitor_notes") or "",
             "seller_solicitor_notes": r.get("seller_solicitor_notes") or "",
             # Internal fields
-            "_raw_status": r.get("status"),
+            "_raw_status": raw_status,
             "_fee": r.get("fee"),
-            "_pipe_fee": float(pipe.get("fee") or 0) if pipe else 0,
-            "_staff_initials": r.get("staff_initials") or "\u2014",
+            "_pipe_fee": float(pipe.get("fee") or 0),
+            "_staff_initials": r.get("staff_initials") or pipe.get("negotiator") or "\u2014",
             "_est_comp_date": est_comp_date.isoformat() if est_comp_date else None,
             "_date_agreed": str(date_agreed_str) if date_agreed_str else None,
             "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
@@ -1150,6 +1172,10 @@ def _build_live_dashboard_data():
             "_vendor_email": r.get("vendor_email") or "\u2014",
             "_sewage_type": r.get("sewage_type") or "\u2014",
             "_invoice_status": r.get("invoice_status") or "\u2014",
+            "_nuvu_notes": r.get("nuvu_notes") or "\u2014",
+            "_property_type": r.get("property_type") or "\u2014",
+            "_beds": r.get("beds"),
+            "_baths": r.get("baths"),
         })
 
     # 4. Classify into sections

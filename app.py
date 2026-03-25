@@ -2800,7 +2800,7 @@ def patch_progression(prog_id):
 
 @app.route("/api/intake", methods=["POST"])
 def api_intake():
-    """Receive a property payload when it goes Under Offer."""
+    """Receive a property payload when status changes (Under Offer or reversal)."""
     # --- Auth ---
     expected_key = os.environ.get("NUVU_API_KEY", "dbe-nuvu-2026")
     provided_key = request.headers.get("X-NUVU-API-KEY", "")
@@ -2812,8 +2812,23 @@ def api_intake():
         return jsonify({"error": "property_address is required"}), 400
 
     addr = data["property_address"].strip()
-    date_agreed = data.get("date_agreed") or None
     alto_ref = (data.get("alto_ref") or "").strip() or None
+    incoming_status = (data.get("status") or "").strip()
+
+    # --- Handle reversal: For Sale = sale fell through ---
+    if incoming_status == "For Sale":
+        update_row = {"status": "For Sale"}
+        try:
+            if alto_ref:
+                sb.table("sales_pipeline").update(update_row).eq("alto_ref", alto_ref).execute()
+            else:
+                sb.table("sales_pipeline").update(update_row).eq("property_address", addr).execute()
+        except Exception as e:
+            return jsonify({"error": f"sales_pipeline reversal failed: {e}"}), 500
+        return jsonify({"success": True, "property": addr, "action": "reversed"}), 200
+
+    # --- Under Offer flow (existing behaviour) ---
+    date_agreed = data.get("date_agreed") or None
 
     # --- Upsert sales_pipeline ---
     pipeline_row = {

@@ -3,3 +3,4 @@ gunicorn
 requests
 supabase
 python-dotenv
+resend

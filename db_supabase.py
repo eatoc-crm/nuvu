@@ -73,7 +73,18 @@ def fetch_property_images():
     """Fetch image columns from properties table for card thumbnails."""
     return (
         supabase.table("properties")
-        .select("ref,address,image_url,photo_urls")
+        .select("id,ref,address,image_url,photo_urls")
+        .execute()
+        .data
+    )
+
+
+def fetch_chain_links():
+    """Fetch all chain link records from Supabase."""
+    return (
+        supabase.table("chain_links")
+        .select("*")
+        .limit(1000)
         .execute()
         .data
     )

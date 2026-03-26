@@ -15,7 +15,7 @@ import json
 import os
 import requests as http_requests
 from datetime import datetime
-from db_supabase import fetch_sales_progression, fetch_pipeline_data, fetch_sales_pipeline, fetch_property_images, supabase as sb
+from db_supabase import fetch_sales_progression, fetch_pipeline_data, fetch_sales_pipeline, fetch_property_images, fetch_chain_links, supabase as sb
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
@@ -1052,15 +1052,26 @@ def _build_live_dashboard_data():
     """
     from datetime import date as _date
 
-    # 1. Fetch all three tables
+    # 1. Fetch all four tables
     pipe_rows = fetch_sales_pipeline()
     prog_rows = fetch_sales_progression()  # all rows, no status filter
     img_rows = fetch_property_images()
+    chain_rows = fetch_chain_links()
 
     # 1b. Build image lookup — keyed by alto ref AND normalized address
+    #     Also build property-id lookup for chain_links resolution
     _img_by_ref = {}
     _img_by_addr = {}
+    _propid_by_ref = {}
+    _propid_by_addr = {}
     for row in img_rows:
+        prop_id = row.get("id")
+        ref = (row.get("ref") or "").strip()
+        addr = _normalize_addr(row.get("address") or "")
+        if ref and prop_id:
+            _propid_by_ref[ref] = prop_id
+        if addr and prop_id:
+            _propid_by_addr[addr] = prop_id
         # Resolve best URL: image_url first, then photo_urls[1] (skip index 0)
         url = (row.get("image_url") or "").strip() or None
         if not url:
@@ -1069,12 +1080,21 @@ def _build_live_dashboard_data():
                 url = (urls[1] or "").strip() or None
         if not url:
             continue
-        ref = (row.get("ref") or "").strip()
         if ref:
             _img_by_ref[ref] = url
-        addr = _normalize_addr(row.get("address") or "")
         if addr:
             _img_by_addr[addr] = url
+
+    # 1c. Build chain_links lookup by property_id
+    _chain_by_propid = {}
+    for cl in chain_rows:
+        pid = cl.get("property_id")
+        if pid:
+            _chain_by_propid.setdefault(pid, []).append(cl)
+    # Sort each list: above links first, then below
+    _pos_order = {"above": 0, "below": 1}
+    for pid in _chain_by_propid:
+        _chain_by_propid[pid].sort(key=lambda x: _pos_order.get(x.get("chain_position", ""), 2))
 
     def _resolve_image(pipe_row):
         """Find the best image URL for a pipeline property."""
@@ -1083,6 +1103,14 @@ def _build_live_dashboard_data():
             return _img_by_ref[ref]
         addr = _normalize_addr(pipe_row.get("property_address") or "")
         return _img_by_addr.get(addr, "")
+
+    def _resolve_property_id(pipe_row):
+        """Find the properties.id for a pipeline property (for chain_links lookup)."""
+        ref = (pipe_row.get("alto_ref") or "").strip()
+        if ref and ref in _propid_by_ref:
+            return _propid_by_ref[ref]
+        addr = _normalize_addr(pipe_row.get("property_address") or "")
+        return _propid_by_addr.get(addr)
 
     # 2. Build progression lookup by normalized address
     prog_lookup = {}
@@ -1175,6 +1203,7 @@ def _build_live_dashboard_data():
             "next_action": r.get("notes") or "\u2014",
             "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
             "image_url": _resolve_image(pipe),
+            "chain_links": _chain_by_propid.get(_resolve_property_id(pipe) or "", []),
             "activity": [],
             # Notes for modal display
             "notes": r.get("notes") or "",
@@ -1763,6 +1792,46 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .search-no-match{
   text-align:center;padding:32px 0;color:var(--txt-light);font-style:italic;display:none;
 }
+
+/* ═══ CHAIN DISPLAY ═══════════════════════════════════════ */
+.chain-toggle{
+  width:100%;background:#f8fafc;border:none;border-top:1px solid #e8ecf1;
+  padding:10px 22px;color:var(--txt-mid);font-size:.78rem;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  transition:all var(--t);
+}
+.chain-toggle:hover{background:#f0f4f8;color:var(--txt)}
+.chain-toggle svg{transition:transform var(--t);flex-shrink:0}
+.chain-toggle.expanded svg{transform:rotate(180deg)}
+.chain-toggle .chain-lbl{display:flex;align-items:center;gap:6px}
+.chain-panel{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.chain-panel.expanded{max-height:1200px}
+.chain-inner{padding:12px 22px 16px}
+.chain-diagram{display:flex;flex-direction:column;align-items:center;gap:0}
+.chain-link-box{
+  width:100%;background:var(--white);border:1px solid #e2e8f0;
+  border-radius:10px;padding:10px 14px;position:relative;
+}
+.chain-link-box.chain-anchor{
+  border:2px solid var(--navy);background:#f0f4ff;
+}
+.chain-link-addr{font-size:.82rem;font-weight:700;color:var(--txt)}
+.chain-link-detail{font-size:.72rem;color:var(--txt-light);margin-top:2px}
+.chain-link-status{
+  display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-top:4px;
+}
+.chain-link-status.chain-st-active{background:rgba(39,174,96,.1);color:var(--green)}
+.chain-link-status.chain-st-problem{background:rgba(226,85,85,.1);color:var(--red)}
+.chain-link-status.chain-st-complete{background:rgba(59,130,246,.1);color:var(--blue)}
+.chain-link-status.chain-st-default{background:#f1f5f9;color:var(--txt-mid)}
+.chain-connector{
+  width:2px;height:18px;background:var(--navy);margin:0 auto;
+}
+.chain-pos-label{
+  font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--txt-light);font-weight:600;margin-bottom:6px;text-align:center;
+}
 </style>
 </head>
 <body>
@@ -1800,6 +1869,61 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       </div>
       {% endfor %}
     </div>
+  </div>
+  {# ── Chain toggle ─────────────────────────────────── #}
+  {% set cl = p.chain_links|default([]) %}
+  <button class="chain-toggle" data-chain-id="{{ p.id }}" onclick="event.stopPropagation();toggleChain('{{ p.id }}')">
+    <span class="chain-lbl">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      Chain {% if cl|length > 0 %}({{ cl|length }} link{{ 's' if cl|length != 1 }}){% else %}(no links added){% endif %}
+    </span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="chain-panel" id="chainPanel-{{ p.id }}">
+    {% if cl|length > 0 %}
+    <div class="chain-inner">
+      <div class="chain-diagram">
+        {% set above = cl|selectattr('chain_position','equalto','above')|list %}
+        {% set below = cl|selectattr('chain_position','equalto','below')|list %}
+        {% if above|length > 0 %}
+        <div class="chain-pos-label">Above</div>
+        {% for link in above %}
+        <div class="chain-link-box">
+          <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
+          <div class="chain-link-detail">
+            {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
+            {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
+            {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
+          </div>
+          {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
+        </div>
+        {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
+        {% endfor %}
+        <div class="chain-connector"></div>
+        {% endif %}
+        <div class="chain-link-box chain-anchor">
+          <div class="chain-link-addr">{{ p.address }}</div>
+          <div class="chain-link-detail" style="color:var(--navy);font-weight:600">Subject Property</div>
+        </div>
+        {% if below|length > 0 %}
+        <div class="chain-connector"></div>
+        <div class="chain-pos-label">Below</div>
+        {% for link in below %}
+        <div class="chain-link-box">
+          <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
+          <div class="chain-link-detail">
+            {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
+            {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
+            {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
+          </div>
+          {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
+        </div>
+        {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endmacro %}
@@ -2385,6 +2509,16 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   }
 
   searchInput.addEventListener("input",doSearch);
+
+  /* ── CHAIN TOGGLE ─────────────────────────────────────── */
+  window.toggleChain=function(id){
+    var panel=document.getElementById("chainPanel-"+id);
+    var btn=document.querySelector('[data-chain-id="'+id+'"]');
+    if(panel&&btn){
+      panel.classList.toggle("expanded");
+      btn.classList.toggle("expanded");
+    }
+  };
 
 })();
 </script>

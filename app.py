@@ -2952,6 +2952,9 @@ def _completion_phrase(data):
 
 def _send_welcome_emails(data):
     """Fire tracks 1-5 of the Welcome Engine. Never raises."""
+    if not os.environ.get('WELCOME_ENGINE_ENABLED', 'false').lower() == 'true':
+        print("Welcome Engine: disabled — set WELCOME_ENGINE_ENABLED=true to activate")
+        return
     addr = data.get("property_address", "")
     comp = _completion_phrase(data)
 

@@ -716,7 +716,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 @crm_bp.route("/crm")
 def crm_dashboard():
     """Live CRM dashboard using NUVU design with real property data."""
-    from app import DASHBOARD_HTML  # shared template constant (dashboard extraction pending)
+    from routes.dashboard import DASHBOARD_HTML  # shared template constant
 
     props, error = _map_live_properties()
     if error:

@@ -1198,7 +1198,7 @@ def _build_live_dashboard_data():
     from datetime import date as _date
 
     # Import inside function to avoid circular import at module load.
-    from app import FALLBACK_GRADIENTS, STATUS_LABELS, STATUS_MAP
+    from routes.crm import FALLBACK_GRADIENTS, STATUS_LABELS, STATUS_MAP
     from routes.crm import _card_checks_from_record, _milestones_from_record, _progress_from_record
 
     # 1. Fetch all four tables

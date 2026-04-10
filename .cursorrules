@@ -1,9 +1,6 @@
----
-description: NUVU project context, architecture constraints, and code rules
-alwaysApply: true
----
-
 # NUVU — Cursor Rules
+
+Keep this file in sync with `.cursor/rules/nuvu.mdc` when you change agent rules.
 
 ## Read First
 

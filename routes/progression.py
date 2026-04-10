@@ -5,9 +5,13 @@ from flask import Blueprint, jsonify, request
 
 import shared  # loads shared config (e.g. resend.api_key) and exports `sb`
 import resend
-from shared import sb
+from email_engine import DEFAULT_SEND_FROM, send_html_email
+from shared import require_nuvu_api_key, sb
 
 progression_bp = Blueprint("progression", __name__)
+
+# Kill switch: when False, chain outreach is logged only (no Resend send).
+CHAIN_OUTREACH_ENABLED = False
 
 # ─────────────────────────────────────────────────────────────
 #  PATCH API — update milestone dates and notes on progression
@@ -239,4 +243,161 @@ def _send_welcome_emails(data):
             print(f"Welcome Engine: Track 5 sent to {ca_email}")
         except Exception as e:
             print(f"Welcome Engine: Track 5 FAILED for {ca_email}: {e}")
+
+
+# ─────────────────────────────────────────────────────────────
+#  CHAIN SOLICITOR OUTREACH
+# ─────────────────────────────────────────────────────────────
+
+
+@progression_bp.route("/api/chain/outreach", methods=["POST"])
+def api_chain_outreach():
+    """Request solicitor details from a chain link's estate agent (email)."""
+    auth_err = require_nuvu_api_key()
+    if auth_err:
+        return auth_err
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "JSON body required"}), 400
+
+    chain_link_id = (data.get("chain_link_id") or "").strip()
+    if not chain_link_id:
+        return jsonify({"error": "chain_link_id is required"}), 400
+
+    try:
+        cl_r = (
+            sb.table("chain_links")
+            .select(
+                "id,property_id,link_address,estate_agent_email,"
+                "buyer_solicitor,seller_solicitor,solicitor_details_requested"
+            )
+            .eq("id", chain_link_id)
+            .limit(1)
+            .execute()
+        )
+    except Exception as e:
+        return jsonify({"error": f"lookup failed: {e}"}), 500
+
+    if not cl_r.data:
+        return jsonify({"error": "Not found"}), 404
+
+    cl = cl_r.data[0]
+    if cl.get("solicitor_details_requested") is True:
+        return (
+            jsonify({"error": "Outreach already sent for this chain link"}),
+            400,
+        )
+
+    agent_email = (cl.get("estate_agent_email") or "").strip()
+    if not agent_email:
+        return (
+            jsonify(
+                {"error": "No estate agent email on file for this chain link"}
+            ),
+            400,
+        )
+
+    buyer_sol = (cl.get("buyer_solicitor") or "").strip()
+    seller_sol = (cl.get("seller_solicitor") or "").strip()
+    if buyer_sol and seller_sol:
+        return (
+            jsonify({"error": "Solicitor details already on file"}),
+            400,
+        )
+
+    prop_id = cl.get("property_id")
+    if not prop_id:
+        return jsonify({"error": "Parent property not found"}), 404
+
+    try:
+        pr_r = (
+            sb.table("sales_progression")
+            .select("id,property_address,staff_initials")
+            .eq("id", prop_id)
+            .limit(1)
+            .execute()
+        )
+    except Exception as e:
+        return jsonify({"error": f"progression lookup failed: {e}"}), 500
+
+    if not pr_r.data:
+        return jsonify({"error": "Parent property not found"}), 404
+
+    prog = pr_r.data[0]
+    property_address = (prog.get("property_address") or "").strip()
+    if not property_address:
+        return jsonify({"error": "Parent property not found"}), 404
+
+    sign_name = (prog.get("staff_initials") or "").strip()
+    if not sign_name:
+        try:
+            pipe_r = (
+                sb.table("sales_pipeline")
+                .select("negotiator")
+                .eq("property_address", property_address)
+                .limit(1)
+                .execute()
+            )
+            if pipe_r.data:
+                sign_name = (pipe_r.data[0].get("negotiator") or "").strip()
+        except Exception:
+            pass
+    sign_off = sign_name if sign_name else "The Sales Progression Team"
+
+    link_address = (cl.get("link_address") or "").strip() or "your linked property"
+    subject = f"Sales Progression — {link_address}"
+
+    html = (
+        "<p>Dear colleague,</p>"
+        f"<p>We are writing from <strong>David Britton Estates</strong>, the agent "
+        f"progressing the sale of <strong>{property_address}</strong>.</p>"
+        f"<p><strong>{link_address}</strong> forms part of the same chain, and we are "
+        "coordinating progression across all parties.</p>"
+        "<p>To keep matters moving smoothly, could you please share the buyer and seller "
+        "solicitor details for your transaction at your earliest convenience? "
+        "Having everyone on record helps us align searches, enquiries, and key dates.</p>"
+        "<p>Thank you for your help.</p>"
+        f"<p>Kind regards,<br>{sign_off}<br>David Britton Estates</p>"
+    )
+
+    live = False
+    if CHAIN_OUTREACH_ENABLED:
+        try:
+            send_html_email(
+                agent_email,
+                subject,
+                html,
+                from_address=DEFAULT_SEND_FROM,
+            )
+            live = True
+            print(
+                f"Chain outreach: sent to {agent_email} "
+                f"(chain_link_id={chain_link_id})"
+            )
+        except Exception as e:
+            return jsonify({"error": f"email send failed: {e}"}), 500
+    else:
+        print(
+            "Chain outreach (dry run — set CHAIN_OUTREACH_ENABLED=True to send): "
+            f"to={agent_email!r} subject={subject!r} chain_link_id={chain_link_id}"
+        )
+
+    try:
+        sb.table("chain_links").update({"solicitor_details_requested": True}).eq(
+            "id", chain_link_id
+        ).execute()
+    except Exception as e:
+        return jsonify({"error": f"update failed: {e}"}), 500
+
+    return (
+        jsonify(
+            {
+                "status": "outreach_sent",
+                "chain_link_id": str(chain_link_id),
+                "live": live,
+            }
+        ),
+        200,
+    )
 

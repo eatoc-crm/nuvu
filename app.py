@@ -44,9 +44,10 @@ from routes.property_api import property_api_bp
 app.register_blueprint(property_api_bp)
 
 if __name__ == "__main__":
+    _port = int(os.environ.get("PORT", "5000"))
     print()
     print("  NUVU Sales Progression Dashboard")
     print("  " + "\u2500" * 34)
-    print("  http://127.0.0.1:5000")
+    print(f"  http://127.0.0.1:{_port}")
     print()
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=_port)

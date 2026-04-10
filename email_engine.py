@@ -417,3 +417,36 @@ def suggest_emails(prop, tone="professional"):
     # Sort by priority, cap at 5
     suggestions.sort(key=lambda s: s["priority"])
     return suggestions[:5]
+
+
+# ─────────────────────────────────────────────────────────────
+#  OUTBOUND SEND (Resend)
+# ─────────────────────────────────────────────────────────────
+
+DEFAULT_SEND_FROM = (
+    "David Britton Estates, powered by NUVU <salesprog@brittonestates.co.uk>"
+)
+
+
+def send_html_email(to, subject, html_body, from_address=None):
+    """Send a single HTML email via Resend.
+
+    ``to`` may be one address (str) or a list of strings.
+    Requires ``RESEND_API_KEY`` and ``resend.api_key`` (see ``shared``).
+    """
+    import os
+
+    import resend
+
+    if not getattr(resend, "api_key", None):
+        resend.api_key = os.environ.get("RESEND_API_KEY", "")
+    addr = from_address or DEFAULT_SEND_FROM
+    recipients = to if isinstance(to, list) else [to]
+    return resend.Emails.send(
+        {
+            "from": addr,
+            "to": recipients,
+            "subject": subject,
+            "html": html_body,
+        }
+    )

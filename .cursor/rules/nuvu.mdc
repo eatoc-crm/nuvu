@@ -1,0 +1,77 @@
+---
+description: NUVU project context, architecture constraints, and code rules
+alwaysApply: true
+---
+
+# NUVU — Cursor Rules
+
+## Read First
+
+Before making any changes, read `ARCHITECTURE.md` in the project root. It contains the full philosophy, progression model, file structure, and hard rules.
+
+## Project Context
+
+- NUVU is a Flask/Python sales progression platform
+- Backend: Supabase (service role key, RLS currently disabled)
+- Hosting: Railway (autodeploy on push to main)
+- Email: Resend (sending domain salesprog@brittonestates.co.uk)
+- David (the product owner) does not write code. You execute all code changes.
+
+## Code Rules
+
+### Architecture
+
+- `app.py` is the Flask entry point. It registers Blueprints only. Do not add routes or logic here.
+- All routes live in `routes/` as Flask Blueprints: `auth.py`, `intake.py`, `progression.py`, `crm.py`, `dashboard.py`, `property_api.py`
+- Shared config (Supabase client, Resend key, constants) lives in `shared.py`
+- Never import from `app.py` in route modules. Import from `shared.py` or sibling route modules.
+
+### CRM-Agnostic
+
+- NUVU never talks directly to Alto, Street, Reapit, or any CRM
+- All external data enters via `/api/intake` in a standardised format
+- EATOC-specific logic belongs in the EATOC codebase, not here
+
+### Data Rules
+
+- Only properties that are Under Offer or beyond exist in NUVU. Never process or store data for properties outside this scope.
+- Status is human-set, never automatic. Do not write code that auto-updates property status.
+- 100% data accuracy required. No rounding, no approximation, no "close enough."
+
+### Outbound Communication
+
+- All outbound-capable features MUST have a kill switch (environment variable)
+- Nothing sends emails, makes API calls to external parties, or contacts anyone without an explicit enable flag
+- The Welcome Engine kill switch is `WELCOME_ENGINE_ENABLED` in `routes/progression.py`
+- When building new outbound features, add a similar kill switch pattern
+
+### Tone (for any AI-generated copy)
+
+- Professional, dignified, supportive
+- Never aggressive, pushy, or pressuring
+- Frame everything as guidance and support, not demands
+- Reference the 21-week UK average as motivation, not a scare tactic
+- Make people feel excited about their move
+
+### When Unsure
+
+- Stop and ask. Do not guess at business logic.
+- If a brief is ambiguous, request clarification rather than making assumptions.
+- Flag compliance, data, or operational risks before building.
+
+## File Locations
+
+- Routes: `routes/`
+- Shared config: `shared.py`
+- Email engine: `email_engine.py`
+- Email parser: `email_parser.py`
+- CRM connectors: `connectors/`
+- Templates: `templates/`
+- Database helpers: `database.py`, `db_supabase.py`
+
+## Environment Variables (Railway)
+
+- `WELCOME_ENGINE_ENABLED` — kill switch for welcome emails (must be `true` to send)
+- `NUVU_API_KEY` — authenticates inbound API calls from CRMs
+- `SUPABASE_URL` / `SUPABASE_KEY` — database connection
+- `RESEND_API_KEY` — email sending

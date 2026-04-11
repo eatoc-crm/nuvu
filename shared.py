@@ -14,7 +14,9 @@ def require_nuvu_api_key():
     from flask import jsonify, request
 
     expected_key = os.environ.get("NUVU_API_KEY", "dbe-nuvu-2026")
-    provided_key = request.headers.get("X-NUVU-API-KEY", "")
+    provided_key = request.headers.get("X-NUVU-API-KEY") or request.headers.get(
+        "X-API-Key", ""
+    )
     if not provided_key or provided_key != expected_key:
         return jsonify({"error": "Unauthorized"}), 401
     return None

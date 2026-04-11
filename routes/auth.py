@@ -179,6 +179,7 @@ AUTH_EXEMPT_PREFIXES = (
     "/crm",
     "/api/crm/",
     "/api/intake",
+    "/api/update",
 )
 
 

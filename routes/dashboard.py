@@ -3,12 +3,7 @@ from datetime import datetime
 
 from flask import Blueprint, render_template_string
 
-from db_supabase import (
-    fetch_chain_links,
-    fetch_property_images,
-    fetch_sales_pipeline,
-    fetch_sales_progression,
-)
+from db_supabase import fetch_chain_links, fetch_property_images
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -167,6 +162,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .chip-stalled{background:var(--red-chip)}
 .chip-at-risk{background:var(--amber-chip)}
 .chip-on-track{background:var(--green-chip)}
+.chip-exchanged{background:var(--blue)}
 
 /* card body */
 .card-body{padding:18px 22px 20px}
@@ -183,6 +179,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ring-fg.clr-stalled{stroke:var(--red)}
 .ring-fg.clr-at-risk{stroke:var(--amber)}
 .ring-fg.clr-on-track{stroke:var(--lime)}
+.ring-fg.clr-exchanged{stroke:var(--blue)}
 .ring-pct{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:.8rem;font-weight:800;color:var(--txt);
@@ -263,6 +260,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .m-prog-fill.clr-stalled{background:var(--red)}
 .m-prog-fill.clr-at-risk{background:var(--amber)}
 .m-prog-fill.clr-on-track{background:var(--green)}
+.m-prog-fill.clr-exchanged{background:var(--blue)}
 .m-prog-labels{display:flex;justify-content:space-between;font-size:.65rem;color:var(--txt-light);margin-top:4px}
 
 /* body */
@@ -851,8 +849,18 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   }
 
   function price(n){ return "\u00a3"+n.toLocaleString(); }
-  function fillCls(s){ return s==="stalled"?"clr-stalled":s==="at-risk"?"clr-at-risk":"clr-on-track"; }
-  function alertCls(s){ return s==="stalled"?"m-alert-red":s==="at-risk"?"m-alert-amber":"m-alert-green"; }
+  function fillCls(s){
+    if(s==="stalled")return "clr-stalled";
+    if(s==="at-risk")return "clr-at-risk";
+    if(s==="exchanged")return "clr-exchanged";
+    return "clr-on-track";
+  }
+  function alertCls(s){
+    if(s==="stalled")return "m-alert-red";
+    if(s==="at-risk")return "m-alert-amber";
+    if(s==="exchanged")return "m-alert-green";
+    return "m-alert-green";
+  }
 
   /* ── open modal ───────────────────────────────────── */
   function openModal(id){
@@ -1069,7 +1077,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     "stat-on-track":"section-this-month",
     "stat-at-risk":"section-needs-action",
     "stat-action":"section-needs-action",
-    "stat-exchanged":"section-this-month",
+    "stat-exchanged":"section-exchanged",
     "stat-fee-pipeline":"section-active-pipeline",
     "stat-pipeline":"section-active-pipeline"
   };
@@ -1189,39 +1197,67 @@ def _match_pipeline(prog_addr, pipe_lookup, pipe_norm_keys):
     return None
 
 
-def _build_live_dashboard_data():
-    """Query Supabase and build PROPERTIES, SECTIONS, PIPELINE, STATS for the dashboard.
+def _first_iso_date(val):
+    if not val:
+        return None
+    s = str(val).strip()
+    if len(s) < 10:
+        return None
+    return s[:10]
 
-    Starts from sales_pipeline (source of truth) and joins sales_progression
-    for milestone/status detail. Only properties in sales_pipeline appear.
+
+def _completion_iso_for_bucket(p):
+    """Prefer completion target, then exchange target, for time-based sections."""
+    return _first_iso_date(p.get("completion_target")) or _first_iso_date(
+        p.get("exchange_target")
+    )
+
+
+def _property_on_track(p, today):
+    """In-flight sale counts as On Track for hero stats (see brief / product owner).
+
+    Rule: memo sent, searches received, and survey booked — OR a completion
+    target more than 30 days away when milestone data is incomplete.
+    """
+    raw = (p.get("_raw_status") or "").lower()
+    if raw not in ("active", "development"):
+        return False
+    if p.get("memo_sent") and p.get("searches_received") and p.get("survey_booked"):
+        return True
+    est = p.get("_est_comp_date")
+    if not est:
+        return False
+    try:
+        d = datetime.strptime(est, "%Y-%m-%d").date()
+        return (d - today).days > 30
+    except Exception:
+        return False
+
+
+def _build_live_dashboard_data():
+    """Build dashboard from live EATOC /api/nuvu/properties, enriched from Supabase.
+
+    Property list and status come from EATOC (same source as /crm). Optional
+    image and chain data are merged from Supabase when addresses match.
     """
     from datetime import date as _date
 
-    # Import inside function to avoid circular import at module load.
-    from routes.crm import FALLBACK_GRADIENTS, STATUS_LABELS, STATUS_MAP
-    from routes.crm import _card_checks_from_record, _milestones_from_record, _progress_from_record
+    from routes.crm import _map_live_properties
 
-    # 1. Fetch all four tables
-    pipe_rows = fetch_sales_pipeline()
-    prog_rows = fetch_sales_progression()  # all rows, no status filter
+    properties, err = _map_live_properties()
+    if err:
+        raise RuntimeError(err) from None
+
     img_rows = fetch_property_images()
     chain_rows = fetch_chain_links()
 
-    # 1b. Build image lookup — keyed by alto ref AND normalized address
-    #     Also build property-id lookup for chain_links resolution
-    _img_by_ref = {}
     _img_by_addr = {}
-    _propid_by_ref = {}
     _propid_by_addr = {}
     for row in img_rows:
         prop_id = row.get("id")
-        ref = (row.get("ref") or "").strip()
         addr = _normalize_addr(row.get("address") or "")
-        if ref and prop_id:
-            _propid_by_ref[ref] = prop_id
         if addr and prop_id:
             _propid_by_addr[addr] = prop_id
-        # Resolve best URL: image_url first, then photo_urls[1] (skip index 0)
         url = (row.get("image_url") or "").strip() or None
         if not url:
             urls = row.get("photo_urls") or []
@@ -1229,159 +1265,35 @@ def _build_live_dashboard_data():
                 url = (urls[1] or "").strip() or None
         if not url:
             continue
-        if ref:
-            _img_by_ref[ref] = url
         if addr:
             _img_by_addr[addr] = url
 
-    # 1c. Build chain_links lookup by property_id
     _chain_by_propid = {}
     for cl in chain_rows:
         pid = cl.get("property_id")
         if pid:
             _chain_by_propid.setdefault(pid, []).append(cl)
-    # Sort each list: above links first, then below
     _pos_order = {"above": 0, "below": 1}
     for pid in _chain_by_propid:
-        _chain_by_propid[pid].sort(key=lambda x: _pos_order.get(x.get("chain_position", ""), 2))
+        _chain_by_propid[pid].sort(
+            key=lambda x: _pos_order.get(x.get("chain_position", ""), 2)
+        )
 
-    def _resolve_image(pipe_row):
-        """Find the best image URL for a pipeline property."""
-        ref = (pipe_row.get("alto_ref") or "").strip()
-        if ref and ref in _img_by_ref:
-            return _img_by_ref[ref]
-        addr = _normalize_addr(pipe_row.get("property_address") or "")
-        return _img_by_addr.get(addr, "")
-
-    def _resolve_property_id(pipe_row):
-        """Find the properties.id for a pipeline property (for chain_links lookup)."""
-        ref = (pipe_row.get("alto_ref") or "").strip()
-        if ref and ref in _propid_by_ref:
-            return _propid_by_ref[ref]
-        addr = _normalize_addr(pipe_row.get("property_address") or "")
-        return _propid_by_addr.get(addr)
-
-    # 2. Build progression lookup by normalized address
-    prog_lookup = {}
-    for pr in prog_rows:
-        key = _normalize_addr(pr.get("property_address", ""))
-        prog_lookup[key] = pr
-    prog_norm_keys = list(prog_lookup.keys())
+    for p in properties:
+        addr_norm = _normalize_addr(p.get("address") or "")
+        pid = _propid_by_addr.get(addr_norm)
+        p["chain_links"] = _chain_by_propid.get(pid or "", [])
+        p.setdefault("activity", [])
+        fee = p.get("_fee")
+        try:
+            p["_pipe_fee"] = float(fee) if fee is not None else 0.0
+        except (TypeError, ValueError):
+            p["_pipe_fee"] = 0.0
+        p["_est_comp_date"] = _completion_iso_for_bucket(p)
+        if not (p.get("image_url") or "").strip():
+            p["image_url"] = _img_by_addr.get(addr_norm, "")
 
     today = _date.today()
-
-    # Map pipeline status strings to progression-style statuses
-    PIPE_STATUS_MAP = {
-        "Under Offer (SSTC)": "active",
-        "Under Offer": "active",
-        "Exchanged": "exchanged",
-    }
-
-    # 3. Build property list — iterate over pipeline, join progression
-    properties = []
-    for i, pipe in enumerate(pipe_rows):
-        addr = pipe.get("property_address", "")
-
-        # Find matching progression row
-        prog = _match_pipeline(addr, prog_lookup, prog_norm_keys)
-
-        # Status: from pipeline only
-        raw_status = PIPE_STATUS_MAP.get(pipe.get("status", ""), "active")
-
-        # Price from pipeline.current_price
-        price = float(pipe.get("current_price") or 0)
-
-        # Duration = today - pipeline.date_agreed
-        duration = 0
-        date_agreed_str = pipe.get("date_agreed")
-        if date_agreed_str:
-            try:
-                agreed = datetime.strptime(str(date_agreed_str), "%Y-%m-%d").date()
-                duration = (today - agreed).days
-            except Exception:
-                pass
-
-        # est_completion from pipeline
-        est_comp_str = pipe.get("est_completion")
-        est_comp_date = None
-        if est_comp_str:
-            try:
-                est_comp_date = datetime.strptime(str(est_comp_str), "%Y-%m-%d").date()
-            except Exception:
-                pass
-
-        status = STATUS_MAP.get(raw_status, "on-track")
-        progress = _progress_from_record(prog) if prog else 10
-        prop_id = str(prog.get("id", f"prop-{i}")) if prog else f"pipe-{i}"
-
-        # Use progression fields where available, fall back to pipeline
-        r = prog or {}
-
-        properties.append(
-            {
-                "id": prop_id,
-                "address": addr or "Unknown",
-                "location": (r.get("branch") or "").title() or "Eden Valley",
-                "price": price,
-                "status": status,
-                "status_label": STATUS_LABELS.get(status, "ON TRACK"),
-                "progress": progress,
-                "duration_days": duration,
-                "target_days": 60,
-                "days_since_update": 0,
-                "card_checks": _card_checks_from_record(r),
-                "milestones": _milestones_from_record(r),
-                "buyer": r.get("buyer_name") or "\u2014",
-                "buyer_phone": r.get("buyer_phone") or "\u2014",
-                "buyer_solicitor": r.get("buyer_solicitor") or pipe.get("buyers_solicitor") or "\u2014",
-                "buyer_sol_phone": "\u2014",
-                "seller_solicitor": r.get("vendor_solicitor") or pipe.get("vendors_solicitor") or "\u2014",
-                "seller_sol_phone": "\u2014",
-                "offer_date": r.get("offer_accepted"),
-                "memo_sent": r.get("memo_sent"),
-                "searches_ordered": r.get("searches_ordered"),
-                "searches_received": r.get("searches_received"),
-                "enquiries_raised": r.get("enquiries_raised"),
-                "enquiries_answered": r.get("enquiries_answered"),
-                "mortgage_offered": r.get("mortgage_offered"),
-                "survey_booked": r.get("survey_booked"),
-                "survey_complete": r.get("survey_complete"),
-                "exchange_target": r.get("exchange_date"),
-                "completion_target": r.get("completion_date"),
-                "chain": "\u2014",
-                "alert": r.get("notes") if raw_status == "problem" else None,
-                "next_action": r.get("notes") or "\u2014",
-                "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
-                "image_url": _resolve_image(pipe),
-                "chain_links": _chain_by_propid.get(_resolve_property_id(pipe) or "", []),
-                "activity": [],
-                # Notes for modal display
-                "notes": r.get("notes") or "",
-                "nuvu_notes": r.get("nuvu_notes") or "",
-                "buyer_solicitor_notes": r.get("buyer_solicitor_notes") or "",
-                "seller_solicitor_notes": r.get("seller_solicitor_notes") or "",
-                # Internal fields
-                "_progression_id": r.get("id"),
-                "_raw_status": raw_status,
-                "_fee": r.get("fee"),
-                "_pipe_fee": float(pipe.get("fee") or 0),
-                "_staff_initials": r.get("staff_initials") or pipe.get("negotiator") or "\u2014",
-                "_est_comp_date": est_comp_date.isoformat() if est_comp_date else None,
-                "_date_agreed": str(date_agreed_str) if date_agreed_str else None,
-                "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
-                "_surveyor": r.get("surveyor") or "\u2014",
-                "_buyer_email": r.get("buyer_email") or "\u2014",
-                "_vendor_name": r.get("vendor_name") or "\u2014",
-                "_vendor_phone": r.get("vendor_phone") or "\u2014",
-                "_vendor_email": r.get("vendor_email") or "\u2014",
-                "_sewage_type": r.get("sewage_type") or "\u2014",
-                "_invoice_status": r.get("invoice_status") or "\u2014",
-                "_nuvu_notes": r.get("nuvu_notes") or "\u2014",
-                "_property_type": r.get("property_type") or "\u2014",
-                "_beds": r.get("beds"),
-                "_baths": r.get("baths"),
-            }
-        )
 
     # 4. Classify into sections
     needs_action = []
@@ -1389,25 +1301,27 @@ def _build_live_dashboard_data():
     sec_two_months = []
     sec_this_quarter = []
     sec_active_pipeline = []
+    sec_exchanged = []
     exchanged_count = 0
 
     for p in properties:
-        raw = p["_raw_status"]
+        raw = (p.get("_raw_status") or "").lower()
 
-        # Exchanged: count only, not shown in sections
         if raw == "exchanged":
             exchanged_count += 1
+            sec_exchanged.append(p)
             continue
 
         est = p.get("_est_comp_date")
         est_date = datetime.strptime(est, "%Y-%m-%d").date() if est else None
         days_to_comp = (est_date - today).days if est_date else None
 
-        # Needs Action check
         is_needs_action = False
         if raw in ("problem", "incomplete_chain"):
             is_needs_action = True
-        elif raw == "active" and p.get("offer_date") and not p.get("memo_sent"):
+        elif raw in ("active", "development") and p.get("offer_date") and not p.get(
+            "memo_sent"
+        ):
             if p.get("_date_agreed"):
                 try:
                     agreed = datetime.strptime(p["_date_agreed"], "%Y-%m-%d").date()
@@ -1432,7 +1346,13 @@ def _build_live_dashboard_data():
         visible = items[:3]
         hidden = items[3:]
         avg = int(sum(p["progress"] for p in items) / len(items)) if items else 0
-        color = "#e25555" if border == "stalled-banner" else "#e88a3a" if border == "amber-banner" else "#27ae60"
+        color = (
+            "#e25555"
+            if border == "stalled-banner"
+            else "#e88a3a"
+            if border == "amber-banner"
+            else "#27ae60"
+        )
         return {
             "id": sid,
             "icon": icon,
@@ -1493,6 +1413,17 @@ def _build_live_dashboard_data():
                 sec_this_quarter,
             )
         )
+    if sec_exchanged:
+        sections.append(
+            _make_section(
+                "exchanged",
+                "\u2705",
+                "Exchanged",
+                f"{len(sec_exchanged)} exchanged",
+                "green-banner",
+                sec_exchanged,
+            )
+        )
     if sec_active_pipeline:
         sections.append(
             _make_section(
@@ -1505,19 +1436,21 @@ def _build_live_dashboard_data():
             )
         )
 
-    # 6. Stats
-    active_props = [p for p in properties if p["_raw_status"] == "active"]
-    active_count = len(active_props)
-    on_track_count = sum(
-        1
-        for p in active_props
-        if p.get("_est_comp_date")
-        and (datetime.strptime(p["_est_comp_date"], "%Y-%m-%d").date() - today).days > 30
+    # 6. Stats — "Active" = all in-flight (active/development); "On Track" = subset meeting criteria
+    in_flight = [
+        p
+        for p in properties
+        if (p.get("_raw_status") or "").lower() in ("active", "development")
+    ]
+    active_count = len(in_flight)
+    on_track_count = sum(1 for p in in_flight if _property_on_track(p, today))
+    at_risk_count = sum(
+        1 for p in properties if (p.get("_raw_status") or "").lower() == "problem"
     )
-    at_risk_count = sum(1 for p in properties if p["_raw_status"] == "problem")
     action_count = len(needs_action)
-    # All non-completed, non-exchanged properties for pipeline totals
-    pipeline_props = [p for p in properties if p["_raw_status"] not in ("exchanged",)]
+    pipeline_props = [
+        p for p in properties if (p.get("_raw_status") or "").lower() != "exchanged"
+    ]
     property_pipeline = sum(p["price"] for p in pipeline_props if p["price"])
     fee_pipeline = sum(p["_pipe_fee"] for p in pipeline_props if p["_pipe_fee"])
 

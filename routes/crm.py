@@ -12,8 +12,15 @@ crm_bp = Blueprint("crm", __name__)
 #  EATOC CRM LIVE PROPERTY CARDS
 # ─────────────────────────────────────────────────────────────
 
-EATOC_API_URL = "https://etoc-crm-production-688d.up.railway.app/api/nuvu/properties"
+EATOC_API_URL = "https://app.eatoc.co.uk/api/nuvu/properties"
 NUVU_API_KEY = os.environ.get("NUVU_API_KEY", "dbe-nuvu-2026")
+
+
+def _iso_date_prefix(val):
+    if not val:
+        return None
+    s = str(val).strip()
+    return s[:10] if len(s) >= 10 else None
 
 
 def fetch_eatoc_properties():
@@ -87,12 +94,17 @@ def build_ai_panel(prop):
 
 STATUS_MAP = {
     "active": "on-track",
-    "exchanged": "on-track",
+    "exchanged": "exchanged",
     "development": "on-track",
     "problem": "at-risk",
     "incomplete_chain": "stalled",
 }
-STATUS_LABELS = {"on-track": "ON TRACK", "at-risk": "AT RISK", "stalled": "STALLED"}
+STATUS_LABELS = {
+    "on-track": "ON TRACK",
+    "exchanged": "EXCHANGED",
+    "at-risk": "AT RISK",
+    "stalled": "STALLED",
+}
 
 FALLBACK_GRADIENTS = [
     "linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)",
@@ -192,7 +204,10 @@ def _map_live_properties():
         return [], error
     mapped = []
     for i, r in enumerate(raw):
-        status = STATUS_MAP.get(r.get("status", "active"), "on-track")
+        raw_status = (r.get("status") or "active").lower()
+        if raw_status not in STATUS_MAP:
+            raw_status = "active"
+        status = STATUS_MAP.get(raw_status, "on-track")
         progress = _progress_from_record(r)
         mapped.append(
             {
@@ -231,7 +246,7 @@ def _map_live_properties():
                 "exchange_target": r.get("exchange_date"),
                 "completion_target": r.get("completion_date"),
                 "chain": "\u2014",
-                "alert": r.get("notes") if r.get("status") == "problem" else None,
+                "alert": r.get("notes") if raw_status == "problem" else None,
                 "next_action": r.get("notes") or "\u2014",
                 "notes": r.get("notes") or "",
                 "nuvu_notes": r.get("nuvu_notes") or "",
@@ -241,7 +256,7 @@ def _map_live_properties():
                 "image_url": r.get("image_url") or "",
                 # extra fields for detail page
                 "_progression_id": r.get("id"),
-                "_raw_status": r.get("status"),
+                "_raw_status": raw_status,
                 "_sewage_type": r.get("sewage_type") or "\u2014",
                 "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
                 "_surveyor": r.get("surveyor") or "\u2014",
@@ -256,6 +271,8 @@ def _map_live_properties():
                 "_beds": r.get("beds"),
                 "_baths": r.get("baths"),
                 "_property_type": r.get("property_type") or "\u2014",
+                "_date_agreed": _iso_date_prefix(r.get("offer_accepted"))
+                or _iso_date_prefix(r.get("created_at")),
             }
         )
     return mapped, None

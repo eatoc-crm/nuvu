@@ -197,11 +197,38 @@ def _milestones_from_record(r):
     ]
 
 
+def _merge_supabase_progression_overlay(raw_rows):
+    """NUVU PATCH writes to Supabase; EATOC list may lag. Overlay authoritative columns."""
+    if not raw_rows:
+        return
+    try:
+        from db_supabase import (
+            SALES_PROGRESSION_OVERLAY_COLS,
+            fetch_sales_progression_overlay_by_ids,
+        )
+
+        ids = [r.get("id") for r in raw_rows]
+        by_id = fetch_sales_progression_overlay_by_ids(ids)
+        for r in raw_rows:
+            rid = r.get("id")
+            if rid is None:
+                continue
+            row = by_id.get(str(rid).strip())
+            if not row:
+                continue
+            for col in SALES_PROGRESSION_OVERLAY_COLS:
+                if col in row:
+                    r[col] = row[col]
+    except Exception:
+        pass
+
+
 def _map_live_properties():
     """Fetch from EATOC API and map to the dict shape DASHBOARD_HTML expects."""
     raw, error = fetch_eatoc_properties()
     if error:
         return [], error
+    _merge_supabase_progression_overlay(raw)
     mapped = []
     for i, r in enumerate(raw):
         raw_status = (r.get("status") or "active").lower()
@@ -666,13 +693,22 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
   function patchField(field, value, onSuccess) {
     var body = {}; body[field] = value;
-    fetch("/api/progression/" + progId, {
+    fetch("/api/progression/" + encodeURIComponent(progId), {
       method: "PATCH",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(body)
-    }).then(function(r){ return r.json(); }).then(function(j){
-      if (j.ok) { if (onSuccess) onSuccess(); }
-      else { alert("Save failed: " + (j.error || "Unknown error")); }
+    }).then(function(r){
+      return r.text().then(function(t){
+        var j = null; try { j = JSON.parse(t); } catch (e) {}
+        return { r: r, j: j, t: t };
+      });
+    }).then(function(x){
+      if (!x.r.ok) {
+        alert("Save failed: HTTP " + x.r.status + (x.j && x.j.error ? " — " + x.j.error : ""));
+        return;
+      }
+      if (x.j && x.j.ok) { if (onSuccess) onSuccess(); }
+      else { alert("Save failed: " + ((x.j && x.j.error) || x.t || "Unknown error")); }
     }).catch(function(e){ alert("Network error: " + e.message); });
   }
 
@@ -783,7 +819,7 @@ def crm_property_detail(prop_id):
 
     prop = None
     for p in props:
-        if p["id"] == prop_id:
+        if str(p["id"]) == str(prop_id):
             prop = p
             break
     if not prop:

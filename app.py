@@ -43,6 +43,10 @@ from routes.property_api import property_api_bp
 
 app.register_blueprint(property_api_bp)
 
+from routes.portal import portal_bp
+
+app.register_blueprint(portal_bp)
+
 if __name__ == "__main__":
     _port = int(os.environ.get("PORT", "5000"))
     print()

@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, request
 import shared  # loads shared config (e.g. resend.api_key) and exports `sb`
 import resend
 from email_engine import DEFAULT_SEND_FROM, send_html_email
+from db_supabase import supabase_for_backend
 from shared import require_nuvu_api_key, sb
 
 progression_bp = Blueprint("progression", __name__)
@@ -36,6 +37,10 @@ ALLOWED_PATCH_FIELDS = {
 @progression_bp.route("/api/progression/<prog_id>", methods=["PATCH"])
 def patch_progression(prog_id):
     """Update one or more fields on a sales_progression row."""
+    prog_id = (prog_id or "").strip()
+    if not prog_id:
+        return jsonify({"error": "Invalid progression id"}), 400
+
     data = request.get_json(force=True)
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -49,10 +54,31 @@ def patch_progression(prog_id):
         return jsonify({"error": "No valid fields to update"}), 400
 
     try:
-        sb.table("sales_progression").update(updates).eq("id", prog_id).execute()
-        return jsonify({"ok": True, "updated": list(updates.keys())})
+        client = supabase_for_backend()
+        res = (
+            client.table("sales_progression")
+            .update(updates)
+            .eq("id", prog_id)
+            .select("id")
+            .execute()
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+    if not (res.data or []):
+        return (
+            jsonify(
+                {
+                    "error": (
+                        "No sales_progression row was updated (check id). "
+                        "If RLS blocks updates, set SUPABASE_SERVICE_ROLE_KEY for this server."
+                    )
+                }
+            ),
+            409,
+        )
+
+    return jsonify({"ok": True, "updated": list(updates.keys())})
 
 
 # ─────────────────────────────────────────────────────────────

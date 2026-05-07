@@ -13,9 +13,73 @@ from supabase import create_client
 
 load_dotenv()
 
-_url = os.environ.get("SUPABASE_URL", "")
-_key = os.environ.get("SUPABASE_ANON_KEY", "")
+_url = os.environ.get("SUPABASE_URL", "").strip()
+_key = os.environ.get("SUPABASE_ANON_KEY", "").strip()
+_service_role_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+
 supabase = create_client(_url, _key)
+
+# Columns PATCHable via /api/progression — keep aligned with routes/progression.py ALLOWED_PATCH_FIELDS
+SALES_PROGRESSION_OVERLAY_COLS = (
+    "offer_accepted",
+    "memo_sent",
+    "searches_ordered",
+    "mortgage_offered",
+    "enquiries_raised",
+    "enquiries_answered",
+    "exchange_date",
+    "completion_date",
+    "notes",
+    "nuvu_notes",
+    "buyer_solicitor_notes",
+    "seller_solicitor_notes",
+)
+
+
+def supabase_for_backend():
+    """Server-only client: prefer service role so RLS cannot silently block PATCH/SELECT.
+
+    Never expose SUPABASE_SERVICE_ROLE_KEY to the browser — Flask env only.
+    """
+    if _url and _service_role_key:
+        return create_client(_url, _service_role_key)
+    return supabase
+
+
+def fetch_sales_progression_overlay_by_ids(ids):
+    """Return id -> row dict for merging milestone/note fields over EATOC API payloads."""
+    seen = set()
+    unique = []
+    for i in ids or []:
+        if i is None:
+            continue
+        s = str(i).strip()
+        if not s or s in seen:
+            continue
+        seen.add(s)
+        unique.append(s)
+    if not unique:
+        return {}
+    client = supabase_for_backend()
+    select_cols = "id," + ",".join(SALES_PROGRESSION_OVERLAY_COLS)
+    out = {}
+    chunk_size = 80
+    for off in range(0, len(unique), chunk_size):
+        part = unique[off : off + chunk_size]
+        try:
+            res = (
+                client.table("sales_progression")
+                .select(select_cols)
+                .in_("id", part)
+                .execute()
+            )
+        except Exception:
+            continue
+        for row in res.data or []:
+            rid = row.get("id")
+            if rid is not None:
+                out[str(rid)] = row
+    return out
 
 
 def fetch_sales_progression(status_filter=None):
@@ -85,6 +149,18 @@ def fetch_chain_links():
         supabase.table("chain_links")
         .select("*")
         .limit(1000)
+        .execute()
+        .data
+    )
+
+
+def fetch_sales_progression_recent(limit=80):
+    """Recent sales_progression rows (Supabase) for portal and similar views."""
+    return (
+        supabase.table("sales_progression")
+        .select("*")
+        .order("created_at", desc=True)
+        .limit(limit)
         .execute()
         .data
     )

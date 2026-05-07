@@ -838,14 +838,35 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   }
   function patchProgression(progId,field,value,onSuccess){
     var body={};body[field]=value;
-    fetch("/api/progression/"+progId,{
+    fetch("/api/progression/"+encodeURIComponent(progId),{
       method:"PATCH",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(body)
-    }).then(function(r){return r.json();}).then(function(j){
-      if(j.ok){if(onSuccess)onSuccess();}
-      else{alert("Save failed: "+(j.error||"Unknown error"));}
+    }).then(function(r){
+      return r.text().then(function(t){
+        var j=null;try{j=JSON.parse(t);}catch(e){}
+        return {r:r,j:j,t:t};
+      });
+    }).then(function(x){
+      if(!x.r.ok){
+        alert("Save failed: HTTP "+x.r.status+(x.j&&x.j.error?" — "+x.j.error:""));
+        return;
+      }
+      if(x.j&&x.j.ok){if(onSuccess)onSuccess();}
+      else{alert("Save failed: "+((x.j&&x.j.error)||x.t||"Unknown error"));}
     }).catch(function(e){alert("Network error: "+e.message);});
+  }
+
+  function mirrorMilestoneFieldOnProp(field,val){
+    var v=val?val:null;
+    if(field==="offer_accepted")currentProp.offer_date=v;
+    else if(field==="memo_sent")currentProp.memo_sent=v;
+    else if(field==="searches_ordered")currentProp.searches_ordered=v;
+    else if(field==="mortgage_offered")currentProp.mortgage_offered=v;
+    else if(field==="enquiries_raised")currentProp.enquiries_raised=v;
+    else if(field==="enquiries_answered")currentProp.enquiries_answered=v;
+    else if(field==="exchange_date")currentProp.exchange_target=v;
+    else if(field==="completion_date")currentProp.completion_target=v;
   }
 
   function price(n){ return "\u00a3"+n.toLocaleString(); }
@@ -865,7 +886,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   /* ── open modal ───────────────────────────────────── */
   function openModal(id){
     var p=null;
-    for(var i=0;i<PROPS.length;i++){if(PROPS[i].id===id){p=PROPS[i];break;}}
+    for(var i=0;i<PROPS.length;i++){if(String(PROPS[i].id)===String(id)){p=PROPS[i];break;}}
     if(!p)return;
     currentProp=p;
 
@@ -922,6 +943,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
             patchProgression(currentProp._progression_id,field,val,function(){
               ms.date=val||"";
               ms.done=!!val;
+              mirrorMilestoneFieldOnProp(field,val);
               openModal(currentProp.id);
             });
           };

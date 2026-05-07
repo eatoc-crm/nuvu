@@ -862,7 +862,10 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     if(field==="offer_accepted")currentProp.offer_date=v;
     else if(field==="memo_sent")currentProp.memo_sent=v;
     else if(field==="searches_ordered")currentProp.searches_ordered=v;
+    else if(field==="searches_received")currentProp.searches_received=v;
+    else if(field==="survey_instructed")currentProp.survey_instructed=v;
     else if(field==="mortgage_offered")currentProp.mortgage_offered=v;
+    else if(field==="draft_contract_sent")currentProp.draft_contract_sent=v;
     else if(field==="enquiries_raised")currentProp.enquiries_raised=v;
     else if(field==="enquiries_answered")currentProp.enquiries_answered=v;
     else if(field==="exchange_date")currentProp.exchange_target=v;
@@ -1016,8 +1019,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       ["Offer Accepted",fmt(p.offer_date)],["Memo Sent",fmt(p.memo_sent)],
       ["Searches Ordered",fmt(p.searches_ordered)],["Searches Received",fmt(p.searches_received)],
       ["Enquiries Raised",fmt(p.enquiries_raised)],["Enquiries Answered",fmt(p.enquiries_answered)],
-      ["Mortgage Offered",fmt(p.mortgage_offered)],["Survey Booked",fmt(p.survey_booked)],
-      ["Survey Complete",fmt(p.survey_complete)],["Exchange Target",fmt(p.exchange_target)],
+      ["Mortgage Offered",fmt(p.mortgage_offered)],["Survey Instructed",fmt(p.survey_instructed)],
+      ["Draft Contract Sent",fmt(p.draft_contract_sent)],["Exchange Target",fmt(p.exchange_target)],
       ["Completion Target",fmt(p.completion_target)],["Duration",p.duration_days+" of "+p.target_days+" days"]
     ];
     var dh="";
@@ -1238,13 +1241,13 @@ def _completion_iso_for_bucket(p):
 def _property_on_track(p, today):
     """In-flight sale counts as On Track for hero stats (see brief / product owner).
 
-    Rule: memo sent, searches received, and survey booked — OR a completion
+    Rule: memo sent, searches received, and survey instructed — OR a completion
     target more than 30 days away when milestone data is incomplete.
     """
     raw = (p.get("_raw_status") or "").lower()
     if raw not in ("active", "development"):
         return False
-    if p.get("memo_sent") and p.get("searches_received") and p.get("survey_booked"):
+    if p.get("memo_sent") and p.get("searches_received") and p.get("survey_instructed"):
         return True
     est = p.get("_est_comp_date")
     if not est:

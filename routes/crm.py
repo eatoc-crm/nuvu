@@ -165,10 +165,28 @@ def _milestones_from_record(r):
             "date": r.get("searches_ordered") or "",
         },
         {
+            "label": "Searches Received",
+            "field": "searches_received",
+            "done": bool(r.get("searches_received")),
+            "date": r.get("searches_received") or "",
+        },
+        {
+            "label": "Survey Instructed",
+            "field": "survey_instructed",
+            "done": bool(r.get("survey_instructed")),
+            "date": r.get("survey_instructed") or "",
+        },
+        {
             "label": "Mortgage Offer Received",
             "field": "mortgage_offered",
             "done": bool(r.get("mortgage_offered")),
             "date": r.get("mortgage_offered") or "",
+        },
+        {
+            "label": "Draft Contract Sent",
+            "field": "draft_contract_sent",
+            "done": bool(r.get("draft_contract_sent")),
+            "date": r.get("draft_contract_sent") or "",
         },
         {
             "label": "Enquiries Raised",
@@ -204,16 +222,17 @@ def _merge_supabase_progression_overlay(raw_rows):
     try:
         from db_supabase import (
             SALES_PROGRESSION_OVERLAY_COLS,
-            fetch_sales_progression_overlay_by_ids,
+            fetch_sales_progression_overlay_by_addresses,
         )
+        from utils.address import normalise_address
 
-        ids = [r.get("id") for r in raw_rows]
-        by_id = fetch_sales_progression_overlay_by_ids(ids)
+        addrs = [r.get("property_address") for r in raw_rows]
+        by_norm = fetch_sales_progression_overlay_by_addresses(addrs)
         for r in raw_rows:
-            rid = r.get("id")
-            if rid is None:
+            key = normalise_address(r.get("property_address") or "")
+            if not key:
                 continue
-            row = by_id.get(str(rid).strip())
+            row = by_norm.get(key)
             if not row:
                 continue
             for col in SALES_PROGRESSION_OVERLAY_COLS:
@@ -265,11 +284,11 @@ def _map_live_properties():
                 "memo_sent": r.get("memo_sent"),
                 "searches_ordered": r.get("searches_ordered"),
                 "searches_received": r.get("searches_received"),
+                "survey_instructed": r.get("survey_instructed"),
+                "draft_contract_sent": r.get("draft_contract_sent"),
                 "enquiries_raised": r.get("enquiries_raised"),
                 "enquiries_answered": r.get("enquiries_answered"),
                 "mortgage_offered": r.get("mortgage_offered"),
-                "survey_booked": r.get("survey_booked"),
-                "survey_complete": r.get("survey_complete"),
                 "exchange_target": r.get("exchange_date"),
                 "completion_target": r.get("completion_date"),
                 "chain": "\u2014",
@@ -660,6 +679,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="det-grid">
       <div class="d-r"><span class="d-l">Offer Accepted</span><span class="d-v">{{ p.offer_date or '\u2014' }}</span></div>
       <div class="d-r"><span class="d-l">Memo Sent</span><span class="d-v">{{ p.memo_sent or '\u2014' }}</span></div>
+      <div class="d-r"><span class="d-l">Searches Received</span><span class="d-v">{{ p.searches_received or '\u2014' }}</span></div>
+      <div class="d-r"><span class="d-l">Survey Instructed</span><span class="d-v">{{ p.survey_instructed or '\u2014' }}</span></div>
+      <div class="d-r"><span class="d-l">Draft Contract Sent</span><span class="d-v">{{ p.draft_contract_sent or '\u2014' }}</span></div>
       <div class="d-r"><span class="d-l">Exchange Date</span><span class="d-v">{{ p.exchange_target or '\u2014' }}</span></div>
       <div class="d-r"><span class="d-l">Completion Date</span><span class="d-v">{{ p.completion_target or '\u2014' }}</span></div>
       <div class="d-r"><span class="d-l">Fee</span><span class="d-v">&pound;{{ "{:,.2f}".format(p._fee) if p._fee else '\u2014' }}</span></div>

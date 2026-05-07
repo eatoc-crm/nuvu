@@ -20,6 +20,7 @@ import json
 import logging
 import os
 import re
+import sys
 from datetime import date, datetime
 from difflib import get_close_matches
 from pathlib import Path
@@ -30,6 +31,10 @@ DATE_SANE_YEAR_MIN = 2025
 DATE_SANE_YEAR_MAX = 2027
 
 _ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from utils.address import normalise_address
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 
@@ -133,21 +138,6 @@ def _setup_logging(verbose: bool) -> None:
         level=level,
         format="%(levelname)s %(message)s",
     )
-
-
-def _norm_addr(s: str) -> str:
-    """Normalize for address matching: lowercase, strip punctuation, collapse whitespace.
-
-    Punctuation (commas, periods, hyphens, apostrophes, etc.) is removed; only
-    letters and digits are kept, separated by single spaces. Used so e.g.
-    ``36, Norfolk Place`` matches ``36 Norfolk Place, Penrith, CA11 7UQ``.
-    """
-    if not s:
-        return ""
-    lowered = s.strip().lower()
-    # Non-alphanumeric runs -> single space (strips punctuation, collapses whitespace)
-    cleaned = re.sub(r"[^a-z0-9]+", " ", lowered)
-    return " ".join(cleaned.split())
 
 
 def _is_sane_transaction_iso(iso: str) -> bool:
@@ -439,7 +429,7 @@ def _resolve_address(
 ) -> tuple[str | None, list[str]]:
     """Match extracted label to Supabase property_address.
 
-    After :func:`_norm_addr` (lowercase, no punctuation, single spaces),
+    After :func:`normalise_address` (lowercase, no punctuation, single spaces),
     normalized extracted must appear as a substring of normalized DB address.
     If several rows match, prefer the longest common substring, then the
     longest full DB address, then lexicographic order for stability.
@@ -447,28 +437,28 @@ def _resolve_address(
     ex = extracted.strip()
     if not ex:
         return None, []
-    ex_n = _norm_addr(ex)
+    ex_n = normalise_address(ex)
     candidates: list[str] = []
     for addr in all_addresses:
-        addr_n = _norm_addr(addr)
+        addr_n = normalise_address(addr)
         if ex_n in addr_n:
             candidates.append(addr)
     if candidates:
 
         def sort_key(addr: str) -> tuple[int, int, str]:
-            addr_n = _norm_addr(addr)
+            addr_n = normalise_address(addr)
             lcs = _lcs_length(ex_n, addr_n)
             return (-lcs, -len(addr_n), addr)
 
         candidates.sort(key=sort_key)
         return candidates[0], []
 
-    norms = [_norm_addr(a) for a in all_addresses]
+    norms = [normalise_address(a) for a in all_addresses]
     suggestions_raw = get_close_matches(ex_n, norms, n=5, cutoff=0.75)
     canon = []
     for s in suggestions_raw:
         for addr in all_addresses:
-            if _norm_addr(addr) == s:
+            if normalise_address(addr) == s:
                 canon.append(addr)
                 break
     return None, canon

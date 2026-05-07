@@ -24,7 +24,10 @@ SALES_PROGRESSION_OVERLAY_COLS = (
     "offer_accepted",
     "memo_sent",
     "searches_ordered",
+    "searches_received",
+    "survey_instructed",
     "mortgage_offered",
+    "draft_contract_sent",
     "enquiries_raised",
     "enquiries_answered",
     "exchange_date",
@@ -79,6 +82,80 @@ def fetch_sales_progression_overlay_by_ids(ids):
             rid = row.get("id")
             if rid is not None:
                 out[str(rid)] = row
+    return out
+
+
+def fetch_sales_progression_overlay_by_addresses(addresses: list[str]):
+    """Return normalised property_address -> row dict for merging over EATOC payloads.
+
+    Join key matches :func:`utils.address.normalise_address` so EATOC and Supabase
+    rows align when punctuation or spacing differs. Uses chunked exact ``IN`` on
+    raw strings first, then paginated scan for any remaining normalised keys.
+    """
+    from utils.address import normalise_address
+
+    needed = {normalise_address(a) for a in (addresses or []) if normalise_address(a)}
+    if not needed:
+        return {}
+    client = supabase_for_backend()
+    cols = ",".join(SALES_PROGRESSION_OVERLAY_COLS)
+    select_cols = "property_address," + cols
+    out: dict[str, dict] = {}
+    seen_raw: set[str] = set()
+    raw_unique: list[str] = []
+    for a in addresses or []:
+        s = (a or "").strip()
+        if not s or s in seen_raw:
+            continue
+        seen_raw.add(s)
+        raw_unique.append(s)
+    chunk_size = 80
+    for off in range(0, len(raw_unique), chunk_size):
+        part = raw_unique[off : off + chunk_size]
+        try:
+            res = (
+                client.table("sales_progression")
+                .select(select_cols)
+                .in_("property_address", part)
+                .execute()
+            )
+        except Exception:
+            continue
+        for row in res.data or []:
+            nk = normalise_address(row.get("property_address") or "")
+            if nk:
+                out[nk] = row
+    still = set(needed)
+    still -= set(out.keys())
+    if not still:
+        return out
+    page_size = 500
+    max_pages = 40
+    for page in range(max_pages):
+        start = page * page_size
+        end = start + page_size - 1
+        try:
+            res = (
+                client.table("sales_progression")
+                .select(select_cols)
+                .order("id")
+                .range(start, end)
+                .execute()
+            )
+        except Exception:
+            break
+        rows = res.data or []
+        if not rows:
+            break
+        for row in rows:
+            nk = normalise_address(row.get("property_address") or "")
+            if nk in still:
+                out[nk] = row
+                still.discard(nk)
+                if not still:
+                    return out
+        if len(rows) < page_size:
+            break
     return out
 
 

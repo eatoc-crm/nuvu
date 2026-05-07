@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Review form — NUVU</title>
+<link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0f1b2d;--navy-lt:#162236;--lime:#c4e233;--txt:#1e293b;--muted:#64748b;--border:#e2e8f0;--skip-bg:#fffbeb;--skip-bd:#fde68a}
+html{font-size:15px}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f4f6f9;color:var(--txt);min-height:100vh;line-height:1.5}
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--navy);color:#fff}
+.top a{color:var(--lime);text-decoration:none;font-weight:600;font-size:.88rem}
+.wrap{max-width:800px;margin:0 auto;padding:28px 20px 48px}
+h1{font-size:1.35rem;font-weight:800;margin-bottom:6px}
+.sub{color:var(--muted);font-size:.9rem;margin-bottom:28px}
+.sec{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px}
+.sec h2{font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--navy)}
+.q{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.q:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.q-sk{background:var(--skip-bg);border:1px solid var(--skip-bd);border-radius:8px;padding:12px 14px;margin-bottom:12px}
+.q-l{font-size:.72rem;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.q-t{font-size:.92rem;font-weight:600;margin-bottom:8px}
+.q-a{font-size:.88rem;color:var(--txt);white-space:pre-wrap}
+.skip-tag{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:4px;background:var(--skip-bd);color:#92400e;margin-bottom:8px}
+.dispatch{margin-top:32px;padding:20px;background:var(--navy-lt);border-radius:12px;color:#fff}
+.dispatch h3{font-size:1rem;margin-bottom:12px}
+.dispatch p{font-size:.85rem;opacity:.88;margin-bottom:14px}
+.dispatch label{font-size:.78rem;font-weight:600;display:block;margin-bottom:6px}
+.dispatch input{width:100%;max-width:420px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(15,27,45,.4);color:#fff;font-size:.9rem;margin-bottom:12px}
+.dispatch input::placeholder{color:rgba(255,255,255,.45)}
+.dispatch button{padding:11px 20px;border:none;border-radius:8px;background:var(--lime);color:var(--navy);font-weight:700;cursor:pointer;font-size:.88rem}
+.dispatch button:disabled{opacity:.45;cursor:not-allowed}
+.dispatch .err{font-size:.82rem;color:#fecaca;margin-top:8px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header class="top">
+  <span style="font-weight:800;letter-spacing:6px">NUVU</span>
+  <a href="/">Back to dashboard</a>
+</header>
+<div class="wrap">
+  <h1>{{ form_title }}</h1>
+  <p class="sub">{{ property_address }} — {{ seller_name }}</p>
+
+  {% for sec in sections %}
+  <section class="sec">
+    <h2>{{ sec.title }}</h2>
+    {% for item in sec.items %}
+    <div class="q {% if item.status == 'skipped' %}q-sk{% endif %}">
+      {% if item.status == 'skipped' %}
+      <span class="skip-tag">Skipped by seller</span>
+      {% endif %}
+      <div class="q-l">Question</div>
+      <div class="q-t">{{ item.question_text }}</div>
+      {% if item.status == 'skipped' %}
+      <div class="q-a" style="color:var(--muted);font-style:italic">No answer — seller chose to skip.</div>
+      {% elif item.status == 'answered' %}
+      <div class="q-a">{{ item.display_answer or '—' }}</div>
+      {% else %}
+      <div class="q-a" style="color:var(--muted)">Not answered yet.</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endfor %}
+
+  {% if dispatch_enabled and completion and (completion.status or '')|lower == 'completed' %}
+  <div class="dispatch" id="dispatchBox">
+    <h3>Approve &amp; dispatch to solicitor</h3>
+    <p>Confirm the solicitor email below. A filled PDF will be generated if needed, then sent by email.</p>
+    <label for="solEmail">Solicitor email</label>
+    <input id="solEmail" type="email" autocomplete="email" placeholder="name@firm.co.uk">
+    <button type="button" id="dispatchBtn">Send to solicitor</button>
+    <div class="err hidden" id="dispatchErr"></div>
+  </div>
+  {% elif not dispatch_enabled and completion and (completion.status or '')|lower == 'completed' %}
+  <div class="sec" style="margin-top:24px;font-size:.88rem;color:var(--muted)">
+    Dispatch is disabled (PORTAL_DISPATCH_ENABLED). Review only — contact the seller directly if changes are needed.
+  </div>
+  {% endif %}
+</div>
+<script>
+(function(){
+  var btn=document.getElementById("dispatchBtn");
+  if(!btn)return;
+  var sid={{ session_id|tojson }};
+  btn.onclick=function(){
+    var em=(document.getElementById("solEmail").value||"").trim();
+    var err=document.getElementById("dispatchErr");
+    err.classList.add("hidden");err.textContent="";
+    if(!em){err.textContent="Enter a solicitor email.";err.classList.remove("hidden");return;}
+    btn.disabled=true;
+    fetch("/portal/api/dispatch",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({session_id:sid,solicitor_email:em})
+    }).then(function(r){
+      return r.json().then(function(j){return {r:r,j:j};});
+    }).then(function(x){
+      btn.disabled=false;
+      if(!x.r.ok){
+        err.textContent=(x.j&&x.j.error)||("HTTP "+x.r.status);
+        err.classList.remove("hidden");
+        return;
+      }
+      alert("Dispatched successfully.");
+      window.location.reload();
+    }).catch(function(e){
+      btn.disabled=false;
+      err.textContent=e.message||"Network error";
+      err.classList.remove("hidden");
+    });
+  };
+})();
+</script>
+</body>
+</html>

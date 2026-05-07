@@ -304,6 +304,12 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ms-date{font-size:.7rem;color:var(--txt-light);margin-left:auto;white-space:nowrap}
 .ms-edit-btn{background:none;border:1px solid #d1d5db;border-radius:5px;padding:2px 8px;font-size:.65rem;color:var(--txt-mid);cursor:pointer;transition:all var(--t);flex-shrink:0}
 .ms-edit-btn:hover{border-color:var(--green);color:var(--green)}
+.m-portal-forms{margin-bottom:10px}
+.m-portal-forms h3{font-size:.82rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;color:var(--txt-mid)}
+.portal-line{font-size:.78rem;color:var(--txt);margin-bottom:6px;line-height:1.4}
+.portal-line strong{color:var(--txt-light);font-weight:600;margin-right:6px}
+a.portal-review-link{display:inline-block;margin-top:6px;margin-right:10px;font-size:.75rem;font-weight:700;color:var(--navy);text-decoration:underline}
+a.portal-review-link:hover{color:var(--green)}
 .ms-edit-form{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
 .ms-edit-form input[type=date]{font-size:.72rem;padding:2px 6px;border:1px solid #d1d5db;border-radius:5px;color:var(--txt)}
 .ms-edit-form button{padding:2px 8px;border-radius:5px;font-size:.65rem;font-weight:600;cursor:pointer;border:none}
@@ -730,6 +736,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         <div class="ms-list" id="mMsList"></div>
       </div>
       <hr class="m-div">
+      <div class="m-portal-forms" id="mPortalForms"></div>
+      <hr class="m-div">
       <div class="m-ms">
         <h3>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--txt-mid)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -826,6 +834,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   var mBtnDone  = document.getElementById("mBtnDone");
   var mBtnEmail = document.getElementById("mBtnEmail");
   var mMsList   = document.getElementById("mMsList");
+  var mPortalForms = document.getElementById("mPortalForms");
   var mDetToggle = document.getElementById("mDetToggle");
   var mDetPanel  = document.getElementById("mDetPanel");
   var mDetGrid   = document.getElementById("mDetGrid");
@@ -920,10 +929,26 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       else if(ms.done===null){ic="ms-ic na";tx="N/A";lc="ms-lb";}
       else{ic="ms-ic pending";tx="";lc="ms-lb ms-pending-lb";}
       var dateStr=ms.date?' <span class="ms-date">'+fmt(ms.date)+'</span>':"";
-      var editBtn=p._progression_id?'<button class="ms-edit-btn" data-field="'+ms.field+'" data-idx="'+m+'">Edit</button>':"";
+      var editBtn="";
+      if(p._progression_id&&ms.field!=="protocol_forms_returned"){
+        editBtn='<button class="ms-edit-btn" data-field="'+ms.field+'" data-idx="'+m+'">Edit</button>';
+      }
       h+='<div class="ms-item" id="ms-row-'+m+'"><span class="'+ic+'">'+tx+'</span><span class="'+lc+'">'+ms.label+'</span>'+dateStr+editBtn+'</div>';
     }
     mMsList.innerHTML=h;
+
+    var p6=p.portal_ta6||{};
+    var p10=p.portal_ta10||{};
+    var portalH='<h3>TA6 / TA10 (seller portal)</h3>'+
+      '<div class="portal-line"><strong>TA6</strong> '+(p6.status_line||"Not Started")+'</div>'+
+      '<div class="portal-line"><strong>TA10</strong> '+(p10.status_line||"Not Started")+'</div>';
+    if(p6.phase==="completed"&&p6.session_id){
+      portalH+='<a class="portal-review-link" href="/portal/review/'+encodeURIComponent(p6.session_id)+'" target="_blank" rel="noopener">Review TA6 answers</a>';
+    }
+    if(p10.phase==="completed"&&p10.session_id){
+      portalH+='<a class="portal-review-link" href="/portal/review/'+encodeURIComponent(p10.session_id)+'" target="_blank" rel="noopener">Review TA10 answers</a>';
+    }
+    mPortalForms.innerHTML=portalH;
 
     /* milestone edit button handlers */
     var editBtns=mMsList.querySelectorAll(".ms-edit-btn");
@@ -1510,6 +1535,10 @@ def _build_live_dashboard_data():
             "confidence": 60,
         },
     }
+
+    from db_portal import enrich_properties_with_portal_forms
+
+    enrich_properties_with_portal_forms(properties)
 
     return properties, sections, stats, pipeline
 

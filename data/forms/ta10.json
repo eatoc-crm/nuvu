@@ -1,0 +1,1164 @@
+{
+  "form_type": "ta10",
+  "title": "Fittings and Contents Form (TA10)",
+  "version": "Edition 2",
+  "sections": [
+    {
+      "key": "basic_fittings",
+      "title": "1. Basic fittings",
+      "description": "Status of each fitting for the sale.",
+      "questions": [
+        {
+          "key": "basic_fittings__boiler",
+          "text": "Boiler — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Boiler” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__immersion_heater",
+          "text": "Immersion heater — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Immersion heater” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__radiators",
+          "text": "Radiators — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Radiators” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__night_storage_heaters",
+          "text": "Night storage heaters — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Night storage heaters” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__gas_fire",
+          "text": "Gas fire — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Gas fire” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__electric_fire",
+          "text": "Electric fire — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Electric fire” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__central_heating_system_describe_if_not_standard",
+          "text": "Central heating system (describe if not standard) — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Central heating system (describe if not standard)” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__wall_heaters",
+          "text": "Wall heaters — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Wall heaters” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__door_bell",
+          "text": "Door bell — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Door bell” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__lighting",
+          "text": "Lighting — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Lighting” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__roof_insulation",
+          "text": "Roof insulation — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Roof insulation” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__window_fittings_eg_curtain_rails",
+          "text": "Window fittings (e.g. curtain rails) — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Window fittings (e.g. curtain rails)” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__window_shutters",
+          "text": "Window shutters — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Window shutters” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__window_blinds",
+          "text": "Window blinds — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Window blinds” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__door_fittings_eg_hinges_locks",
+          "text": "Door fittings (e.g. hinges, locks) — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Door fittings (e.g. hinges, locks)” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__burglar_alarm",
+          "text": "Burglar alarm — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Burglar alarm” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "basic_fittings__electric_sockets",
+          "text": "Electric sockets — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Electric sockets” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "kitchen",
+      "title": "2. Kitchen",
+      "description": "Kitchen appliances and fittings.",
+      "questions": [
+        {
+          "key": "kitchen__hob",
+          "text": "Hob — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Hob” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__extractor_hood",
+          "text": "Extractor hood — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Extractor hood” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__oven",
+          "text": "Oven — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Oven” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__grill",
+          "text": "Grill — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Grill” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__cooker",
+          "text": "Cooker — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Cooker” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__microwave",
+          "text": "Microwave — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Microwave” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__refrigerator",
+          "text": "Refrigerator — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Refrigerator” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__freezer",
+          "text": "Freezer — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Freezer” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__fridge___freezer",
+          "text": "Fridge / freezer — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Fridge / freezer” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__dishwasher",
+          "text": "Dishwasher — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Dishwasher” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__tumble_dryer",
+          "text": "Tumble dryer — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Tumble dryer” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "kitchen__washing_machine",
+          "text": "Washing machine — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Washing machine” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "bathroom",
+      "title": "3. Bathroom",
+      "description": "Bathroom fittings.",
+      "questions": [
+        {
+          "key": "bathroom__bath",
+          "text": "Bath — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Bath” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__shower_fittings",
+          "text": "Shower fittings — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Shower fittings” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__shower_curtain",
+          "text": "Shower curtain — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Shower curtain” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__bathroom_cabinet",
+          "text": "Bathroom cabinet — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Bathroom cabinet” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__taps",
+          "text": "Taps — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Taps” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__separate_shower_cubicle_or_enclosure",
+          "text": "Separate shower cubicle or enclosure — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Separate shower cubicle or enclosure” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__towel_rail",
+          "text": "Towel rail — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Towel rail” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__soap_or_toothbrush_holders",
+          "text": "Soap or toothbrush holders — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Soap or toothbrush holders” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__toilet_roll_holders",
+          "text": "Toilet roll holders — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Toilet roll holders” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "bathroom__mirrors",
+          "text": "Mirrors — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Mirrors” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "carpets",
+      "title": "4. Carpets",
+      "description": "Carpets by area (state which rooms in your answer if needed).",
+      "questions": [
+        {
+          "key": "carpets__hall_stairs_and_landing",
+          "text": "Hall, stairs and landing — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Hall, stairs and landing” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "carpets__living_room",
+          "text": "Living room — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Living room” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "carpets__dining_room",
+          "text": "Dining room — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Dining room” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "carpets__kitchen",
+          "text": "Kitchen — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Kitchen” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "carpets__bedroom_1",
+          "text": "Bedroom 1 — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Bedroom 1” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "carpets__bedroom_2",
+          "text": "Bedroom 2 — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Bedroom 2” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "carpets__bedroom_3",
+          "text": "Bedroom 3 — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Bedroom 3” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "carpets__other_rooms_specify_in_answer",
+          "text": "Other rooms (specify in answer) — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Other rooms (specify in answer)” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "curtains",
+      "title": "5. Curtains and curtain rails",
+      "description": "Curtains and rails.",
+      "questions": [
+        {
+          "key": "curtains__curtains",
+          "text": "Curtains — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Curtains” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "curtains__curtain_rails",
+          "text": "Curtain rails — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Curtain rails” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "light_fittings",
+      "title": "6. Light fittings",
+      "description": "Light fittings excluding standard ceiling roses and bare bulbs.",
+      "questions": [
+        {
+          "key": "light_fittings__light_fittings_describe_which_rooms_or_fittings",
+          "text": "Light fittings (describe which rooms or fittings) — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Light fittings (describe which rooms or fittings)” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "fitted_units",
+      "title": "7. Fitted units",
+      "description": "Built-in storage and units.",
+      "questions": [
+        {
+          "key": "fitted_units__fitted_wardrobes",
+          "text": "Fitted wardrobes — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Fitted wardrobes” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "fitted_units__builtin_cupboards",
+          "text": "Built-in cupboards — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Built-in cupboards” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "fitted_units__shelving",
+          "text": "Shelving — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Shelving” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "fitted_units__other_fitted_units_describe",
+          "text": "Other fitted units (describe) — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Other fitted units (describe)” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "outdoor",
+      "title": "8. Outdoor area",
+      "description": "Garden and outdoor items.",
+      "questions": [
+        {
+          "key": "outdoor__garden_furniture",
+          "text": "Garden furniture — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Garden furniture” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__garden_shed",
+          "text": "Garden shed — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Garden shed” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__greenhouse",
+          "text": "Greenhouse — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Greenhouse” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__outdoor_heating_or_lighting",
+          "text": "Outdoor heating or lighting — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Outdoor heating or lighting” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__barbecue",
+          "text": "Barbecue — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Barbecue” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__outside_ornaments",
+          "text": "Outside ornaments — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Outside ornaments” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__television_aerial",
+          "text": "Television aerial — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Television aerial” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__satellite_dish",
+          "text": "Satellite dish — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Satellite dish” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__clothes_line",
+          "text": "Clothes line — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Clothes line” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__dustbin",
+          "text": "Dustbin — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Dustbin” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "outdoor__plants_and_shrubs",
+          "text": "Plants and shrubs — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Plants and shrubs” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "television",
+      "title": "9. Television and telephone",
+      "description": "Telecom equipment.",
+      "questions": [
+        {
+          "key": "television__television",
+          "text": "Television — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Television” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "television__telephone",
+          "text": "Telephone — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Telephone” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "television__cabling",
+          "text": "Cabling — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Cabling” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "stock_of_fuel",
+      "title": "10. Stock of fuel",
+      "description": "Any fuel stock included.",
+      "questions": [
+        {
+          "key": "stock_of_fuel__oil",
+          "text": "Oil — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Oil” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "stock_of_fuel__wood",
+          "text": "Wood — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Wood” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        },
+        {
+          "key": "stock_of_fuel__lpg_or_other_specify",
+          "text": "LPG or other (specify) — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “LPG or other (specify)” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    },
+    {
+      "key": "other",
+      "title": "11. Other items",
+      "description": "Any other contents not listed above.",
+      "questions": [
+        {
+          "key": "other__other_items_describe_each",
+          "text": "Other items (describe each) — what is the position for this sale?",
+          "type": "select",
+          "required": false,
+          "options": [
+            "Fitted and included in sale price",
+            "Included in the sale",
+            "Excluded from the sale",
+            "None",
+            "Not applicable"
+          ],
+          "help": "Match the TA10 columns: included, excluded, none, or not applicable. Add price in your reply if selling separately.",
+          "ai_prompt": "Help the seller decide the status of “Other items (describe each)” for the TA10 fittings form: included, excluded, none, or not applicable — and whether a price applies. Keep language simple. Summarise and ask to confirm before saving."
+        }
+      ]
+    }
+  ]
+}

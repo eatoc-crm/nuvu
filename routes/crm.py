@@ -201,6 +201,12 @@ def _milestones_from_record(r):
             "date": r.get("enquiries_answered") or "",
         },
         {
+            "label": "Protocol Forms Returned",
+            "field": "protocol_forms_returned",
+            "done": bool(r.get("protocol_forms_returned")),
+            "date": r.get("protocol_forms_returned") or "",
+        },
+        {
             "label": "Exchange",
             "field": "exchange_date",
             "done": bool(r.get("exchange_date")),

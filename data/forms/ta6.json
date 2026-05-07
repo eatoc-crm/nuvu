@@ -1,0 +1,962 @@
+{
+  "form_type": "ta6",
+  "title": "Property Information Form (TA6)",
+  "version": "Edition 5 (2024)",
+  "sections": [
+    {
+      "key": "seller_and_parties",
+      "title": "Seller, property and solicitor",
+      "description": "Details at the start of the TA6 (Edition 5) form.",
+      "questions": [
+        {
+          "key": "seller_names_individual",
+          "text": "Full names of seller(s) if individuals (as on HM Land Registry title or deeds).",
+          "type": "textarea",
+          "required": true,
+          "help": "Answer as on the paper TA6. Your solicitor can help with wording.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question intro. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "seller_capacity",
+          "text": "Capacity in which you provide information: Seller(s), Seller’s personal representative, Attorney(s), or Trustee(s).",
+          "type": "textarea",
+          "required": true,
+          "help": "Answer as on the paper TA6. Your solicitor can help with wording.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question intro. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "seller_company",
+          "text": "If seller is a company: company name, number, director/authorised person, country of incorporation.",
+          "type": "textarea",
+          "required": true,
+          "help": "Answer as on the paper TA6. Your solicitor can help with wording.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question intro. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "ownership_date",
+          "text": "When did you become owner or get authority to sell? (DD/MM/YYYY)",
+          "type": "textarea",
+          "required": true,
+          "help": "Answer as on the paper TA6. Your solicitor can help with wording.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question intro. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "property_address",
+          "text": "Full address of the property being sold (all lines and postcode).",
+          "type": "textarea",
+          "required": true,
+          "help": "Answer as on the paper TA6. Your solicitor can help with wording.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question intro. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "property_uprn",
+          "text": "Unique Property Reference Number (UPRN) of the property.",
+          "type": "textarea",
+          "required": true,
+          "help": "Answer as on the paper TA6. Your solicitor can help with wording.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question intro. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "solicitor_details",
+          "text": "Seller’s solicitor: firm name, full address, contact name, email, reference.",
+          "type": "textarea",
+          "required": true,
+          "help": "Answer as on the paper TA6. Your solicitor can help with wording.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question intro. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        }
+      ]
+    },
+    {
+      "key": "part1a_material_information",
+      "title": "Part 1 — Section A: Material information (Council tax, price, tenure)",
+      "description": "TA6 Part 1, Part A — material information for marketing and conveyancing.",
+      "questions": [
+        {
+          "key": "q1_council_tax",
+          "text": "(1) What Council Tax band is the property in?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q2_asking_price",
+          "text": "(2) What is the asking price of the property you are selling?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_1",
+          "text": "(3.1) Is your property freehold, leasehold, shared ownership or commonhold? Please tick all that apply.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_2",
+          "text": "(3.2) What share of the property do you own?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_3",
+          "text": "(3.3) How much rent do you pay each year for the remaining share of the property?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_4",
+          "text": "(3.4) What is the end date of your lease? (DD/MM/YYYY)",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_5",
+          "text": "(3.5) Have you applied to the landlord: (a) for an extension of the lease? (b) to buy the freehold? (c) to vary the terms of the lease? If Yes to any, give details of when you applied and whether accepted.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.5. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_6",
+          "text": "(3.6) How much ground rent is due each year?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.6. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_7",
+          "text": "(3.7) Does your lease say that the ground rent increases? If Yes, give details of the next increase (date, frequency, amount).",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.7. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_8",
+          "text": "(3.8) Does the lease require you to pay service charges? (a) Have you paid service charges? If No to both, skip 3.9–3.16 per form routing.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.8. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_9",
+          "text": "(3.9) Please give the dates of your last annual service charge (from / to) (DD/MM/YYYY).",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.9. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_10",
+          "text": "(3.10) How much was your last annual service charge?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.10. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_11",
+          "text": "(3.11) Is there a budget or known amount for the service charge this year? If Yes, describe and attach bill if available.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.11. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_12",
+          "text": "(3.12) How frequently are service charge payments due (monthly, six-monthly, quarterly, annually)?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.12. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_13",
+          "text": "(3.13) Please provide a copy of the commonhold community statement (or state if to follow).",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.13. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_14",
+          "text": "(3.14) How many units are there in the commonhold?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.14. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_15",
+          "text": "(3.15) How much does your unit pay annually under the commonhold assessment?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.15. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_16",
+          "text": "(3.16) Does the commonhold have a reserve fund? How much does your unit pay annually into the reserve fund?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.16. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_17",
+          "text": "(3.17) Do you have to pay any additional charges relating to the property (apart from council tax, utilities), e.g. management company? If Yes, give details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.17. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_18",
+          "text": "(3.18) How much is due annually for these other charges?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.18. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_19",
+          "text": "(3.19) Do you have to pay anything towards maintaining access roads or footpaths? If Yes, who are payments made to?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.19. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q3_20",
+          "text": "(3.20) How much is due annually towards these access road or footpath costs?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 3.20. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        }
+      ]
+    },
+    {
+      "key": "part1b_material_information",
+      "title": "Part 1 — Section B: Physical characteristics, utilities, parking",
+      "description": "TA6 Part 1, Part B.",
+      "questions": [
+        {
+          "key": "q4_1",
+          "text": "(4.1) Is the property a house, bungalow, flat or maisonette?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 4.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q4_2",
+          "text": "(4.2) If a house or bungalow, is it detached, semi-detached, terraced or end of terrace?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 4.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q4_3",
+          "text": "(4.3) What construction type or materials have been used in the property? If unsure, say not known.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 4.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q4_4",
+          "text": "(4.4) How many rooms does the property have (bedrooms, bathrooms, reception rooms, other — specify)?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 4.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q5_1",
+          "text": "(5.1) Which services are connected (electricity, water, sewerage, heating, broadband, mobile signal, etc.)? Give details including private water if applicable.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 5.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q5_2",
+          "text": "(5.2) Which services are available at the property? Any known issues or restricted mobile coverage?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 5.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q6_1",
+          "text": "(6.1) Is off-road parking available? Specify type (garage, allocated space, driveway).",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 6.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q6_2",
+          "text": "(6.2) Is a permit required for on-road parking?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 6.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q6_3",
+          "text": "(6.3) If a permit is required, what is the current annual charge?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 6.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q6_4",
+          "text": "(6.4) Does the property have an electric vehicle (EV) charging point? If Yes, specify make and location.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 6.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        }
+      ]
+    },
+    {
+      "key": "part1c_material_information",
+      "title": "Part 1 — Section C: Safety, restrictions, rights, flooding, notices, accessibility, mining",
+      "description": "TA6 Part 1, Part C.",
+      "questions": [
+        {
+          "key": "q7_1",
+          "text": "(7.1) Are you aware of any defects or hazards that might lead to fire or structural failure? If Yes, give details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 7.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q7_2",
+          "text": "(7.2) If Yes to 7.1: have urgent or essential works been recommended? Any proposals or completed works? Give details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 7.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q8_1",
+          "text": "(8.1) Is the property (or any part) in a conservation area? If Yes, supply or note documents to follow.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 8.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q8_2",
+          "text": "(8.2) Is the property (or any part) listed?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 8.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q8_3",
+          "text": "(8.3) If listed, what grade? Supply or note relevant documents.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 8.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q8_4",
+          "text": "(8.4) Does your title contain restrictive covenants affecting use? Supply title copy or note to follow.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 8.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q8_5",
+          "text": "(8.5) Are any trees subject to a Tree Preservation Order? (a) Terms complied with? (b) Documents supplied or to follow?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 8.5. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_1",
+          "text": "(9.1) Does the property benefit from rights or arrangements over neighbouring property (including rights of way)? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_2",
+          "text": "(9.2) Does ownership carry responsibility to contribute to jointly used services (shared driveway, boundary, drain)? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_3",
+          "text": "(9.3) Has anyone prevented access, complained, or demanded payment for access? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_4",
+          "text": "(9.4) Rights of light; rights of support; customary rights — which apply? Yes / No / Not known for each with notes.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_5",
+          "text": "(9.5) Mines and minerals; chancel repair; rights to take things from the land — do any affect the property? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.5. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_6",
+          "text": "(9.6) Any other rights or arrangements (including rights of way)? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.6. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_7",
+          "text": "(9.7) Do drains, pipes or wires serving the property cross any neighbour’s land?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.7. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_8",
+          "text": "(9.8) Do drains, pipes or wires to a neighbour’s property cross your land?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.8. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q9_9",
+          "text": "(9.9) Any agreement about drains, pipes or wires? Copy or details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 9.9. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q10_1",
+          "text": "(10.1) What is the flood risk for the area around the property (use gov.uk long-term flood risk if helpful)?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 10.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q10_2",
+          "text": "(10.2) Has any part of the property ever been flooded? When, which parts, type of flooding, details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 10.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q10_3",
+          "text": "(10.3) Are there flood defences installed? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 10.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q10_4",
+          "text": "(10.4) If near the coast, any known coastal erosion risk? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 10.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q11_1",
+          "text": "(11.1) Any breaches of planning or building regulations conditions, unfinished work, or work without consents? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 11.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q11_2",
+          "text": "(11.2) Any planning or building control issues to resolve? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 11.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q12_1",
+          "text": "(12.1) Any notices, correspondence, negotiations affecting the property or nearby? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 12.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q12_2",
+          "text": "(12.2) Any plans or proposals to develop property or land nearby? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 12.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q12_3",
+          "text": "(12.3) Any proposals to alter or change use of buildings nearby? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 12.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q13_accessibility",
+          "text": "(13) Accessibility: (a) step-free access from street, (b) wet room / level access shower, (c) lateral living, (d) other adaptations — for each Yes, give details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 13. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q14_coalfield",
+          "text": "(14) Are you aware the property is on a past or present coalfield or affected by other mining activity?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 14. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        }
+      ]
+    },
+    {
+      "key": "part2_supplementary",
+      "title": "Part 2 — Supplementary information for conveyancing",
+      "description": "TA6 Part 2 (boundaries through additional information).",
+      "questions": [
+        {
+          "key": "q15_1",
+          "text": "(15.1) Looking from the road, who owns or accepts responsibility to maintain each boundary (left, right, rear, front)?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 15.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q15_2",
+          "text": "(15.2) If boundaries are irregular, describe ownership or refer to a plan.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 15.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q15_3",
+          "text": "(15.3) Any boundary feature moved in the last 10 years or during your ownership? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 15.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q15_4",
+          "text": "(15.4) During your ownership, was adjacent land purchased? Details for left, right, rear, front.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 15.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q15_5",
+          "text": "(15.5) Any overhang or projection under neighbour’s land or road (eaves, cellars, walkways)? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 15.5. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q15_6",
+          "text": "(15.6) Any Party Wall etc. Act 1996 notice? Copy and details of works.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 15.6. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q16_1",
+          "text": "(16.1) Disputes or complaints about your property or nearby? When and who involved?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 16.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q16_2",
+          "text": "(16.2) Anything that might lead to a dispute? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 16.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q16_3",
+          "text": "(16.3) Do neighbours or the public have a right to enter your property? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 16.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q17_1",
+          "text": "(17.1) Alterations: windows/roof lights since 1 Apr 2002; extension; conservatory; loft; garage conversion; internal wall removal; insulation; other — which apply (Yes/No each) and notes.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 17.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q17_2",
+          "text": "(17.2) If Yes to 17.1 items: details and dates. Was work completed? Planning, building regs, completion certificates — obtained? If not required, why?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 17.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q17_3",
+          "text": "(17.3) Any part used exclusively for non-residential purposes? Details and documents.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 17.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q17_4",
+          "text": "(17.4) Solar panels installed? If Yes: year; ownership; roof lease; maintenance; battery; grid export; FIT/SEG; documentation; panel position; structural adequacy — answer all that apply.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 17.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q18_consent",
+          "text": "(18) Do you have consent for matters needing permission in your deeds? Details; check with solicitor.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 18. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q19_1",
+          "text": "(19.1) Guarantees/warranties: NHBC, damp, timber, windows, electrical, roofing, heating, underpinning, insulation — which apply? Copies supplied or to follow.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 19.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q19_2",
+          "text": "(19.2) Any claims under those guarantees? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 19.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q20_1",
+          "text": "(20.1) Do you insure the property? If No, who insures?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 20.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q20_2",
+          "text": "(20.2) Difficulty obtaining insurance? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 20.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q20_3",
+          "text": "(20.3) Insurance subject to special conditions? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 20.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q20_4",
+          "text": "(20.4) Any buildings insurance claims? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 20.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q21_1",
+          "text": "(21.1) Do you live at the property?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 21.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q21_2",
+          "text": "(21.2) Anyone else aged 17+ living there? Names; tenants or lodgers; assured shortholds or licences?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 21.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q21_3",
+          "text": "(21.3) Sold with vacant possession? Explain meaning in your own words and answer.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 21.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q21_4",
+          "text": "(21.4) Have all occupiers aged 17+ agreed to sign the contract?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 21.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q21_5",
+          "text": "(21.5) If not vacant possession: occupiers and tenancy agreements (details / copies).",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 21.5. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_1",
+          "text": "(22.1) Details for each connected service: mains electricity (provider, meter location, MPAN), gas (MPRN), oil, other — as applicable.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_2",
+          "text": "(22.2) Electrical installation tested by qualified electrician? Year and certificate copy.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_3",
+          "text": "(22.3) Rewired or electrical work since 1 Jan 2005? BS7671 certificate, Building Regulations compliance, or why exempt.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_4",
+          "text": "(22.4) How is the property heated? Tick all that apply; heat pump provider/model if relevant.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_5",
+          "text": "(22.5) Connected to mains foul drainage? Surface water drainage?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.5. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_6",
+          "text": "(22.6) Septic tank, sewage treatment plant, or cesspool? If any, answer 22.7 onwards.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.6. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_7",
+          "text": "(22.7) When was the sewerage system installed (MM/YYYY)?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.7. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_8",
+          "text": "(22.8) When was sewerage system last replaced or upgraded?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.8. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_9",
+          "text": "(22.9) If cesspool, when last emptied?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.9. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_10",
+          "text": "(22.10) If sewage treatment plant, when last serviced?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.10. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_11",
+          "text": "(22.11) Discharge to ground or surface water?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.11. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_12",
+          "text": "(22.12) If discharges to ground, infiltration system?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.12. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_13",
+          "text": "(22.13) System shared with other properties? How many?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.13. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q22_14",
+          "text": "(22.14) Any part of sewerage system or access outside your boundary? Plan if Yes.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 22.14. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q23_1",
+          "text": "(23.1) Supply a copy of the EPC (or state to follow).",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 23.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q23_2",
+          "text": "(23.2) Green Deal financed installations? Details and last electricity bill copy.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 23.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q23_3",
+          "text": "(23.3) Japanese knotweed on or adjacent to the property? Management plan in place?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 23.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q23_4",
+          "text": "(23.4) Radon test carried out? Report copy; result below action level?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 23.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q23_5",
+          "text": "(23.5) Remedial measures for Radon on construction? Details.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 23.5. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q24_1",
+          "text": "(24.1) Sale dependent on completing another purchase the same day?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 24.1. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q24_2",
+          "text": "(24.2) Special requirements about moving date?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 24.2. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q24_3",
+          "text": "(24.3) Will sale price repay all mortgages and charges?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 24.3. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q24_4",
+          "text": "(24.4) Will seller ensure rubbish removed, property clean, only agreed contents/fixtures remain? Confirm each part.",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 24.4. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        },
+        {
+          "key": "q25_additional",
+          "text": "(25) Additional information you think the buyer should know about the property or area?",
+          "type": "textarea",
+          "required": false,
+          "help": "Refer to your TA6 paper form for tick-boxes and sub-parts; describe your position in full.",
+          "ai_prompt": "You are helping a property seller with Law Society TA6 question 25. Explain the question in plain English. If they are unsure, suggest checking title deeds, lease, EPC, or asking their solicitor. When they have enough detail, summarise and ask to confirm saving."
+        }
+      ]
+    }
+  ]
+}

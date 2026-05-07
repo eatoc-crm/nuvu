@@ -1,6 +1,23 @@
-"""Buyer / vendor portal (demo login, live Supabase property snapshot)."""
+"""Buyer / vendor portal (demo login, live Supabase property snapshot).
 
-from flask import Blueprint, redirect, render_template_string, request, session, url_for
+Staff review/dispatch (TA6/TA10) lives on the same ``portal`` Blueprint (``/portal/...``).
+"""
+
+import json
+from datetime import datetime, timezone
+from functools import wraps
+from pathlib import Path
+
+from flask import (
+    Blueprint,
+    jsonify,
+    redirect,
+    render_template,
+    render_template_string,
+    request,
+    session,
+    url_for,
+)
 
 from db_supabase import fetch_property_images, fetch_sales_pipeline, fetch_sales_progression_recent
 from routes.crm import (
@@ -10,7 +27,18 @@ from routes.crm import (
     _milestones_from_record,
     _progress_from_record,
 )
+from db_portal import (
+    fetch_form_completion_by_session,
+    fetch_form_responses,
+    fetch_portal_session,
+    record_form_completion_dispatch,
+)
 from routes.dashboard import _match_pipeline, _normalize_addr
+from routes.portal_notify import send_solicitor_dispatch_email
+from routes.portal_forms import load_form
+from utils.portal_config import portal_dispatch_enabled
+from utils.portal_milestones import augment_protocol_forms_returned
+from utils.pdf_filler import ROOT, fill_ta_form
 
 portal_bp = Blueprint("portal", __name__, url_prefix="/portal")
 
@@ -381,3 +409,151 @@ def portal_logout():
     session.pop(_SESSION_KEY, None)
     session.pop("portal_email", None)
     return redirect(url_for("portal.portal_root"))
+
+
+# ─────────────────────────────────────────────────────────────
+#  Staff — TA6/TA10 review & dispatch (Window 3, NUVU dashboard auth)
+# ─────────────────────────────────────────────────────────────
+
+
+def _require_nuvu_staff():
+    if not session.get("nuvu_email"):
+        return redirect("/login")
+    return None
+
+
+def _require_staff(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        redir = _require_nuvu_staff()
+        if redir is not None:
+            return redir
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
+@portal_bp.route("/review/<session_id>")
+@_require_staff
+def portal_review_page(session_id: str):
+    session_id = (session_id or "").strip()
+    sess = fetch_portal_session(session_id)
+    if not sess:
+        return render_template(
+            "portal/portal_error.html",
+            message="Unknown or invalid session.",
+        ), 404
+    form_type = (sess.get("form_type") or "ta6").lower()
+    form = load_form(form_type)
+    rows = fetch_form_responses(session_id)
+    by_q: dict[tuple[str, str], dict] = {
+        (r.get("section_key"), r.get("question_key")): r for r in rows
+    }
+
+    def _fmt_answer(val):
+        if val is None:
+            return ""
+        if isinstance(val, str):
+            return val
+        return json.dumps(val, ensure_ascii=False)
+
+    sections_out = []
+    for sec in form.get("sections") or []:
+        sk = sec.get("key") or ""
+        items = []
+        for q in sec.get("questions") or []:
+            qk = q.get("key") or ""
+            row = by_q.get((sk, qk))
+            st = (row or {}).get("status") or "pending"
+            raw_ans = (row or {}).get("answer")
+            items.append(
+                {
+                    "question_text": q.get("text") or qk,
+                    "status": st,
+                    "answer": raw_ans,
+                    "display_answer": _fmt_answer(raw_ans),
+                }
+            )
+        sections_out.append(
+            {
+                "title": sec.get("title") or sk,
+                "key": sk,
+                "items": items,
+            }
+        )
+    completion = fetch_form_completion_by_session(session_id)
+    return render_template(
+        "portal/portal_review.html",
+        session_id=session_id,
+        property_address=sess.get("property_address") or "",
+        seller_name=sess.get("seller_name") or "",
+        form_title=form.get("title") or form_type.upper(),
+        sections=sections_out,
+        completion=completion,
+        dispatch_enabled=portal_dispatch_enabled(),
+    )
+
+
+@portal_bp.route("/api/dispatch", methods=["POST"])
+@_require_staff
+def api_portal_dispatch():
+    if not portal_dispatch_enabled():
+        return jsonify({"error": "Dispatch is disabled (PORTAL_DISPATCH_ENABLED)."}), 403
+    body = request.get_json(silent=True) or {}
+    session_id = (body.get("session_id") or "").strip()
+    solicitor_email = (body.get("solicitor_email") or "").strip()
+    if not session_id or not solicitor_email:
+        return jsonify({"error": "session_id and solicitor_email required"}), 400
+
+    sess = fetch_portal_session(session_id)
+    if not sess:
+        return jsonify({"error": "Unknown session"}), 404
+    comp = fetch_form_completion_by_session(session_id)
+    if not comp or (comp.get("status") or "").lower() != "completed":
+        return jsonify({"error": "Form is not in completed / awaiting review state."}), 400
+
+    form_type = (sess.get("form_type") or "ta6").lower()
+    form_label = "TA6" if form_type == "ta6" else "TA10"
+    addr = sess.get("property_address") or ""
+    seller = sess.get("seller_name") or "the seller"
+
+    try:
+        pdf_path_str = fill_ta_form(form_type, addr, session_id)
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 400
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"PDF generation failed: {e}"}), 500
+
+    pdf_path = Path(pdf_path_str)
+    if not pdf_path.is_file():
+        return jsonify({"error": "Generated PDF not found on disk."}), 500
+    pdf_bytes = pdf_path.read_bytes()
+    _dt = datetime.now(timezone.utc)
+    completed_on = f"{_dt.day} {_dt.strftime('%B %Y')}"
+    fname = pdf_path.name
+
+    try:
+        send_solicitor_dispatch_email(
+            to_email=solicitor_email,
+            form_label=form_label,
+            property_address=addr,
+            seller_name=seller,
+            completed_on=completed_on,
+            pdf_path=str(pdf_path),
+            pdf_bytes=pdf_bytes,
+            filename=fname,
+        )
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": f"Email send failed: {e}"}), 502
+
+    reviewer = (session.get("nuvu_email") or "").strip() or "unknown"
+    record_form_completion_dispatch(
+        session_id, reviewed_by=reviewer, dispatched_to=solicitor_email
+    )
+    augment_protocol_forms_returned(addr)
+
+    return jsonify({"ok": True, "pdf_path": str(pdf_path.relative_to(ROOT))})

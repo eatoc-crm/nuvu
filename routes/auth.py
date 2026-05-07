@@ -185,8 +185,28 @@ AUTH_EXEMPT_PREFIXES = (
 
 @auth_bp.before_app_request
 def require_login():
+    path = request.path
+    if path.startswith("/portal/review") or path.rstrip("/") == "/portal/api/dispatch":
+        if not session.get("nuvu_email"):
+            return redirect("/login")
+        return None
+    seller_portal_apis = (
+        "/portal/api/form-state",
+        "/portal/api/chat",
+        "/portal/api/save-answer",
+    )
+    if path.rstrip("/") in {p.rstrip("/") for p in seller_portal_apis}:
+        return None
+    if path.startswith("/portal/form"):
+        return None
+    if path in ("/portal", "/portal/"):
+        return None
+    if path.startswith("/portal/login") or path.startswith("/portal/logout") or path.startswith(
+        "/portal/home"
+    ):
+        return None
     for prefix in AUTH_EXEMPT_PREFIXES:
-        if request.path.startswith(prefix):
+        if path.startswith(prefix):
             return
     if not session.get("nuvu_email"):
         return redirect("/login")

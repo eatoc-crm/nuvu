@@ -32,6 +32,7 @@ SALES_PROGRESSION_OVERLAY_COLS = (
     "enquiries_answered",
     "exchange_date",
     "completion_date",
+    "protocol_forms_returned",
     "notes",
     "nuvu_notes",
     "buyer_solicitor_notes",
@@ -99,7 +100,7 @@ def fetch_sales_progression_overlay_by_addresses(addresses: list[str]):
         return {}
     client = supabase_for_backend()
     cols = ",".join(SALES_PROGRESSION_OVERLAY_COLS)
-    select_cols = "property_address," + cols
+    select_cols = "id,property_address," + cols
     out: dict[str, dict] = {}
     seen_raw: set[str] = set()
     raw_unique: list[str] = []

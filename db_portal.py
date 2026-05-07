@@ -1,0 +1,438 @@
+"""Portal seller forms — Supabase portal_sessions / form_responses (Window 1 schema)."""
+
+from __future__ import annotations
+
+import os
+import uuid
+from typing import Any
+
+from db_supabase import supabase_for_backend
+
+DEMO_SESSION_ID = "00000000-0000-4000-8000-000000000001"
+
+
+def demo_enabled() -> bool:
+    return os.environ.get("PORTAL_FORM_DEMO", "").lower() in ("1", "true", "yes")
+
+
+def _demo_session(form_type: str = "ta6") -> dict[str, Any]:
+    return {
+        "id": DEMO_SESSION_ID,
+        "property_address": os.environ.get(
+            "PORTAL_DEMO_ADDRESS", "12 Example Road, Coventry CV1 2AB"
+        ),
+        "seller_name": os.environ.get("PORTAL_DEMO_SELLER", "Alex Seller"),
+        "form_type": (form_type or "ta6").lower(),
+    }
+
+
+def fetch_portal_session(session_id: str) -> dict[str, Any] | None:
+    if not session_id:
+        return None
+    if demo_enabled() and session_id == DEMO_SESSION_ID:
+        return _demo_session()
+    client = supabase_for_backend()
+    try:
+        res = (
+            client.table("portal_sessions")
+            .select("id, property_address, seller_name, form_type")
+            .eq("id", session_id)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None
+
+
+def fetch_form_responses(session_id: str) -> list[dict[str, Any]]:
+    if demo_enabled() and session_id == DEMO_SESSION_ID:
+        from flask import session
+
+        raw = session.get("portal_demo_responses") or []
+        return list(raw)
+    client = supabase_for_backend()
+    try:
+        res = (
+            client.table("form_responses")
+            .select(
+                "id, session_id, section_key, question_key, answer, status, ai_conversation, updated_at"
+            )
+            .eq("session_id", session_id)
+            .execute()
+        )
+        return res.data or []
+    except Exception:
+        return []
+
+
+def _demo_store_response(session_id: str, row: dict[str, Any]) -> None:
+    from flask import session
+
+    store: list[dict[str, Any]] = list(session.get("portal_demo_responses") or [])
+    key = (row.get("section_key"), row.get("question_key"))
+    for i, existing in enumerate(store):
+        if (existing.get("section_key"), existing.get("question_key")) == key:
+            store[i] = {**existing, **row}
+            break
+    else:
+        store.append(
+            {
+                "id": str(uuid.uuid4()),
+                "session_id": session_id,
+                **row,
+            }
+        )
+    session["portal_demo_responses"] = store
+    session.modified = True
+
+
+def upsert_form_response(
+    session_id: str,
+    section_key: str,
+    question_key: str,
+    *,
+    answer: dict[str, Any] | None,
+    status: str,
+    ai_conversation: list[dict[str, str]] | None = None,
+) -> dict[str, Any] | None:
+    payload: dict[str, Any] = {
+        "session_id": session_id,
+        "section_key": section_key,
+        "question_key": question_key,
+        "status": status,
+        "answer": answer,
+    }
+    if ai_conversation is not None:
+        payload["ai_conversation"] = ai_conversation
+
+    if demo_enabled() and session_id == DEMO_SESSION_ID:
+        _demo_store_response(session_id, payload)
+        return payload
+
+    client = supabase_for_backend()
+    try:
+        existing = (
+            client.table("form_responses")
+            .select("id")
+            .eq("session_id", session_id)
+            .eq("question_key", question_key)
+            .limit(1)
+            .execute()
+        )
+        rows = existing.data or []
+        if rows:
+            rid = rows[0]["id"]
+            upd = {k: v for k, v in payload.items() if k != "session_id"}
+            client.table("form_responses").update(upd).eq("id", rid).execute()
+        else:
+            ins = {**payload, "id": str(uuid.uuid4())}
+            client.table("form_responses").insert(ins).execute()
+        return payload
+    except Exception:
+        return None
+
+
+def update_ai_conversation_only(
+    session_id: str,
+    section_key: str,
+    question_key: str,
+    messages: list[dict[str, str]],
+) -> None:
+    if demo_enabled() and session_id == DEMO_SESSION_ID:
+        existing = None
+        from flask import session as fsession
+
+        for row in fsession.get("portal_demo_responses") or []:
+            if row.get("question_key") == question_key and row.get("section_key") == section_key:
+                existing = row
+                break
+        merged = {**(existing or {}), "ai_conversation": messages, "section_key": section_key, "question_key": question_key}
+        if existing is None:
+            merged.setdefault("status", "in_progress")
+            merged.setdefault("answer", None)
+        _demo_store_response(session_id, merged)
+        return
+
+    client = supabase_for_backend()
+    try:
+        existing = (
+            client.table("form_responses")
+            .select("id, answer, status")
+            .eq("session_id", session_id)
+            .eq("question_key", question_key)
+            .limit(1)
+            .execute()
+        )
+        rows = existing.data or []
+        if rows:
+            client.table("form_responses").update({"ai_conversation": messages}).eq(
+                "id", rows[0]["id"]
+            ).execute()
+        else:
+            client.table("form_responses").insert(
+                {
+                    "id": str(uuid.uuid4()),
+                    "session_id": session_id,
+                    "section_key": section_key,
+                    "question_key": question_key,
+                    "answer": None,
+                    "status": "in_progress",
+                    "ai_conversation": messages,
+                }
+            ).execute()
+    except Exception:
+        pass
+
+
+# ─────────────────────────────────────────────────────────────
+#  form_completions (Window 3) — optional table; demo uses Flask session
+# ─────────────────────────────────────────────────────────────
+
+
+def _demo_completions() -> dict[str, dict[str, Any]]:
+    from flask import session
+
+    return session.setdefault("portal_demo_form_completions", {})
+
+
+def fetch_form_completion_by_session(session_id: str) -> dict[str, Any] | None:
+    if not session_id:
+        return None
+    if demo_enabled() and session_id == DEMO_SESSION_ID:
+        return _demo_completions().get(session_id)
+    client = supabase_for_backend()
+    try:
+        res = (
+            client.table("form_completions")
+            .select(
+                "id, session_id, property_address, form_type, status, "
+                "questions_answered, questions_total, pdf_path, "
+                "reviewed_by, reviewed_at, dispatched_at, dispatched_to"
+            )
+            .eq("session_id", session_id)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None
+
+
+def upsert_form_completion_progress(
+    session_id: str,
+    property_address: str,
+    form_type: str,
+    *,
+    answered: int,
+    total: int,
+    status: str,
+) -> None:
+    ft = (form_type or "ta6").lower()
+    payload: dict[str, Any] = {
+        "session_id": session_id,
+        "property_address": property_address,
+        "form_type": ft,
+        "questions_answered": answered,
+        "questions_total": total,
+        "status": status,
+    }
+    if demo_enabled() and session_id == DEMO_SESSION_ID:
+        prev = _demo_completions().get(session_id) or {}
+        merged = {
+            **prev,
+            **payload,
+            "id": prev.get("id") or "demo-completion",
+        }
+        _demo_completions()[session_id] = merged
+        from flask import session as fs
+
+        fs.modified = True
+        return
+    client = supabase_for_backend()
+    try:
+        client.table("form_completions").upsert(payload, on_conflict="session_id").execute()
+    except Exception:
+        pass
+
+
+def update_form_completion_pdf_path(session_id: str, pdf_path: str) -> None:
+    if demo_enabled() and session_id == DEMO_SESSION_ID:
+        prev = _demo_completions().get(session_id) or {"session_id": session_id}
+        _demo_completions()[session_id] = {**prev, "pdf_path": pdf_path}
+        from flask import session as fs
+
+        fs.modified = True
+        return
+    client = supabase_for_backend()
+    try:
+        client.table("form_completions").update({"pdf_path": pdf_path}).eq(
+            "session_id", session_id
+        ).execute()
+    except Exception:
+        pass
+
+
+def record_form_completion_dispatch(
+    session_id: str,
+    *,
+    reviewed_by: str,
+    dispatched_to: str,
+) -> None:
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc).isoformat()
+    payload = {
+        "reviewed_by": reviewed_by,
+        "reviewed_at": now,
+        "dispatched_at": now,
+        "dispatched_to": dispatched_to,
+        "status": "dispatched",
+    }
+    if demo_enabled() and session_id == DEMO_SESSION_ID:
+        prev = _demo_completions().get(session_id) or {"session_id": session_id}
+        _demo_completions()[session_id] = {**prev, **payload}
+        from flask import session as fs
+
+        fs.modified = True
+        return
+    client = supabase_for_backend()
+    try:
+        client.table("form_completions").update(payload).eq(
+            "session_id", session_id
+        ).execute()
+    except Exception:
+        pass
+
+
+def _chunked(items: list[str], size: int) -> list[list[str]]:
+    return [items[i : i + size] for i in range(0, len(items), size)]
+
+
+def fetch_portal_sessions_latest(limit: int = 400) -> list[dict[str, Any]]:
+    client = supabase_for_backend()
+    try:
+        res = (
+            client.table("portal_sessions")
+            .select("id, property_address, seller_name, form_type")
+            .order("id", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        return res.data or []
+    except Exception:
+        return []
+
+
+def fetch_form_completions_for_sessions(
+    session_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    if not session_ids:
+        return {}
+    client = supabase_for_backend()
+    out: dict[str, dict[str, Any]] = {}
+    for chunk in _chunked(list({str(s) for s in session_ids if s}), 80):
+        try:
+            res = (
+                client.table("form_completions")
+                .select(
+                    "session_id, status, questions_answered, questions_total, "
+                    "pdf_path, dispatched_at, dispatched_to, reviewed_at"
+                )
+                .in_("session_id", chunk)
+                .execute()
+            )
+            for row in res.data or []:
+                sid = str(row.get("session_id") or "")
+                if sid:
+                    out[sid] = row
+        except Exception:
+            continue
+    return out
+
+
+def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
+    """Mutate each property dict with portal_ta6 / portal_ta10 summary for the dashboard."""
+    from utils.address import normalise_address
+
+    sessions = fetch_portal_sessions_latest()
+    by_norm_form: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in sessions:
+        pa = row.get("property_address") or ""
+        nk = normalise_address(pa)
+        if not nk:
+            continue
+        ft = (row.get("form_type") or "ta6").lower()
+        key = (nk, ft)
+        if key not in by_norm_form:
+            by_norm_form[key] = row
+
+    if demo_enabled():
+        d = _demo_session("ta6")
+        nk0 = normalise_address(d["property_address"] or "")
+        if nk0:
+            by_norm_form[(nk0, "ta6")] = d
+
+    sids = [str(r["id"]) for r in by_norm_form.values() if r.get("id")]
+    completions = fetch_form_completions_for_sessions(sids)
+    if demo_enabled():
+        dc = _demo_completions().get(DEMO_SESSION_ID)
+        if dc and DEMO_SESSION_ID in sids:
+            completions[str(DEMO_SESSION_ID)] = dc
+
+    def line_for(ft: str, nk: str) -> dict[str, Any]:
+        sess = by_norm_form.get((nk, ft))
+        if not sess:
+            return {
+                "status_line": "Not Started",
+                "session_id": None,
+                "progress_pct": None,
+                "dispatched_at": None,
+                "phase": "not_started",
+            }
+        sid = str(sess["id"])
+        comp = completions.get(sid) or {}
+        st = (comp.get("status") or "in_progress").lower()
+        ans = int(comp.get("questions_answered") or 0)
+        tot = int(comp.get("questions_total") or 0)
+        pct = int(round(100 * ans / tot)) if tot else None
+        disp = comp.get("dispatched_at")
+        if st == "dispatched" and disp:
+            ds = str(disp)[:10]
+            return {
+                "status_line": f"Dispatched {ds}",
+                "session_id": sid,
+                "progress_pct": 100,
+                "dispatched_at": disp,
+                "phase": "dispatched",
+            }
+        if st == "completed":
+            return {
+                "status_line": "Completed — Awaiting Review",
+                "session_id": sid,
+                "progress_pct": pct if pct is not None else 100,
+                "dispatched_at": None,
+                "phase": "completed",
+            }
+        if pct is not None and tot:
+            return {
+                "status_line": f"{pct}% Complete",
+                "session_id": sid,
+                "progress_pct": pct,
+                "dispatched_at": None,
+                "phase": "in_progress",
+            }
+        return {
+            "status_line": "In progress",
+            "session_id": sid,
+            "progress_pct": pct,
+            "dispatched_at": None,
+            "phase": "in_progress",
+        }
+
+    for p in properties:
+        nk = normalise_address(p.get("address") or "")
+        p["portal_ta6"] = line_for("ta6", nk)
+        p["portal_ta10"] = line_for("ta10", nk)

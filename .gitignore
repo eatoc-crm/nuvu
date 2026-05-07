@@ -4,3 +4,7 @@ __pycache__/
 *.db
 .env
 .DS_Store
+
+generated_pdfs/
+
+eatoc-backend/node_modules/

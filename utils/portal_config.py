@@ -6,7 +6,9 @@ import os
 
 
 def env_bool(name: str, default: str = "false") -> bool:
-    return os.environ.get(name, default).lower() in ("1", "true", "yes")
+    raw = os.environ.get(name, default) or ""
+    v = raw.strip().strip("\ufeff").lower()
+    return v in ("1", "true", "yes", "on")
 
 
 def portal_forms_enabled() -> bool:

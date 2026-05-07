@@ -12,7 +12,17 @@ DEMO_SESSION_ID = "00000000-0000-4000-8000-000000000001"
 
 
 def demo_enabled() -> bool:
-    return os.environ.get("PORTAL_FORM_DEMO", "").lower() in ("1", "true", "yes")
+    """Railway / shell often add trailing spaces or a BOM; normalise before parsing."""
+    raw = os.environ.get("PORTAL_FORM_DEMO", "") or ""
+    v = raw.strip().strip("\ufeff").lower()
+    return v in ("1", "true", "yes", "on")
+
+
+def is_demo_session_id(session_id: str | None) -> bool:
+    """Match the demo UUID regardless of surrounding whitespace or hex case."""
+    a = (session_id or "").strip().lower()
+    b = DEMO_SESSION_ID.strip().lower()
+    return bool(a) and a == b
 
 
 def _demo_session(form_type: str = "ta6") -> dict[str, Any]:
@@ -26,11 +36,13 @@ def _demo_session(form_type: str = "ta6") -> dict[str, Any]:
     }
 
 
-def fetch_portal_session(session_id: str) -> dict[str, Any] | None:
+def fetch_portal_session(
+    session_id: str, form_type: str | None = None
+) -> dict[str, Any] | None:
     if not session_id:
         return None
-    if demo_enabled() and session_id == DEMO_SESSION_ID:
-        return _demo_session()
+    if demo_enabled() and is_demo_session_id(session_id):
+        return _demo_session(form_type or "ta6")
     client = supabase_for_backend()
     try:
         res = (
@@ -47,7 +59,7 @@ def fetch_portal_session(session_id: str) -> dict[str, Any] | None:
 
 
 def fetch_form_responses(session_id: str) -> list[dict[str, Any]]:
-    if demo_enabled() and session_id == DEMO_SESSION_ID:
+    if demo_enabled() and is_demo_session_id(session_id):
         from flask import session
 
         raw = session.get("portal_demo_responses") or []
@@ -107,7 +119,7 @@ def upsert_form_response(
     if ai_conversation is not None:
         payload["ai_conversation"] = ai_conversation
 
-    if demo_enabled() and session_id == DEMO_SESSION_ID:
+    if demo_enabled() and is_demo_session_id(session_id):
         _demo_store_response(session_id, payload)
         return payload
 
@@ -140,7 +152,7 @@ def update_ai_conversation_only(
     question_key: str,
     messages: list[dict[str, str]],
 ) -> None:
-    if demo_enabled() and session_id == DEMO_SESSION_ID:
+    if demo_enabled() and is_demo_session_id(session_id):
         existing = None
         from flask import session as fsession
 
@@ -200,7 +212,7 @@ def _demo_completions() -> dict[str, dict[str, Any]]:
 def fetch_form_completion_by_session(session_id: str) -> dict[str, Any] | None:
     if not session_id:
         return None
-    if demo_enabled() and session_id == DEMO_SESSION_ID:
+    if demo_enabled() and is_demo_session_id(session_id):
         return _demo_completions().get(session_id)
     client = supabase_for_backend()
     try:
@@ -239,7 +251,7 @@ def upsert_form_completion_progress(
         "questions_total": total,
         "status": status,
     }
-    if demo_enabled() and session_id == DEMO_SESSION_ID:
+    if demo_enabled() and is_demo_session_id(session_id):
         prev = _demo_completions().get(session_id) or {}
         merged = {
             **prev,
@@ -259,7 +271,7 @@ def upsert_form_completion_progress(
 
 
 def update_form_completion_pdf_path(session_id: str, pdf_path: str) -> None:
-    if demo_enabled() and session_id == DEMO_SESSION_ID:
+    if demo_enabled() and is_demo_session_id(session_id):
         prev = _demo_completions().get(session_id) or {"session_id": session_id}
         _demo_completions()[session_id] = {**prev, "pdf_path": pdf_path}
         from flask import session as fs
@@ -291,7 +303,7 @@ def record_form_completion_dispatch(
         "dispatched_to": dispatched_to,
         "status": "dispatched",
     }
-    if demo_enabled() and session_id == DEMO_SESSION_ID:
+    if demo_enabled() and is_demo_session_id(session_id):
         prev = _demo_completions().get(session_id) or {"session_id": session_id}
         _demo_completions()[session_id] = {**prev, **payload}
         from flask import session as fs

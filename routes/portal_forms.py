@@ -173,7 +173,7 @@ def portal_form_page():
             ),
             400,
         )
-    session = fetch_portal_session(session_id)
+    session = fetch_portal_session(session_id, form_type=form_type)
     if not session:
         return (
             render_template(
@@ -200,7 +200,7 @@ def api_form_state():
     form_type = (request.args.get("form") or "ta6").lower()
     if not session_id:
         return jsonify({"error": "session_id required"}), 400
-    session = fetch_portal_session(session_id)
+    session = fetch_portal_session(session_id, form_type=form_type)
     if not session:
         return jsonify({"error": "Unknown session"}), 404
     form = load_form(form_type)
@@ -235,7 +235,8 @@ def api_chat():
     messages = body.get("messages") or []
     if not session_id or not section_key or not question_key:
         return jsonify({"error": "session_id, section_key and question_key required"}), 400
-    session = fetch_portal_session(session_id)
+    form_type_hint = (body.get("form_type") or "ta6").lower()
+    session = fetch_portal_session(session_id, form_type=form_type_hint)
     if not session:
         return jsonify({"error": "Unknown session"}), 404
     form_type = (body.get("form_type") or session.get("form_type") or "ta6").lower()
@@ -289,7 +290,8 @@ def api_save_answer():
         return jsonify({"error": "session_id, section_key and question_key required"}), 400
     if status not in ("answered", "skipped"):
         return jsonify({"error": "status must be answered or skipped"}), 400
-    session = fetch_portal_session(session_id)
+    form_type_hint = (body.get("form_type") or "ta6").lower()
+    session = fetch_portal_session(session_id, form_type=form_type_hint)
     if not session:
         return jsonify({"error": "Unknown session"}), 404
     if status == "skipped":

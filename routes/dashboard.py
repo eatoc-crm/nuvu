@@ -1,9 +1,15 @@
 import json
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import Blueprint, render_template_string
 
-from db_supabase import fetch_chain_links, fetch_property_images
+from db_supabase import (
+    fetch_chain_links,
+    fetch_local_authority_search_times,
+    fetch_preferred_surveyors,
+    fetch_property_images,
+    fetch_sales_pipeline,
+)
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -64,7 +70,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   display:flex;justify-content:center;padding:0;
 }
 .hs{
-  flex:1;max-width:220px;text-align:center;padding:22px 16px;
+  flex:1;min-width:0;max-width:200px;text-align:center;padding:22px 12px;
   border-right:1px solid rgba(255,255,255,.08);
   cursor:pointer;transition:background var(--t);
 }
@@ -467,6 +473,56 @@ a.portal-review-link:hover{color:var(--green)}
   font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;
   color:var(--txt-light);font-weight:600;margin-bottom:6px;text-align:center;
 }
+
+/* ═══ NEEDS ATTENTION + COLLAPSIBLE SECTIONS ═══════════ */
+.needs-attention-region{
+  background:#FFF5F5;border-radius:16px;padding:8px 20px 24px;margin-bottom:28px;
+  border:1px solid #f5d5d5;
+}
+.section-collapse-hdr{
+  width:100%;display:flex;justify-content:space-between;align-items:center;
+  text-align:left;background:transparent;border:none;cursor:pointer;
+  padding:16px 4px 12px;
+}
+.section-collapse-hdr h2{
+  font-size:1.25rem;font-weight:800;color:#1B3A5C;margin:0;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.na-count-badge,.sec-count-badge{
+  font-size:.75rem;font-weight:800;padding:4px 12px;border-radius:999px;
+  background:#e8ecf1;color:var(--txt-mid);
+}
+.na-count-badge.sev-amber{background:#FFF3CD;color:#856404}
+.na-count-badge.sev-red{background:#F8D7DA;color:#721C24}
+.section-collapse-hdr svg{flex-shrink:0;transition:transform var(--t)}
+.section-collapse-hdr.collapsed svg{transform:rotate(-90deg)}
+.section-collapse-body{overflow:hidden}
+.section-collapse-body:not(.open){display:none}
+.na-empty{padding:24px;text-align:center;color:var(--txt-light);font-style:italic}
+.card-grid-na{grid-template-columns:repeat(2,1fr)}
+.prop-card-na{min-height:auto}
+.prop-card-na .card-photo{height:180px}
+.na-badges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 8px}
+.na-badge{
+  font-size:.68rem;font-weight:700;padding:5px 10px;border-radius:6px;
+}
+.na-badge.amber{background:#FFF3CD;color:#856404}
+.na-badge.red{background:#F8D7DA;color:#721C24}
+.na-overdue{font-size:1.35rem;font-weight:900;color:#721C24;margin:4px 0}
+.na-action{font-size:.85rem;color:var(--txt);line-height:1.4;margin-bottom:10px}
+.na-cta{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:700;
+  background:var(--navy);color:#fff;text-decoration:none;margin-bottom:12px;
+}
+.na-cta:hover{filter:brightness(1.08)}
+.m-pipe-row{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;flex-wrap:nowrap}
+.m-pipe-row label{font-size:.68rem;font-weight:600;color:var(--txt-light);text-transform:uppercase;letter-spacing:.5px}
+.m-pipe-row select,.m-pipe-row input{
+  font-size:.85rem;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;
+}
+.m-pipe-save{background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:4px}
+@media(max-width:960px){.card-grid-na{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -563,6 +619,105 @@ a.portal-review-link:hover{color:var(--green)}
 </div>
 {% endmacro %}
 
+{% macro na_card(p, triggers) %}
+{% set primary = triggers[0] %}
+<div class="prop-card prop-card-na" id="card-na-{{ p.id }}" data-prop-id="{{ p.id }}">
+  <div class="card-photo">
+    {% if p.image_url %}<img class="card-photo-bg" src="{{ p.image_url|safe }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="card-photo-bg" style="background:var(--navy-md);display:none"></div>{% else %}<div class="card-photo-bg" style="background:var(--navy-md)"></div>{% endif %}
+    <span class="card-chip chip-{{ p.status }}">{{ p.status_label }}</span>
+  </div>
+  <div class="card-body">
+    <div class="card-name">{{ p.address }}, {{ p.location }}</div>
+    <div class="na-badges">
+      {% for t in triggers %}
+      <span class="na-badge {{ t.severity }}">{{ t.trigger_name }} — {{ t.days_overdue }}d</span>
+      {% endfor %}
+    </div>
+    <div class="na-overdue">{% if primary.days_overdue > 0 %}{{ primary.days_overdue }} days overdue{% else %}Immediate{% endif %}</div>
+    <p class="na-action">{{ primary.suggested_action }}</p>
+    <a class="na-cta" href="{{ primary.quick_action.href }}" {% if primary.quick_action.href == '#' %}onclick="event.stopPropagation();return false;"{% else %}onclick="event.stopPropagation();"{% endif %}>{{ primary.quick_action.label }}</a>
+    <div class="card-progress-row">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 64 64">
+          <circle class="ring-bg" cx="32" cy="32" r="27"/>
+          <circle class="ring-fg clr-{{ p.status }}" cx="32" cy="32" r="27"
+            stroke-dasharray="{{ (2 * 3.14159 * 27) | round(1) }}"
+            stroke-dashoffset="{{ ((100 - p.progress) / 100 * 2 * 3.14159 * 27) | round(1) }}"/>
+        </svg>
+        <span class="ring-pct">{{ p.progress }}%</span>
+      </div>
+      <div class="card-duration">
+        <div class="dur-label">Duration</div>
+        <div class="dur-val">{{ p.duration_days }} days</div>
+        <div class="dur-target">Target: {{ p.target_days }} days</div>
+      </div>
+    </div>
+    <div class="card-checks">
+      {% for c in p.card_checks %}
+      <div class="chk {{ 'chk-done' if c.done else 'chk-pending' }}">
+        <span class="chk-icon {{ 'done' if c.done else 'pending' }}">{% if c.done %}&#x2713;{% endif %}</span>
+        {{ c.label }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% set cl = p.chain_links|default([]) %}
+  <button class="chain-toggle" data-chain-id="na-{{ p.id }}" onclick="event.stopPropagation();toggleChain('na-{{ p.id }}')">
+    <span class="chain-lbl">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      Chain {% if cl|length > 0 %}({{ cl|length }} link{{ 's' if cl|length != 1 }}){% else %}(no links added){% endif %}
+    </span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="chain-panel" id="chainPanel-na-{{ p.id }}">
+    {% if cl|length > 0 %}
+    <div class="chain-inner">
+      <div class="chain-diagram">
+        {% set above = cl|selectattr('chain_position','equalto','above')|list %}
+        {% set below = cl|selectattr('chain_position','equalto','below')|list %}
+        {% if above|length > 0 %}
+        <div class="chain-pos-label">Above</div>
+        {% for link in above %}
+        <div class="chain-link-box">
+          <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
+          <div class="chain-link-detail">
+            {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
+            {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
+            {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
+          </div>
+          {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
+        </div>
+        {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
+        {% endfor %}
+        <div class="chain-connector"></div>
+        {% endif %}
+        <div class="chain-link-box chain-anchor">
+          <div class="chain-link-addr">{{ p.address }}</div>
+          <div class="chain-link-detail" style="color:var(--navy);font-weight:600">Subject Property</div>
+        </div>
+        {% if below|length > 0 %}
+        <div class="chain-connector"></div>
+        <div class="chain-pos-label">Below</div>
+        {% for link in below %}
+        <div class="chain-link-box">
+          <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
+          <div class="chain-link-detail">
+            {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
+            {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
+            {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
+          </div>
+          {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
+        </div>
+        {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}
+
 <!-- ═══ HERO ══════════════════════════════════════════════ -->
 <div class="hero">
   <img class="hero-img" src="/static/street-scene.PNG" alt="NUVU sold boards">
@@ -576,11 +731,9 @@ a.portal-review-link:hover{color:var(--green)}
   <div class="hero-stats">
     <div class="hs" id="stat-active"><div class="hs-val">{{ stats.active }}</div><div class="hs-lbl">Active</div></div>
     <div class="hs" id="stat-on-track"><div class="hs-val">{{ stats.on_track }}</div><div class="hs-lbl">On Track</div></div>
-    <div class="hs" id="stat-at-risk"><div class="hs-val">{{ stats.at_risk }}</div><div class="hs-lbl">At Risk</div></div>
-    <div class="hs" id="stat-action"><div class="hs-val">{{ stats.action }}</div><div class="hs-lbl">Action</div></div>
+    <div class="hs" id="stat-needs-attention"><div class="hs-val">{{ stats.needs_attention }}</div><div class="hs-lbl">Needs Attention</div></div>
     <div class="hs" id="stat-exchanged"><div class="hs-val">{{ stats.exchanged }}</div><div class="hs-lbl">Exchanged</div></div>
-    <div class="hs" id="stat-fee-pipeline"><div class="hs-val">&pound;{{ "{:,.0f}".format(stats.fee_pipeline) }}</div><div class="hs-lbl">Fee Pipeline</div></div>
-    <div class="hs" id="stat-pipeline"><div class="hs-val">&pound;{{ "%.1f" | format(stats.property_pipeline / 1000000) }}M</div><div class="hs-lbl">Property Pipeline</div></div>
+    <div class="hs" id="stat-pipeline-value"><div class="hs-val">&pound;{{ "{:,.0f}".format(stats.pipeline_value) }}</div><div class="hs-lbl">Pipeline Value</div></div>
   </div>
 </div>
 
@@ -629,56 +782,96 @@ a.portal-review-link:hover{color:var(--green)}
   </div>
 </div>
 
-<!-- ═══ MAIN CONTENT — 4 SECTIONS ═══════════════════════ -->
+<!-- ═══ MAIN CONTENT — NEEDS ATTENTION + TIME BUCKETS ═════ -->
 <div class="content">
 <div class="search-no-match" id="searchNoMatch">No properties found</div>
+{% set nai = needs_attention_items|default([]) %}
+
+  <div class="needs-attention-region" id="section-needs-attention">
+    <button type="button" class="section-collapse-hdr" id="hdr-needs-attention" data-panel="panel-needs-attention">
+      <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2>&#x26A0;&#xFE0F; Needs Attention</h2>
+        <span class="na-count-badge {% if stats.needs_header_severity == 'red' %}sev-red{% elif stats.needs_header_severity == 'amber' %}sev-amber{% endif %}">{{ nai|length }}</span>
+      </span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="section-collapse-body open" id="panel-needs-attention">
+      <div class="card-grid card-grid-na">
+        {% for item in nai[:3] %}
+        {{ na_card(item.property, item.triggers) }}
+        {% endfor %}
+      </div>
+      {% if nai|length > 3 %}
+      <button class="show-more-btn" id="showMore-needs-attention">
+        Show More ({{ nai|length - 3 }})
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="show-more-panel" id="morePanel-needs-attention">
+        <div class="card-grid card-grid-na">
+          {% for item in nai[3:] %}
+          {{ na_card(item.property, item.triggers) }}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% if nai|length == 0 %}
+      <p class="na-empty">No properties need attention right now.</p>
+      {% endif %}
+    </div>
+  </div>
 
   {% for sec in sections %}
-  <div id="section-{{ sec.id }}">
-    <div class="section-banner {{ sec.border_class }}">
-      <div class="section-banner-left">
+  <div class="dash-section" id="section-{{ sec.id }}">
+    <button type="button" class="section-collapse-hdr" data-panel="panel-{{ sec.id }}">
+      <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <h2>{{ sec.icon }} {{ sec.title }}</h2>
-        <p>{{ sec.subtitle }}</p>
-      </div>
-      <div class="section-banner-right">
-        <div class="section-avg">
-          <div class="avg-label">Avg Completion</div>
-          <div class="avg-bar-wrap">
-            <div class="avg-bar"><div class="avg-bar-fill" style="width:{{ sec.avg_progress }}%;background:{{ sec.avg_color }}"></div></div>
-            <span class="avg-pct">{{ sec.avg_progress }}%</span>
+        <span class="sec-count-badge">{{ sec.count }}</span>
+      </span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="section-collapse-body open" id="panel-{{ sec.id }}">
+      <div class="section-banner {{ sec.border_class }}" style="border-left:none;padding-left:0;margin-left:0">
+        <div class="section-banner-left">
+          <p style="margin:0">{{ sec.subtitle }} &mdash; {{ sec.count }} propert{% if sec.count == 1 %}y{% else %}ies{% endif %}</p>
+        </div>
+        <div class="section-banner-right">
+          <div class="section-avg">
+            <div class="avg-label">Avg Completion</div>
+            <div class="avg-bar-wrap">
+              <div class="avg-bar"><div class="avg-bar-fill" style="width:{{ sec.avg_progress }}%;background:{{ sec.avg_color }}"></div></div>
+              <span class="avg-pct">{{ sec.avg_progress }}%</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="card-grid">
-      {% for p in sec.visible %}
-      {{ prop_card(p) }}
-      {% endfor %}
-    </div>
-
-    {% set total_extra = sec.hidden|length + sec.extra_count %}
-    {% if total_extra > 0 %}
-    <button class="show-more-btn" id="showMore-{{ sec.id }}">
-      Show More ({{ total_extra }})
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-    </button>
-    <div class="show-more-panel" id="morePanel-{{ sec.id }}">
-      {% if sec.hidden %}
       <div class="card-grid">
-        {% for p in sec.hidden %}
+        {% for p in sec.visible %}
         {{ prop_card(p) }}
         {% endfor %}
       </div>
-      {% endif %}
-      {% if sec.extra_count > 0 %}
-      <div class="extra-summary">
-        <span>+ {{ sec.extra_count }} more properties</span>
-        <span class="extra-note">Connect to your CRM for full pipeline view</span>
+      {% set total_extra = sec.hidden|length + sec.extra_count %}
+      {% if total_extra > 0 %}
+      <button class="show-more-btn" id="showMore-{{ sec.id }}">
+        Show More ({{ total_extra }})
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="show-more-panel" id="morePanel-{{ sec.id }}">
+        {% if sec.hidden %}
+        <div class="card-grid">
+          {% for p in sec.hidden %}
+          {{ prop_card(p) }}
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if sec.extra_count > 0 %}
+        <div class="extra-summary">
+          <span>+ {{ sec.extra_count }} more properties</span>
+          <span class="extra-note">Connect to your CRM for full pipeline view</span>
+        </div>
+        {% endif %}
       </div>
       {% endif %}
     </div>
-    {% endif %}
   </div>
   {% endfor %}
 
@@ -726,6 +919,17 @@ a.portal-review-link:hover{color:var(--green)}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Email
         </button>
+      </div>
+      <div class="m-pipe-row" id="mPipeRow" style="display:none">
+        <label for="mChainStatus">Chain status</label>
+        <select id="mChainStatus">
+          <option value="stable">Stable</option>
+          <option value="at_risk">At risk</option>
+          <option value="broken">Broken</option>
+        </select>
+        <label for="mLocalAuthority">Local authority (search turnaround)</label>
+        <input type="text" id="mLocalAuthority" placeholder="e.g. Westmorland and Furness" autocomplete="off">
+        <button type="button" class="m-pipe-save" id="mPipeSave">Save pipeline fields</button>
       </div>
       <hr class="m-div">
       <div class="m-ms">
@@ -839,6 +1043,10 @@ a.portal-review-link:hover{color:var(--green)}
   var mDetPanel  = document.getElementById("mDetPanel");
   var mDetGrid   = document.getElementById("mDetGrid");
   var mChain     = document.getElementById("mChain");
+  var mPipeRow   = document.getElementById("mPipeRow");
+  var mChainStatus = document.getElementById("mChainStatus");
+  var mLocalAuthority = document.getElementById("mLocalAuthority");
+  var mPipeSave  = document.getElementById("mPipeSave");
 
   function fmt(d){
     if(!d) return "\u2014";
@@ -879,6 +1087,8 @@ a.portal-review-link:hover{color:var(--green)}
     else if(field==="enquiries_answered")currentProp.enquiries_answered=v;
     else if(field==="exchange_date")currentProp.exchange_target=v;
     else if(field==="completion_date")currentProp.completion_target=v;
+    else if(field==="protocol_forms_returned")currentProp.protocol_forms_returned=v;
+    else if(field==="seller_forms_returned")currentProp.seller_forms_returned=v;
   }
 
   function price(n){ return "\u00a3"+n.toLocaleString(); }
@@ -920,6 +1130,18 @@ a.portal-review-link:hover{color:var(--green)}
 
     mNextAction.textContent=p.next_action;
     mCallLbl.textContent="Call "+p.buyer.split(" ").pop();
+
+    if(mPipeRow&&mChainStatus&&mLocalAuthority&&mPipeSave){
+      if(p._sales_pipeline_id){
+        mPipeRow.style.display="flex";
+        mChainStatus.value=p.chain_status||"stable";
+        mLocalAuthority.value=p.local_authority||"";
+        mPipeSave.setAttribute("data-pipe-id",p._sales_pipeline_id);
+      }else{
+        mPipeRow.style.display="none";
+        mPipeSave.removeAttribute("data-pipe-id");
+      }
+    }
 
     var h="";
     for(var m=0;m<p.milestones.length;m++){
@@ -1076,20 +1298,64 @@ a.portal-review-link:hover{color:var(--green)}
     if(e.key==="Escape"){closeModal();closeAnalytics();}
   };
   mDetToggle.onclick=function(){mDetPanel.classList.toggle("expanded");mDetToggle.classList.toggle("expanded");};
-  mBtnCall.onclick=function(){if(currentProp)alert("Calling "+currentProp.buyer+" on "+currentProp.buyer_phone);};
+  mBtnCall.onclick=function(){
+    if(!currentProp)return;
+    var ph=(currentProp.buyer_phone||"").replace(/\s/g,"");
+    if(ph&&ph.length>6)window.location.href="tel:"+ph.replace(/[^\d+]/g,"");
+    else alert("Calling "+currentProp.buyer+" on "+currentProp.buyer_phone);
+  };
   mBtnDone.onclick=function(){if(currentProp)alert("Marked done for "+currentProp.address+".\n\nAction: "+currentProp.next_action);};
-  mBtnEmail.onclick=function(){if(currentProp)alert("Opening email for "+currentProp.address+" progression.");};
+  mBtnEmail.onclick=function(){
+    if(!currentProp)return;
+    window.location.href="mailto:?subject="+encodeURIComponent(currentProp.address+" — progression");
+  };
+  if(mPipeSave){
+    mPipeSave.onclick=function(ev){
+      ev.stopPropagation();
+      var pid=mPipeSave.getAttribute("data-pipe-id");
+      if(!pid||!currentProp)return;
+      fetch("/api/sales-pipeline/"+encodeURIComponent(pid),{
+        method:"PATCH",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          chain_status:mChainStatus.value,
+          local_authority:mLocalAuthority.value
+        })
+      }).then(function(r){return r.json().then(function(j){return {r:r,j:j};});})
+      .then(function(x){
+        if(!x.r.ok){alert((x.j&&x.j.error)||"Save failed");return;}
+        currentProp.chain_status=mChainStatus.value;
+        currentProp.local_authority=mLocalAuthority.value;
+        alert("Saved.");
+      }).catch(function(e){alert(e.message);});
+    };
+  }
 
   /* ── CARD CLICK HANDLERS ──────────────────────────── */
   for(var i=0;i<PROPS.length;i++){
     (function(pid){
-      var card=document.getElementById("card-"+pid);
-      if(card){card.onclick=function(){openModal(pid);};}
+      function go(){openModal(pid);}
+      var c1=document.getElementById("card-"+pid);
+      var c2=document.getElementById("card-na-"+pid);
+      if(c1)c1.onclick=go;
+      if(c2)c2.onclick=go;
     })(PROPS[i].id);
   }
 
+  /* ── SECTION COLLAPSE HEADERS ─────────────────────── */
+  document.querySelectorAll(".section-collapse-hdr").forEach(function(h){
+    h.addEventListener("click",function(){
+      var pid=h.getAttribute("data-panel");
+      if(!pid)return;
+      var panel=document.getElementById(pid);
+      if(!panel)return;
+      var isOpen=panel.classList.toggle("open");
+      h.classList.toggle("collapsed",!isOpen);
+    });
+  });
+
   /* ── SHOW MORE TOGGLE HANDLERS ────────────────────── */
-  var sectionIds=["needs-action","this-month","two-months","this-quarter","active-pipeline"];
+  var sectionIds=["needs-attention","bucket-0-30","bucket-31-90","bucket-90-plus"];
   for(var s=0;s<sectionIds.length;s++){
     (function(sid){
       var btn=document.getElementById("showMore-"+sid);
@@ -1123,13 +1389,11 @@ a.portal-review-link:hover{color:var(--green)}
 
   /* ── STATS BAR — scroll to sections ───────────────── */
   var statMap={
-    "stat-active":"section-active-pipeline",
-    "stat-on-track":"section-this-month",
-    "stat-at-risk":"section-needs-action",
-    "stat-action":"section-needs-action",
-    "stat-exchanged":"section-exchanged",
-    "stat-fee-pipeline":"section-active-pipeline",
-    "stat-pipeline":"section-active-pipeline"
+    "stat-active":"section-bucket-0-30",
+    "stat-on-track":"section-bucket-0-30",
+    "stat-needs-attention":"section-needs-attention",
+    "stat-exchanged":"section-needs-attention",
+    "stat-pipeline-value":"section-bucket-0-30"
   };
   var statKeys=Object.keys(statMap);
   for(var k=0;k<statKeys.length;k++){
@@ -1148,7 +1412,7 @@ a.portal-review-link:hover{color:var(--green)}
   var searchInput=document.getElementById("searchInput");
   var searchNoMatch=document.getElementById("searchNoMatch");
   var allCards=document.querySelectorAll(".prop-card");
-  var allSections=document.querySelectorAll(".content > div[id^='section-']");
+  var allSections=document.querySelectorAll(".content > .dash-section, .content > .needs-attention-region");
   var allShowMoreBtns=document.querySelectorAll(".show-more-btn");
   var allShowMorePanels=document.querySelectorAll(".show-more-panel");
 
@@ -1247,52 +1511,66 @@ def _match_pipeline(prog_addr, pipe_lookup, pipe_norm_keys):
     return None
 
 
-def _first_iso_date(val):
-    if not val:
-        return None
-    s = str(val).strip()
-    if len(s) < 10:
-        return None
-    return s[:10]
+def _merge_sales_pipeline_for_dashboard(properties, pipe_rows, today):
+    """Attach sales_pipeline row by normalised address; exchanged + bucket days."""
+    from utils.address import normalise_address
 
+    pipe_by_norm = {}
+    for row in pipe_rows or []:
+        k = normalise_address(row.get("property_address") or "")
+        if k:
+            pipe_by_norm[k] = row
+    for p in properties:
+        k = normalise_address(p.get("address") or "")
+        pr = pipe_by_norm.get(k)
+        p["_pipeline_row"] = pr
+        sid = pr.get("id") if pr else None
+        p["_sales_pipeline_id"] = str(sid) if sid else None
 
-def _completion_iso_for_bucket(p):
-    """Prefer completion target, then exchange target, for time-based sections."""
-    return _first_iso_date(p.get("completion_target")) or _first_iso_date(
-        p.get("exchange_target")
-    )
+        if pr:
+            cs = (pr.get("chain_status") or "stable").strip().lower()
+            p["chain_status"] = (
+                cs if cs in ("stable", "at_risk", "broken") else "stable"
+            )
+            la = pr.get("local_authority")
+            if la is not None and str(la).strip():
+                p["local_authority"] = str(la).strip()
+            cp = pr.get("current_price")
+            if cp is not None and str(cp).strip() != "":
+                try:
+                    p["price"] = int(float(cp))
+                except (TypeError, ValueError):
+                    pass
+        else:
+            p.setdefault("chain_status", "stable")
+            p.setdefault("local_authority", "")
 
+        raw_ex = (p.get("_raw_status") or "").lower() == "exchanged"
+        pst = (pr.get("status") or "") if pr else ""
+        pipe_ex = "exchanged" in pst.lower()
+        p["_is_exchanged"] = bool(raw_ex or pipe_ex)
 
-def _property_on_track(p, today):
-    """In-flight sale counts as On Track for hero stats (see brief / product owner).
-
-    Rule: memo sent, searches received, and survey instructed — OR a completion
-    target more than 30 days away when milestone data is incomplete.
-    """
-    raw = (p.get("_raw_status") or "").lower()
-    if raw not in ("active", "development"):
-        return False
-    if p.get("memo_sent") and p.get("searches_received") and p.get("survey_instructed"):
-        return True
-    est = p.get("_est_comp_date")
-    if not est:
-        return False
-    try:
-        d = datetime.strptime(est, "%Y-%m-%d").date()
-        return (d - today).days > 30
-    except Exception:
-        return False
+        bdays = None
+        ts = (pr or {}).get("created_at") or p.get("_eatoc_created_at")
+        if ts:
+            try:
+                d0 = datetime.strptime(str(ts)[:10], "%Y-%m-%d").date()
+                bdays = max(0, (today - d0).days)
+            except Exception:
+                pass
+        if bdays is None:
+            try:
+                bdays = int(p.get("duration_days") or 0)
+            except (TypeError, ValueError):
+                bdays = 0
+        p["_bucket_days"] = bdays
 
 
 def _build_live_dashboard_data():
-    """Build dashboard from live EATOC /api/nuvu/properties, enriched from Supabase.
-
-    Property list and status come from EATOC (same source as /crm). Optional
-    image and chain data are merged from Supabase when addresses match.
-    """
-    from datetime import date as _date
-
+    """EATOC list + Supabase progression, pipeline, images, needs-attention engine."""
     from routes.crm import _map_live_properties
+    from utils.address import normalise_address
+    from utils.needs_attention import get_needs_attention
 
     properties, err = _map_live_properties()
     if err:
@@ -1300,6 +1578,7 @@ def _build_live_dashboard_data():
 
     img_rows = fetch_property_images()
     chain_rows = fetch_chain_links()
+    pipe_rows = fetch_sales_pipeline() or []
 
     _img_by_addr = {}
     _propid_by_addr = {}
@@ -1329,6 +1608,9 @@ def _build_live_dashboard_data():
             key=lambda x: _pos_order.get(x.get("chain_position", ""), 2)
         )
 
+    today = date.today()
+    _merge_sales_pipeline_for_dashboard(properties, pipe_rows, today)
+
     for p in properties:
         addr_norm = _normalize_addr(p.get("address") or "")
         pid = _propid_by_addr.get(addr_norm)
@@ -1339,59 +1621,64 @@ def _build_live_dashboard_data():
             p["_pipe_fee"] = float(fee) if fee is not None else 0.0
         except (TypeError, ValueError):
             p["_pipe_fee"] = 0.0
-        p["_est_comp_date"] = _completion_iso_for_bucket(p)
         if not (p.get("image_url") or "").strip():
             p["image_url"] = _img_by_addr.get(addr_norm, "")
 
-    today = _date.today()
+    from db_portal import enrich_properties_with_portal_forms
 
-    # 4. Classify into sections
-    needs_action = []
-    sec_this_month = []
-    sec_two_months = []
-    sec_this_quarter = []
-    sec_active_pipeline = []
-    sec_exchanged = []
-    exchanged_count = 0
+    enrich_properties_with_portal_forms(properties)
 
-    for p in properties:
-        raw = (p.get("_raw_status") or "").lower()
-
-        if raw == "exchanged":
-            exchanged_count += 1
-            sec_exchanged.append(p)
+    la_rows = fetch_local_authority_search_times()
+    la_by_norm: dict[str, int] = {}
+    for row in la_rows:
+        name = (row.get("local_authority_name") or "").strip()
+        if not name:
             continue
+        k = normalise_address(name)
+        if k:
+            try:
+                la_by_norm[k] = int(row.get("avg_turnaround_days") or 21)
+            except (TypeError, ValueError):
+                la_by_norm[k] = 21
 
-        est = p.get("_est_comp_date")
-        est_date = datetime.strptime(est, "%Y-%m-%d").date() if est else None
-        days_to_comp = (est_date - today).days if est_date else None
+    sv_rows = fetch_preferred_surveyors()
+    surveyor_hint = None
+    if sv_rows:
+        r0 = sv_rows[0]
+        nm = (r0.get("surveyor_name") or "").strip()
+        fm = (r0.get("surveyor_firm") or "").strip()
+        surveyor_hint = f"{nm} ({fm})" if nm and fm else (nm or fm or None)
 
-        is_needs_action = False
-        if raw in ("problem", "incomplete_chain"):
-            is_needs_action = True
-        elif raw in ("active", "development") and p.get("offer_date") and not p.get(
-            "memo_sent"
-        ):
-            if p.get("_date_agreed"):
-                try:
-                    agreed = datetime.strptime(p["_date_agreed"], "%Y-%m-%d").date()
-                    if (today - agreed).days > 7:
-                        is_needs_action = True
-                except Exception:
-                    pass
+    na_candidates = [p for p in properties if not p.get("_is_exchanged")]
+    na_raw = get_needs_attention(
+        na_candidates,
+        la_by_norm,
+        surveyor_hint=surveyor_hint,
+        today=today,
+    )
+    needs_attention_items = []
+    for it in na_raw:
+        it["property"]["_needs_attention_triggers"] = it["triggers"]
+        needs_attention_items.append(
+            {"property": it["property"], "triggers": it["triggers"]}
+        )
 
-        if is_needs_action:
-            needs_action.append(p)
-        elif raw in ("active", "development") and days_to_comp is not None and days_to_comp <= 30:
-            sec_this_month.append(p)
-        elif raw in ("active", "development") and days_to_comp is not None and days_to_comp <= 60:
-            sec_two_months.append(p)
-        elif raw in ("active", "development") and days_to_comp is not None and days_to_comp <= 90:
-            sec_this_quarter.append(p)
+    any_red_na = any(
+        t["severity"] == "red" for it in na_raw for t in it["triggers"]
+    )
+
+    b0, b1, b2 = [], [], []
+    for p in properties:
+        if p.get("_is_exchanged"):
+            continue
+        d = int(p.get("_bucket_days") or 0)
+        if d <= 30:
+            b0.append(p)
+        elif d <= 90:
+            b1.append(p)
         else:
-            sec_active_pipeline.append(p)
+            b2.append(p)
 
-    # 5. Build section dicts
     def _make_section(sid, icon, title, subtitle, border, items):
         visible = items[:3]
         hidden = items[3:]
@@ -1401,152 +1688,95 @@ def _build_live_dashboard_data():
             if border == "stalled-banner"
             else "#e88a3a"
             if border == "amber-banner"
-            else "#27ae60"
+            else "#2fa868"
         )
         return {
             "id": sid,
             "icon": icon,
             "title": title,
             "subtitle": subtitle,
+            "count": len(items),
             "avg_progress": avg,
             "avg_color": color,
             "border_class": border,
-            "visible_ids": [],
-            "hidden_ids": [],
             "visible": visible,
             "hidden": hidden,
             "extra_count": 0,
         }
 
-    sections = []
-    if needs_action:
-        sections.append(
-            _make_section(
-                "needs-action",
-                "\U0001F6A8",
-                "Needs Action",
-                f"{len(needs_action)} transactions requiring attention",
-                "stalled-banner",
-                needs_action,
-            )
-        )
-    if sec_this_month:
-        sections.append(
-            _make_section(
-                "this-month",
-                "\U0001F4C5",
-                "This Month",
-                f"{len(sec_this_month)} completing within 30 days",
-                "green-banner",
-                sec_this_month,
-            )
-        )
-    if sec_two_months:
-        sections.append(
-            _make_section(
-                "two-months",
-                "\U0001F4CA",
-                "Two Months",
-                f"{len(sec_two_months)} completing in 31\u201360 days",
-                "blue-banner",
-                sec_two_months,
-            )
-        )
-    if sec_this_quarter:
-        sections.append(
-            _make_section(
-                "this-quarter",
-                "\U0001F4C8",
-                "This Quarter",
-                f"{len(sec_this_quarter)} completing in 61\u201390 days",
-                "amber-banner",
-                sec_this_quarter,
-            )
-        )
-    if sec_exchanged:
-        sections.append(
-            _make_section(
-                "exchanged",
-                "\u2705",
-                "Exchanged",
-                f"{len(sec_exchanged)} exchanged",
-                "green-banner",
-                sec_exchanged,
-            )
-        )
-    if sec_active_pipeline:
-        sections.append(
-            _make_section(
-                "active-pipeline",
-                "\U0001F3E0",
-                "Active Pipeline",
-                f"{len(sec_active_pipeline)} active transactions",
-                "blue-banner",
-                sec_active_pipeline,
-            )
-        )
+    sections = [
+        _make_section(
+            "bucket-0-30",
+            "\U0001F4C5",
+            "One Month Remaining",
+            "Properties added in the last 30 days",
+            "green-banner",
+            b0,
+        ),
+        _make_section(
+            "bucket-31-90",
+            "\U0001F4CA",
+            "Two to Three Months",
+            "Properties added 31–90 days ago",
+            "blue-banner",
+            b1,
+        ),
+        _make_section(
+            "bucket-90-plus",
+            "\U0001F4C8",
+            "Three Months and Over",
+            "Properties added over 90 days ago",
+            "amber-banner",
+            b2,
+        ),
+    ]
 
-    # 6. Stats — "Active" = all in-flight (active/development); "On Track" = subset meeting criteria
-    in_flight = [
-        p
-        for p in properties
-        if (p.get("_raw_status") or "").lower() in ("active", "development")
-    ]
-    active_count = len(in_flight)
-    on_track_count = sum(1 for p in in_flight if _property_on_track(p, today))
-    at_risk_count = sum(
-        1 for p in properties if (p.get("_raw_status") or "").lower() == "problem"
-    )
-    action_count = len(needs_action)
-    pipeline_props = [
-        p for p in properties if (p.get("_raw_status") or "").lower() != "exchanged"
-    ]
-    property_pipeline = sum(p["price"] for p in pipeline_props if p["price"])
-    fee_pipeline = sum(p["_pipe_fee"] for p in pipeline_props if p["_pipe_fee"])
+    exchanged_count = sum(1 for p in properties if p.get("_is_exchanged"))
+    active_props = [p for p in properties if not p.get("_is_exchanged")]
+    active_count = len(active_props)
+    needs_attention_count = len(needs_attention_items)
+    on_track_count = max(0, active_count - needs_attention_count)
+    pipeline_value = sum(int(p.get("price") or 0) for p in active_props)
 
     stats = {
         "active": active_count,
         "on_track": on_track_count,
-        "at_risk": at_risk_count,
-        "action": action_count,
+        "needs_attention": needs_attention_count,
         "exchanged": exchanged_count,
-        "fee_pipeline": fee_pipeline,
-        "property_pipeline": property_pipeline,
+        "pipeline_value": pipeline_value,
+        "needs_header_severity": "red" if any_red_na else ("amber" if na_raw else "none"),
     }
 
-    # 7. Pipeline forecast (using section counts)
     pipeline = {
         "this_week": {
-            "count": len(sec_this_month),
-            "value": sum(p["price"] for p in sec_this_month),
-            "fee": sum(p["_pipe_fee"] for p in sec_this_month),
+            "count": len(b0),
+            "value": sum(int(p.get("price") or 0) for p in b0),
+            "fee": sum(p.get("_pipe_fee") or 0 for p in b0),
             "confidence": 90,
         },
         "this_month": {
-            "count": len(sec_two_months),
-            "value": sum(p["price"] for p in sec_two_months),
-            "fee": sum(p["_pipe_fee"] for p in sec_two_months),
+            "count": len(b1),
+            "value": sum(int(p.get("price") or 0) for p in b1),
+            "fee": sum(p.get("_pipe_fee") or 0 for p in b1),
             "confidence": 75,
         },
         "this_quarter": {
-            "count": len(sec_this_quarter) + len(sec_active_pipeline),
-            "value": property_pipeline,
-            "fee": fee_pipeline,
+            "count": len(b2),
+            "value": pipeline_value,
+            "fee": sum(p.get("_pipe_fee") or 0 for p in active_props),
             "confidence": 60,
         },
     }
 
-    from db_portal import enrich_properties_with_portal_forms
-
-    enrich_properties_with_portal_forms(properties)
-
-    return properties, sections, stats, pipeline
+    return properties, sections, stats, pipeline, needs_attention_items
 
 
 @dashboard_bp.route("/")
 def dashboard():
     try:
-        properties, sections, stats, pipeline = _build_live_dashboard_data()
+        properties, sections, stats, pipeline, needs_attention_items = (
+            _build_live_dashboard_data()
+        )
     except Exception as e:
         # Fallback: show error
         return f"<h2>Error loading live data</h2><pre>{e}</pre>", 500
@@ -1554,6 +1784,7 @@ def dashboard():
     return render_template_string(
         DASHBOARD_HTML,
         sections=sections,
+        needs_attention_items=needs_attention_items,
         stats=stats,
         pipeline=pipeline,
         properties_json=json.dumps(properties, default=str),

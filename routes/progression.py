@@ -21,6 +21,7 @@ CHAIN_OUTREACH_ENABLED = False
 ALLOWED_PATCH_FIELDS = {
     "offer_accepted",
     "memo_sent",
+    "welcome_emails_sent",
     "searches_ordered",
     "searches_received",
     "survey_instructed",
@@ -30,6 +31,8 @@ ALLOWED_PATCH_FIELDS = {
     "enquiries_answered",
     "exchange_date",
     "completion_date",
+    "protocol_forms_returned",
+    "seller_forms_returned",
     "notes",
     "nuvu_notes",
     "buyer_solicitor_notes",

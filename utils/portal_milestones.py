@@ -8,8 +8,8 @@ from db_supabase import fetch_sales_progression_overlay_by_addresses, supabase_f
 from utils.address import normalise_address
 
 
-def augment_protocol_forms_returned(property_address: str) -> None:
-    """Set protocol_forms_returned on sales_progression only when currently null."""
+def augment_seller_forms_returned(property_address: str) -> None:
+    """Set seller_forms_returned when TA6/TA10 is dispatched (buyer uses protocol_forms_returned)."""
     addr = (property_address or "").strip()
     if not addr:
         return
@@ -20,7 +20,7 @@ def augment_protocol_forms_returned(property_address: str) -> None:
     row = by_addr.get(key)
     if not row:
         return
-    if row.get("protocol_forms_returned"):
+    if row.get("seller_forms_returned"):
         return
     pid = row.get("id")
     if not pid:
@@ -28,7 +28,11 @@ def augment_protocol_forms_returned(property_address: str) -> None:
     stamp = datetime.now(timezone.utc).isoformat()
     try:
         supabase_for_backend().table("sales_progression").update(
-            {"protocol_forms_returned": stamp}
+            {"seller_forms_returned": stamp}
         ).eq("id", pid).execute()
     except Exception:
         pass
+
+
+# Backwards compatibility for imports
+augment_protocol_forms_returned = augment_seller_forms_returned

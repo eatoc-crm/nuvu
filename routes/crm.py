@@ -201,10 +201,16 @@ def _milestones_from_record(r):
             "date": r.get("enquiries_answered") or "",
         },
         {
-            "label": "Protocol Forms Returned",
+            "label": "Buyer protocol forms returned",
             "field": "protocol_forms_returned",
             "done": bool(r.get("protocol_forms_returned")),
             "date": r.get("protocol_forms_returned") or "",
+        },
+        {
+            "label": "Seller TA6/TA10 dispatched",
+            "field": "seller_forms_returned",
+            "done": bool(r.get("seller_forms_returned")),
+            "date": r.get("seller_forms_returned") or "",
         },
         {
             "label": "Exchange",
@@ -244,6 +250,9 @@ def _merge_supabase_progression_overlay(raw_rows):
             for col in SALES_PROGRESSION_OVERLAY_COLS:
                 if col in row:
                     r[col] = row[col]
+            rid = row.get("id")
+            if rid is not None:
+                r["sales_progression_supabase_id"] = rid
     except Exception:
         pass
 
@@ -297,6 +306,9 @@ def _map_live_properties():
                 "mortgage_offered": r.get("mortgage_offered"),
                 "exchange_target": r.get("exchange_date"),
                 "completion_target": r.get("completion_date"),
+                "protocol_forms_returned": r.get("protocol_forms_returned"),
+                "seller_forms_returned": r.get("seller_forms_returned"),
+                "welcome_emails_sent": r.get("welcome_emails_sent"),
                 "chain": "\u2014",
                 "alert": r.get("notes") if raw_status == "problem" else None,
                 "next_action": r.get("notes") or "\u2014",
@@ -307,8 +319,10 @@ def _map_live_properties():
                 "image_bg": FALLBACK_GRADIENTS[i % len(FALLBACK_GRADIENTS)],
                 "image_url": r.get("image_url") or "",
                 # extra fields for detail page
-                "_progression_id": r.get("id"),
+                "_progression_id": r.get("sales_progression_supabase_id") or r.get("id"),
+                "_eatoc_property_id": r.get("id"),
                 "_raw_status": raw_status,
+                "_eatoc_created_at": r.get("created_at"),
                 "_sewage_type": r.get("sewage_type") or "\u2014",
                 "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
                 "_surveyor": r.get("surveyor") or "\u2014",
@@ -440,19 +454,6 @@ CRM_OVERRIDE_JS = r"""
     })(PROPS[i].id);
   }
 
-  /* Update stats bar labels for CRM view */
-  var labels = {
-    "stat-on-track": "Exchanged",
-    "stat-at-risk": "Problems",
-    "stat-action": "Inc. Chain"
-  };
-  for (var id in labels) {
-    var el = document.getElementById(id);
-    if (el) {
-      var lbl = el.querySelector(".hs-lbl");
-      if (lbl) lbl.textContent = labels[id];
-    }
-  }
 })();
 </script>
 """
@@ -797,42 +798,22 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 @crm_bp.route("/crm")
 def crm_dashboard():
     """Live CRM dashboard using NUVU design with real property data."""
-    from routes.dashboard import DASHBOARD_HTML  # shared template constant
+    from routes.dashboard import DASHBOARD_HTML, _build_live_dashboard_data
 
-    props, error = _map_live_properties()
-    if error:
-        return f"<h2>Error fetching live data</h2><pre>{error}</pre>", 500
-
-    stats = _crm_stats(props)
-    sections = _crm_sections(props)
-
-    pipeline = {
-        "this_week": {
-            "count": stats["on_track"],
-            "value": stats["property_pipeline"],
-            "fee": stats["fee_pipeline"],
-            "confidence": 90,
-        },
-        "this_month": {
-            "count": stats["active"],
-            "value": stats["property_pipeline"],
-            "fee": stats["fee_pipeline"],
-            "confidence": 75,
-        },
-        "this_quarter": {
-            "count": len(props),
-            "value": stats["property_pipeline"],
-            "fee": stats["fee_pipeline"],
-            "confidence": 60,
-        },
-    }
+    try:
+        props, sections, stats, pipeline, needs_attention_items = (
+            _build_live_dashboard_data()
+        )
+    except Exception as e:
+        return f"<h2>Error fetching live data</h2><pre>{e}</pre>", 500
 
     html = render_template_string(
         DASHBOARD_HTML + CRM_OVERRIDE_JS,
         sections=sections,
+        needs_attention_items=needs_attention_items,
         stats=stats,
         pipeline=pipeline,
-        properties_json=json.dumps(props),
+        properties_json=json.dumps(props, default=str),
         detail_base_url="/crm/property",
     )
     return html

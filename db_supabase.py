@@ -23,6 +23,7 @@ supabase = create_client(_url, _key)
 SALES_PROGRESSION_OVERLAY_COLS = (
     "offer_accepted",
     "memo_sent",
+    "welcome_emails_sent",
     "searches_ordered",
     "searches_received",
     "survey_instructed",
@@ -33,6 +34,7 @@ SALES_PROGRESSION_OVERLAY_COLS = (
     "exchange_date",
     "completion_date",
     "protocol_forms_returned",
+    "seller_forms_returned",
     "notes",
     "nuvu_notes",
     "buyer_solicitor_notes",
@@ -198,6 +200,36 @@ def fetch_sales_pipeline():
         .execute()
         .data
     )
+
+
+def fetch_local_authority_search_times():
+    """Rows for local_authority_search_times (empty list if table missing)."""
+    try:
+        return (
+            supabase_for_backend()
+            .table("local_authority_search_times")
+            .select("local_authority_name,avg_turnaround_days")
+            .execute()
+            .data
+        ) or []
+    except Exception:
+        return []
+
+
+def fetch_preferred_surveyors(agency_id: str = "dbe", limit: int = 3):
+    """Preferred surveyors for suggested copy (optional table)."""
+    try:
+        return (
+            supabase_for_backend()
+            .table("preferred_surveyors")
+            .select("surveyor_name,surveyor_firm,contact_email,contact_phone")
+            .eq("agency_id", agency_id)
+            .limit(limit)
+            .execute()
+            .data
+        ) or []
+    except Exception:
+        return []
 
 
 def fetch_solicitors():

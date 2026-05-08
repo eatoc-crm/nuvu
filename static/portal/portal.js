@@ -1,6 +1,7 @@
 (function () {
   const cfg = window.PORTAL_CONFIG || {};
   const qs = (sel, el) => (el || document).querySelector(sel);
+  const isStaffView = !!cfg.staffView;
 
   let state = {
     form: null,
@@ -251,6 +252,7 @@
   }
 
   async function maybeOpeningChat() {
+    if (isStaffView) return;
     if (!state.portalAiEnabled || state.messages.length) return;
     const item = state.flat[state.currentIndex];
     state.sending = true;
@@ -330,6 +332,7 @@
   }
 
   async function sendChat() {
+    if (isStaffView) return;
     const item = state.flat[state.currentIndex];
     const text = (qs("#chatInput").value || "").trim();
     if (!text || state.sending) return;
@@ -367,6 +370,7 @@
   }
 
   async function saveAnswer(skipped) {
+    if (isStaffView) return;
     const item = state.flat[state.currentIndex];
     const q = item.question;
     let answer = null;
@@ -457,6 +461,13 @@
     const open = inner.classList.toggle("open");
     qs("#sectionToggle").setAttribute("aria-expanded", open ? "true" : "false");
   });
+
+  if (isStaffView) {
+    ["#sendBtn", "#chatInput", "#saveBtn", "#skipBtn", "#answerDraft", "#useSummaryBtn"].forEach((sel) => {
+      const el = qs(sel);
+      if (el) el.disabled = true;
+    });
+  }
 
   loadState();
 })();

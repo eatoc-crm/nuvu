@@ -8,13 +8,39 @@
     propertyAddress: {{ property_address | tojson }},
     sellerName: {{ seller_name | tojson }},
     portalAiEnabled: {{ portal_ai_enabled | tojson }},
+    staffView: {{ staff_view | tojson }},
     formStateUrl: {{ url_for('portal_forms.api_form_state') | tojson }},
     chatUrl: {{ url_for('portal_forms.api_chat') | tojson }},
     saveUrl: {{ url_for('portal_forms.api_save_answer') | tojson }}
   };
 </script>
+{% if staff_view %}
+<style>
+  .staff-preview-banner{
+    position:sticky;top:0;z-index:50;
+    background:#fff7e0;border-bottom:1px solid #f1c34a;
+    color:#5a4400;font-size:.82rem;font-weight:600;
+    padding:8px 16px;text-align:center;
+  }
+  .staff-preview-banner .pill{
+    display:inline-block;background:#f1c34a;color:#3a2a00;
+    font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    padding:2px 8px;border-radius:10px;margin-right:8px;
+  }
+  body.is-staff-view .portal-compose,
+  body.is-staff-view .portal-answer-block{opacity:.55;pointer-events:none}
+  body.is-staff-view .portal-skip{display:none}
+</style>
+{% endif %}
 {% endblock %}
 {% block body %}
+{% if staff_view %}
+<div class="staff-preview-banner" role="status">
+  <span class="pill">Staff preview</span>
+  Read-only view of the seller portal. Saving, skipping and chat are disabled.
+</div>
+<script>document.body.classList.add('is-staff-view');</script>
+{% endif %}
 <header class="portal-top">
   <div class="portal-top-inner">
     <a class="portal-brand" href="{{ url_for('portal_forms.portal_form_page', session_id=session_id, form=form_type) }}">

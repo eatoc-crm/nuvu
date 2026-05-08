@@ -7,7 +7,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, render_template, request, session as flask_session
 
 from db_portal import (
     DEMO_SESSION_ID,
@@ -182,6 +182,7 @@ def portal_form_page():
             ),
             404,
         )
+    staff_view = bool(flask_session.get("nuvu_email"))
     return render_template(
         "portal/portal_form.html",
         session_id=session_id,
@@ -189,6 +190,7 @@ def portal_form_page():
         property_address=session.get("property_address", ""),
         seller_name=session.get("seller_name", ""),
         portal_ai_enabled=_portal_ai_enabled(),
+        staff_view=staff_view,
     )
 
 

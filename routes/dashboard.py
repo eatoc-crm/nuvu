@@ -312,9 +312,17 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ms-edit-btn:hover{border-color:var(--green);color:var(--green)}
 .m-portal-forms{margin-bottom:10px}
 .m-portal-forms h3{font-size:.82rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;color:var(--txt-mid)}
-.portal-line{font-size:.78rem;color:var(--txt);margin-bottom:6px;line-height:1.4}
+.portal-form-block{margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed #e5e7eb}
+.portal-form-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.portal-line{font-size:.78rem;color:var(--txt);margin-bottom:4px;line-height:1.4}
 .portal-line strong{color:var(--txt-light);font-weight:600;margin-right:6px}
-a.portal-review-link{display:inline-block;margin-top:6px;margin-right:10px;font-size:.75rem;font-weight:700;color:var(--navy);text-decoration:underline}
+.portal-line.empty{color:var(--txt-light);font-style:italic}
+.portal-actions-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;align-items:center}
+a.portal-action-link{display:inline-block;font-size:.75rem;font-weight:700;color:var(--navy);text-decoration:underline}
+a.portal-action-link:hover{color:var(--green)}
+button.portal-send-btn{font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:6px;border:1px solid #d1d5db;background:#f5f5f5;color:var(--txt-light);cursor:not-allowed;opacity:.75}
+button.portal-send-btn[disabled]{cursor:not-allowed}
+a.portal-review-link{display:inline-block;font-size:.75rem;font-weight:700;color:var(--navy);text-decoration:underline}
 a.portal-review-link:hover{color:var(--green)}
 .ms-edit-form{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
 .ms-edit-form input[type=date]{font-size:.72rem;padding:2px 6px;border:1px solid #d1d5db;border-radius:5px;color:var(--txt)}
@@ -1159,17 +1167,31 @@ a.portal-review-link:hover{color:var(--green)}
     }
     mMsList.innerHTML=h;
 
+    function buildPortalBlock(label,formKey,info){
+      info=info||{};
+      var sid=info.session_id||"";
+      var hasSession=!!sid;
+      var html='<div class="portal-form-block">';
+      if(hasSession){
+        html+='<div class="portal-line"><strong>'+label+'</strong> '+(info.status_line||"In progress")+'</div>'+
+          '<div class="portal-actions-row">'+
+            '<a class="portal-action-link" href="/portal/form?session_id='+encodeURIComponent(sid)+'&form='+encodeURIComponent(formKey)+'" target="_blank" rel="noopener" title="Read-only seller view of the portal">View as Seller</a>'+
+            '<a class="portal-action-link" href="/portal/review/'+encodeURIComponent(sid)+'" target="_blank" rel="noopener" title="All answers, AI history and completion status">Review Answers</a>'+
+          '</div>';
+      }else{
+        html+='<div class="portal-line empty"><strong>'+label+'</strong> No portal session yet</div>'+
+          '<div class="portal-actions-row">'+
+            '<button type="button" class="portal-send-btn" disabled title="Coming soon">Send '+label+' Link</button>'+
+          '</div>';
+      }
+      html+='</div>';
+      return html;
+    }
     var p6=p.portal_ta6||{};
     var p10=p.portal_ta10||{};
     var portalH='<h3>TA6 / TA10 (seller portal)</h3>'+
-      '<div class="portal-line"><strong>TA6</strong> '+(p6.status_line||"Not Started")+'</div>'+
-      '<div class="portal-line"><strong>TA10</strong> '+(p10.status_line||"Not Started")+'</div>';
-    if(p6.phase==="completed"&&p6.session_id){
-      portalH+='<a class="portal-review-link" href="/portal/review/'+encodeURIComponent(p6.session_id)+'" target="_blank" rel="noopener">Review TA6 answers</a>';
-    }
-    if(p10.phase==="completed"&&p10.session_id){
-      portalH+='<a class="portal-review-link" href="/portal/review/'+encodeURIComponent(p10.session_id)+'" target="_blank" rel="noopener">Review TA10 answers</a>';
-    }
+      buildPortalBlock("TA6","ta6",p6)+
+      buildPortalBlock("TA10","ta10",p10);
     mPortalForms.innerHTML=portalH;
 
     /* milestone edit button handlers */

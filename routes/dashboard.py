@@ -1175,7 +1175,7 @@ a.portal-review-link:hover{color:var(--green)}
       if(hasSession){
         html+='<div class="portal-line"><strong>'+label+'</strong> '+(info.status_line||"In progress")+'</div>'+
           '<div class="portal-actions-row">'+
-            '<a class="portal-action-link" href="/portal/form?session_id='+encodeURIComponent(sid)+'&form='+encodeURIComponent(formKey)+'" target="_blank" rel="noopener" title="Read-only seller view of the portal">View as Seller</a>'+
+            '<a class="portal-action-link" href="/portal/form?session_id='+encodeURIComponent(sid)+'&form='+encodeURIComponent(formKey)+'" target="_blank" rel="noopener" title="Read-only seller view of the TA6/TA10 form">View as Seller</a>'+
             '<a class="portal-action-link" href="/portal/review/'+encodeURIComponent(sid)+'" target="_blank" rel="noopener" title="All answers, AI history and completion status">Review Answers</a>'+
           '</div>';
       }else{
@@ -1187,12 +1187,26 @@ a.portal-review-link:hover{color:var(--green)}
       html+='</div>';
       return html;
     }
+    var portalProgId=p._portal_progression_id||"";
+    var clientPortalH="";
+    if(portalProgId){
+      clientPortalH='<h3>Buyer &amp; vendor portal</h3>'+
+        '<div class="portal-line">Client-facing progression overview for this sale (matches the signed-in portal home).</div>'+
+        '<div class="portal-actions-row">'+
+        '<a class="portal-action-link" href="/portal/staff/property-home?progression_id='+encodeURIComponent(portalProgId)+'&role=buyer" target="_blank" rel="noopener" title="Staff read-only: buyer portal view for this property">View as Buyer</a>'+
+        '<a class="portal-action-link" href="/portal/staff/property-home?progression_id='+encodeURIComponent(portalProgId)+'&role=seller" target="_blank" rel="noopener" title="Staff read-only: seller portal view for this property">View as Seller</a>'+
+        '</div>';
+    }else{
+      clientPortalH='<h3>Buyer &amp; vendor portal</h3>'+
+        '<div class="portal-line empty">No Supabase progression linked for this address yet — client portal preview needs a sales_progression row.</div>';
+    }
     var p6=p.portal_ta6||{};
     var p10=p.portal_ta10||{};
-    var portalH='<h3>TA6 / TA10 (seller portal)</h3>'+
+    var taBlockH='<h3>TA6 / TA10 (seller portal)</h3>'+
       buildPortalBlock("TA6","ta6",p6)+
       buildPortalBlock("TA10","ta10",p10);
-    mPortalForms.innerHTML=portalH;
+    mPortalForms.innerHTML=clientPortalH+'<hr class="m-div" style="margin:14px 0 10px">'+
+      taBlockH;
 
     /* milestone edit button handlers */
     var editBtns=mMsList.querySelectorAll(".ms-edit-btn");

@@ -1,6 +1,7 @@
 """Buyer / vendor portal (demo login, live Supabase property snapshot).
 
-Staff review/dispatch (TA6/TA10) lives on the same ``portal`` Blueprint (``/portal/...``).
+Staff review/dispatch (TA6/TA10) and staff property-home previews live on the same
+``portal`` Blueprint (``/portal/...``).
 """
 
 import json
@@ -19,7 +20,12 @@ from flask import (
     url_for,
 )
 
-from db_supabase import fetch_property_images, fetch_sales_pipeline, fetch_sales_progression_recent
+from db_supabase import (
+    fetch_property_images,
+    fetch_sales_pipeline,
+    fetch_sales_progression_by_id,
+    fetch_sales_progression_recent,
+)
 from routes.crm import (
     FALLBACK_GRADIENTS,
     STATUS_LABELS,
@@ -84,14 +90,11 @@ def _image_url_for_address(addr, img_rows):
     return ""
 
 
-def _build_portal_property():
-    """Single property view model from Supabase (progression + pipeline + images)."""
+def _portal_property_from_row(r):
+    """Build the portal home view-model from one sales_progression row."""
+    if not r:
+        return None
     try:
-        rows = fetch_sales_progression_recent(80)
-        r = _pick_progression_row(rows)
-        if not r:
-            return None
-
         addr = (r.get("property_address") or "").strip() or "Property"
         pipe_rows = fetch_sales_pipeline()
         pipe_lookup = {}
@@ -135,6 +138,16 @@ def _build_portal_property():
             "status_label": status_label,
             "_progression_id": r.get("id"),
         }
+    except Exception:
+        return None
+
+
+def _build_portal_property():
+    """Single property view model from Supabase (progression + pipeline + images)."""
+    try:
+        rows = fetch_sales_progression_recent(80)
+        r = _pick_progression_row(rows)
+        return _portal_property_from_row(r)
     except Exception:
         return None
 
@@ -218,7 +231,7 @@ PORTAL_HOME_HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Your property — NUVU Portal</title>
+<title>{% if staff_preview %}{{ role_strap }} — {% endif %}Your property — NUVU Portal</title>
 <link rel="icon" href="/static/logo.png">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -246,6 +259,16 @@ body{
   padding:8px 14px;border-radius:8px;border:1px solid rgba(196,226,51,.35);
 }
 .top-right a:hover{background:rgba(196,226,51,.1)}
+.staff-preview-pill{
+  font-size:.72rem;font-weight:700;color:var(--navy);
+  padding:7px 12px;border-radius:8px;background:var(--lime);
+  border:1px solid rgba(196,226,51,.6);white-space:nowrap;
+}
+.role-strap{
+  text-align:center;font-size:.68rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.2px;color:var(--lime);padding:8px 16px;
+  background:rgba(196,226,51,.1);border-bottom:1px solid rgba(255,255,255,.08);
+}
 .hero{position:relative;height:min(38vh,360px);overflow:hidden;background:var(--navy-card)}
 .hero img{width:100%;height:100%;object-fit:cover;display:block}
 .hero-fallback{width:100%;height:100%}
@@ -315,9 +338,17 @@ body{
     <span>NUVU</span>
   </div>
   <div class="top-right">
+    {% if staff_preview %}
+    <span class="staff-preview-pill">NUVU staff preview (read-only)</span>
+    {% else %}
     <a href="{{ url_for('portal.portal_logout') }}">Sign out</a>
+    {% endif %}
   </div>
 </header>
+
+{% if staff_preview and role_strap %}
+<div class="role-strap">{{ role_strap }}</div>
+{% endif %}
 
 {% if prop %}
 <div class="hero">
@@ -401,7 +432,12 @@ def portal_home():
     if not session.get(_SESSION_KEY):
         return redirect(url_for("portal.portal_root"))
     prop = _build_portal_property()
-    return render_template_string(PORTAL_HOME_HTML, prop=prop)
+    return render_template_string(
+        PORTAL_HOME_HTML,
+        prop=prop,
+        staff_preview=False,
+        role_strap="",
+    )
 
 
 @portal_bp.route("/logout")
@@ -431,6 +467,45 @@ def _require_staff(view):
         return view(*args, **kwargs)
 
     return wrapped
+
+
+@portal_bp.route("/staff/property-home")
+@_require_staff
+def portal_staff_property_home():
+    """Staff-only: same /portal home UI for one progression row (buyer vs seller framing)."""
+    progression_id = (request.args.get("progression_id") or "").strip()
+    if not progression_id:
+        return (
+            render_template(
+                "portal/portal_error.html",
+                message="Missing progression_id. Open this page from the dashboard property modal.",
+            ),
+            400,
+        )
+    role = (request.args.get("role") or "seller").strip().lower()
+    if role not in ("buyer", "seller"):
+        role = "seller"
+    row = fetch_sales_progression_by_id(progression_id)
+    if not row:
+        return (
+            render_template(
+                "portal/portal_error.html",
+                message="No sales progression was found for that id.",
+            ),
+            404,
+        )
+    prop = _portal_property_from_row(row)
+    role_strap = (
+        "Buyer portal view (staff preview)"
+        if role == "buyer"
+        else "Seller portal view (staff preview)"
+    )
+    return render_template_string(
+        PORTAL_HOME_HTML,
+        prop=prop,
+        staff_preview=True,
+        role_strap=role_strap,
+    )
 
 
 @portal_bp.route("/review/<session_id>")

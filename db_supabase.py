@@ -274,3 +274,23 @@ def fetch_sales_progression_recent(limit=80):
         .execute()
         .data
     )
+
+
+def fetch_sales_progression_by_id(prog_id: str):
+    """Single sales_progression row by primary key (service client when configured)."""
+    prog_id = (prog_id or "").strip()
+    if not prog_id:
+        return None
+    try:
+        client = supabase_for_backend()
+        res = (
+            client.table("sales_progression")
+            .select("*")
+            .eq("id", prog_id)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None

@@ -320,6 +320,8 @@ def _map_live_properties():
                 "image_url": r.get("image_url") or "",
                 # extra fields for detail page
                 "_progression_id": r.get("sales_progression_supabase_id") or r.get("id"),
+                # Supabase sales_progression.id only — use for /portal staff previews (not EATOC id)
+                "_portal_progression_id": r.get("sales_progression_supabase_id") or "",
                 "_eatoc_property_id": r.get("id"),
                 "_raw_status": raw_status,
                 "_eatoc_created_at": r.get("created_at"),

@@ -1,5 +1,5 @@
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from flask import Blueprint, render_template_string
 
@@ -79,41 +79,101 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .hs-val{font-size:2.1rem;font-weight:900;color:var(--white);line-height:1}
 .hs-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:1.8px;color:rgba(255,255,255,.55);margin-top:6px;font-weight:600}
 
-/* ═══ PIPELINE FORECAST ═══════════════════════════════════ */
+/* ═══ PIPELINE FORECAST (brief layout — light panel) ═══════ */
 .pipeline-section{
-  background:var(--navy);padding:36px 40px 40px;cursor:pointer;
-  transition:background .2s ease;
+  background:var(--off-white);padding:28px 32px 36px;
+  border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;
 }
-.pipeline-section:hover{background:#0d1826}
+.pipe-inner{max-width:1280px;margin:0 auto}
 .pipeline-header{
   display:flex;justify-content:space-between;align-items:flex-start;
-  max-width:1280px;margin:0 auto 24px;
+  gap:16px;margin-bottom:20px;
 }
-.pipeline-title{font-size:1.25rem;font-weight:800;color:var(--white);display:flex;align-items:center;gap:10px}
-.pipeline-sub{font-size:.82rem;color:rgba(255,255,255,.45);margin-top:4px}
+.pipeline-title{font-size:1.2rem;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:10px}
+.pipeline-sub{font-size:.8rem;color:var(--txt-mid);margin-top:4px;max-width:52rem;line-height:1.45}
 .ahead-badge{
-  background:rgba(196,226,51,.12);color:var(--lime);
-  padding:7px 16px;border-radius:20px;font-size:.82rem;font-weight:700;
-  display:flex;align-items:center;gap:6px;
+  background:rgba(196,226,51,.22);color:#3d4f0a;
+  padding:7px 16px;border-radius:20px;font-size:.8rem;font-weight:700;
+  display:flex;align-items:center;gap:6px;flex-shrink:0;border:1px solid rgba(196,226,51,.45);
 }
 .ahead-badge.caution{
-  background:rgba(232,138,58,.15);color:var(--amber);
+  background:rgba(232,138,58,.18);color:#7a3d0f;border-color:rgba(232,138,58,.4);
 }
-.pipeline-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
-  max-width:1280px;margin:0 auto;
+.pipe-kpi-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;
 }
-.pipe-card{
-  background:var(--navy-lt);border:1px solid rgba(255,255,255,.06);
-  border-radius:14px;padding:22px 24px;
+.pipe-kpi{
+  background:var(--white);border:1px solid #e2e8f0;border-radius:12px;
+  padding:16px 18px;box-shadow:var(--card-shadow);
 }
-.pipe-period{font-size:.68rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.45);font-weight:600;margin-bottom:10px}
-.pipe-period-hint{font-size:.62rem;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.35);font-weight:500;margin-top:4px;line-height:1.35}
-.pipe-count{font-size:2rem;font-weight:900;color:var(--white);line-height:1}
-.pipe-value{font-size:1.05rem;font-weight:800;color:var(--lime);margin-top:4px}
-.pipe-bar{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:14px;overflow:hidden}
-.pipe-bar-fill{height:100%;border-radius:3px;background:var(--lime)}
-.pipe-confidence{font-size:.75rem;color:rgba(255,255,255,.4);margin-top:8px}
+.pipe-kpi-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt-light);font-weight:700;margin-bottom:6px}
+.pipe-kpi-val{font-size:1.45rem;font-weight:900;color:var(--navy);line-height:1.1}
+.pipe-kpi-sub{font-size:.72rem;color:var(--txt-mid);margin-top:6px;line-height:1.35}
+.pipe-split{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;
+}
+.pipe-panel{
+  background:var(--white);border:1px solid #e2e8f0;border-radius:12px;
+  padding:18px 20px 20px;box-shadow:var(--card-shadow);
+}
+.pipe-panel-h{font-size:.88rem;font-weight:800;color:var(--navy);margin-bottom:4px}
+.pipe-panel-sub{font-size:.72rem;color:var(--txt-light);margin-bottom:16px;line-height:1.4}
+.pipe-fee-chart{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+  height:180px;padding:12px 8px 0;border-radius:10px;background:#f1f5f9;
+  border:1px solid #e2e8f0;
+}
+.pipe-fee-col{
+  flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-end;height:100%;gap:8px;
+}
+.pipe-fee-bar-wrap{
+  width:100%;max-width:48px;height:100%;display:flex;align-items:flex-end;justify-content:center;
+}
+.pipe-fee-bar{
+  width:100%;max-width:44px;border-radius:6px 6px 0 0;background:#1B3A5C;
+  min-height:4px;position:relative;transition:opacity .2s;
+}
+.pipe-fee-bar.pipe-fee-bar--remainder{background:rgba(27,58,92,0.18)}
+.pipe-fee-bar:hover{opacity:.88}
+.pipe-fee-bar span{
+  position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+  font-size:.68rem;font-weight:800;white-space:nowrap;
+}
+.pipe-fee-bar:not(.pipe-fee-bar--remainder) span{color:#fff}
+.pipe-fee-bar.pipe-fee-bar--remainder span{color:#1B3A5C}
+.pipe-fee-x{font-size:.65rem;font-weight:700;color:var(--txt-mid);text-align:center;line-height:1.2}
+.pipe-funnel-rows{display:flex;flex-direction:column;gap:10px}
+.pipe-fun-row{display:flex;align-items:center;gap:12px}
+.pipe-fun-lbl{
+  flex:0 0 38%;min-width:0;font-size:.72rem;font-weight:600;color:var(--txt);
+  line-height:1.25;
+}
+.pipe-fun-track{
+  flex:1;height:22px;background:#eef2f7;border-radius:6px;overflow:hidden;
+  border:1px solid #e2e8f0;
+}
+.pipe-fun-fill{
+  height:100%;border-radius:5px;background:#1B3A5C;
+  min-width:4px;transition:width .35s ease;
+}
+.pipe-fun-pct{font-size:.72rem;font-weight:800;color:var(--txt-mid);width:36px;text-align:right;flex-shrink:0}
+.pipe-forecast-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pipe-fc{
+  border-radius:12px;padding:18px 20px;border:1px solid transparent;
+  box-shadow:var(--card-shadow);
+}
+.pipe-fc-sage{background:#eef4ef;border-color:#c5d4c8}
+.pipe-fc-sage .pipe-fc-h{color:#2d4a38}
+.pipe-fc-navy{background:#e9eef7;border-color:#c5cedd}
+.pipe-fc-navy .pipe-fc-h{color:#1B3A5C}
+.pipe-fc-amber{background:#fdf6ee;border-color:#edd4ad}
+.pipe-fc-amber .pipe-fc-h{color:#7a4a12}
+.pipe-fc-h{font-size:.72rem;text-transform:uppercase;letter-spacing:1.1px;font-weight:800;margin-bottom:10px}
+.pipe-fc-count{font-size:1.75rem;font-weight:900;line-height:1;color:var(--txt)}
+.pipe-fc-val{font-size:1rem;font-weight:800;color:var(--green);margin-top:4px}
+.pipe-fc-fee{font-size:.82rem;font-weight:700;color:var(--txt-mid);margin-top:6px}
+.pipe-fc-note{font-size:.68rem;color:var(--txt-light);margin-top:10px;line-height:1.35}
 
 /* ═══ MAIN CONTENT ════════════════════════════════════════ */
 .content{max-width:1280px;margin:0 auto;padding:0 32px 60px}
@@ -377,49 +437,22 @@ a.portal-review-link:hover{color:var(--green)}
 
 .m-footer{padding:6px 22px 16px}
 
-/* ═══ ANALYTICS MODAL ════════════════════════════════════ */
-.analytics-chart{
-  height:200px;background:linear-gradient(135deg,var(--navy-lt),var(--navy-md));
-  border-radius:12px;display:flex;align-items:flex-end;justify-content:center;
-  gap:28px;padding:24px 32px 16px;margin-bottom:16px;
-}
-.analytics-chart .bar-col{
-  display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:flex-end;
-  height:100%;
-}
-.analytics-chart .bar{
-  width:44px;border-radius:6px 6px 0 0;background:var(--lime);opacity:.75;
-  transition:opacity .2s;position:relative;min-height:18px;
-}
-.analytics-chart .bar.bar-hit{opacity:1;box-shadow:0 0 0 2px rgba(196,226,51,.35)}
-.analytics-chart .bar:hover{opacity:1}
-.analytics-chart .bar span{
-  position:absolute;top:-20px;left:50%;transform:translateX(-50%);
-  font-size:.72rem;color:var(--lime);font-weight:800;white-space:nowrap;
-}
-.analytics-chart .bar-x{
-  font-size:.65rem;color:rgba(255,255,255,.55);text-align:center;font-weight:600;
-  max-width:76px;line-height:1.25;
-}
-.analytics-coming{text-align:center;color:var(--txt-light);font-size:.82rem;margin:4px 0 14px;line-height:1.45}
-.analytics-rows{display:flex;flex-direction:column;gap:8px}
-.anal-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px 14px;background:#f8fafc;border-radius:8px;border:1px solid #e8ecf1;
-}
-.anal-row-label{font-size:.85rem;font-weight:600;color:var(--txt)}
-.anal-row-value{font-size:.82rem;color:var(--txt-mid)}
-
 /* ═══ RESPONSIVE ══════════════════════════════════════════ */
-@media(max-width:960px){.card-grid{grid-template-columns:repeat(2,1fr)}.pipeline-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:960px){
+  .card-grid{grid-template-columns:repeat(2,1fr)}
+  .pipe-kpi-row{grid-template-columns:repeat(2,1fr)}
+  .pipe-split{grid-template-columns:1fr}
+  .pipe-forecast-row{grid-template-columns:1fr}
+}
 @media(max-width:640px){
   .hero{height:320px}
   .hero-badge{top:16px;right:16px;padding:12px 18px}
   .hero-badge img{width:36px;height:36px}
   .hero-badge-text h1{font-size:1.3rem}
   .hs{padding:14px 10px}.hs-val{font-size:1.4rem}
-  .pipeline-section{padding:24px 20px}
-  .pipeline-grid,.card-grid{grid-template-columns:1fr}
+  .pipeline-section{padding:22px 16px}
+  .pipe-kpi-row{grid-template-columns:1fr}
+  .card-grid{grid-template-columns:1fr}
   .content{padding:0 16px 40px}
   .section-banner{flex-direction:column;align-items:flex-start;gap:8px}
   .section-avg{margin-top:4px}
@@ -758,42 +791,76 @@ a.portal-review-link:hover{color:var(--green)}
   </div>
 </div>
 
-<!-- ═══ PIPELINE FORECAST (clickable, read-only) ══════════ -->
+<!-- ═══ PIPELINE FORECAST (read-only, milestone score heuristic) ═ -->
 <div class="pipeline-section" id="pipelineSection">
-  <div class="pipeline-header">
-    <div>
-      <div class="pipeline-title">&#x1F4CA; Pipeline Forecast</div>
-      <div class="pipeline-sub">Target completions from live CRM + progression (read-only) &bull; Click for analytics</div>
+  <div class="pipe-inner">
+    <div class="pipeline-header">
+      <div>
+        <div class="pipeline-title">&#x1F4CA; Pipeline Forecast</div>
+        <div class="pipeline-sub">{{ pipeline.subtitle }}</div>
+      </div>
+      <div class="ahead-badge{% if pipeline.badge_caution %} caution{% endif %}">{% if pipeline.badge_caution %}&#x26A0;&#xFE0F;{% else %}&#x26A1;{% endif %} {{ pipeline.badge_text }}</div>
     </div>
-    <div class="ahead-badge{% if pipeline.badge_caution %} caution{% endif %}">{% if pipeline.badge_caution %}&#x26A0;&#xFE0F;{% else %}&#x26A1;{% endif %} {{ pipeline.badge_text }}</div>
-  </div>
-  <div class="pipeline-grid">
-    <div class="pipe-card">
-      <div class="pipe-period">This Week</div>
-      <div class="pipe-period-hint">{{ pipeline.week_hint }}</div>
-      <div class="pipe-count">{{ pipeline.this_week.count }}</div>
-      <div class="pipe-value">{% if pipeline.this_week.value >= 1000000 %}&pound;{{ "%.1f" | format(pipeline.this_week.value / 1000000) }}M{% elif pipeline.this_week.value >= 1000 %}&pound;{{ "%.1f" | format(pipeline.this_week.value / 1000) }}k{% else %}&pound;{{ "{:,.0f}".format(pipeline.this_week.value) }}{% endif %}</div>
-      <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_week.fee) }}</div>
-      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.coverage_pct }}%"></div></div>
-      <div class="pipe-confidence">{{ pipeline.coverage_pct }}% of cases on this board have a target completion</div>
+    <div class="pipe-kpi-row">
+      {% for k in pipeline.kpi_cards %}
+      <div class="pipe-kpi">
+        <div class="pipe-kpi-lbl">{{ k.label }}</div>
+        <div class="pipe-kpi-val">{{ k.value }}</div>
+        {% if k.sub %}<div class="pipe-kpi-sub">{{ k.sub }}</div>{% endif %}
+      </div>
+      {% endfor %}
     </div>
-    <div class="pipe-card">
-      <div class="pipe-period">This Month</div>
-      <div class="pipe-period-hint">{{ pipeline.month_hint }}</div>
-      <div class="pipe-count">{{ pipeline.this_month.count }}</div>
-      <div class="pipe-value">{% if pipeline.this_month.value >= 1000000 %}&pound;{{ "%.1f" | format(pipeline.this_month.value / 1000000) }}M{% elif pipeline.this_month.value >= 1000 %}&pound;{{ "%.1f" | format(pipeline.this_month.value / 1000) }}k{% else %}&pound;{{ "{:,.0f}".format(pipeline.this_month.value) }}{% endif %}</div>
-      <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_month.fee) }}</div>
-      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.coverage_pct }}%"></div></div>
-      <div class="pipe-confidence">{{ pipeline.coverage_pct }}% of cases on this board have a target completion</div>
+    <div class="pipe-split">
+      <div class="pipe-panel">
+        <div class="pipe-panel-h">Fee income forecast</div>
+        <div class="pipe-panel-sub">{{ pipeline.fee_chart_subtitle }}</div>
+        <div class="pipe-fee-chart">
+          {% for b in pipeline.fee_bars %}
+          <div class="pipe-fee-col">
+            <div class="pipe-fee-bar-wrap">
+              <div class="pipe-fee-bar{% if b.remainder %} pipe-fee-bar--remainder{% endif %}" style="height:{{ b.h_pct }}%"><span>&pound;{{ "{:,.0f}".format(b.fee) }}</span></div>
+            </div>
+            <div class="pipe-fee-x">{{ b.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="pipe-panel">
+        <div class="pipe-panel-h">Sales progression funnel</div>
+        <div class="pipe-panel-sub">Active cases only &mdash; share reaching each milestone (cumulative)</div>
+        <div class="pipe-funnel-rows">
+          {% for f in pipeline.funnel %}
+          <div class="pipe-fun-row">
+            <div class="pipe-fun-lbl">{{ f.label }}</div>
+            <div class="pipe-fun-track"><div class="pipe-fun-fill" style="width:{{ f.pct }}%;background:{{ f.fill }}"></div></div>
+            <div class="pipe-fun-pct">{{ f.pct }}%</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
-    <div class="pipe-card">
-      <div class="pipe-period">This Quarter</div>
-      <div class="pipe-period-hint">{{ pipeline.quarter_hint }}</div>
-      <div class="pipe-count">{{ pipeline.this_quarter.count }}</div>
-      <div class="pipe-value">{% if pipeline.this_quarter.value >= 1000000 %}&pound;{{ "%.1f" | format(pipeline.this_quarter.value / 1000000) }}M{% elif pipeline.this_quarter.value >= 1000 %}&pound;{{ "%.1f" | format(pipeline.this_quarter.value / 1000) }}k{% else %}&pound;{{ "{:,.0f}".format(pipeline.this_quarter.value) }}{% endif %}</div>
-      <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_quarter.fee) }}</div>
-      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.coverage_pct }}%"></div></div>
-      <div class="pipe-confidence">{{ pipeline.coverage_pct }}% of cases on this board have a target completion</div>
+    <div class="pipe-forecast-row">
+      <div class="pipe-fc pipe-fc-sage">
+        <div class="pipe-fc-h">{{ pipeline.month_cards[0].title }}</div>
+        <div class="pipe-fc-count">{{ pipeline.month_cards[0].count }} cases</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[0].value) }} volume</div>
+        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[0].fee) }}</div>
+        <div class="pipe-fc-note">{{ pipeline.month_cards[0].note }}</div>
+      </div>
+      <div class="pipe-fc pipe-fc-navy">
+        <div class="pipe-fc-h">{{ pipeline.month_cards[1].title }}</div>
+        <div class="pipe-fc-count">{{ pipeline.month_cards[1].count }} cases</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[1].value) }} volume</div>
+        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[1].fee) }}</div>
+        <div class="pipe-fc-note">{{ pipeline.month_cards[1].note }}</div>
+      </div>
+      <div class="pipe-fc pipe-fc-amber">
+        <div class="pipe-fc-h">{{ pipeline.month_cards[2].title }}</div>
+        <div class="pipe-fc-count">{{ pipeline.month_cards[2].count }} cases</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[2].value) }} volume</div>
+        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[2].fee) }}</div>
+        <div class="pipe-fc-note">{{ pipeline.month_cards[2].note }}</div>
+      </div>
     </div>
   </div>
 </div>
@@ -986,53 +1053,6 @@ a.portal-review-link:hover{color:var(--green)}
       </div>
     </div>
     <div class="m-footer"></div>
-  </div>
-</div>
-
-<!-- ═══ ANALYTICS MODAL ═════════════════════════════════ -->
-<div class="modal-overlay" id="analyticsOverlay">
-  <div class="modal" style="max-width:700px">
-    <div class="m-hdr">
-      <div>
-        <h2>Pipeline Analytics</h2>
-        <div class="m-loc">Read-only view &mdash; same data as the strip above</div>
-      </div>
-      <button class="m-close" id="analyticsCloseBtn">&times;</button>
-    </div>
-    <div class="m-body" style="padding-bottom:20px">
-      <hr class="m-div">
-      <div class="analytics-chart">
-        {% for bar in pipeline.chart_bars %}
-        <div class="bar-col">
-          <div class="bar{% if bar.highlight %} bar-hit{% endif %}" style="height:{{ bar.h_pct }}%"><span>{{ bar.count }}</span></div>
-          <div class="bar-x">{{ bar.label }}</div>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="analytics-coming">{{ pipeline.coverage_note }}. Does not write to <code style="font-size:.78em">sales_pipeline</code> or <code style="font-size:.78em">sales_progression</code>.</div>
-      <div class="analytics-rows">
-        <div class="anal-row">
-          <span class="anal-row-label">This week ({{ pipeline.week_hint }})</span>
-          <span class="anal-row-value">{{ pipeline.modal_week_detail }}</span>
-        </div>
-        <div class="anal-row">
-          <span class="anal-row-label">This month ({{ pipeline.month_hint }})</span>
-          <span class="anal-row-value">{{ pipeline.modal_month_detail }}</span>
-        </div>
-        <div class="anal-row">
-          <span class="anal-row-label">This quarter ({{ pipeline.quarter_hint }})</span>
-          <span class="anal-row-value">{{ pipeline.modal_quarter_detail }}</span>
-        </div>
-        <div class="anal-row">
-          <span class="anal-row-label">Avg. days (offer to target completion)</span>
-          <span class="anal-row-value">{% if pipeline.avg_days_offer_to_completion is not none %}{{ pipeline.avg_days_offer_to_completion }} days{% else %}Need offer + completion targets on active cases{% endif %}</span>
-        </div>
-        <div class="anal-row">
-          <span class="anal-row-label">Attention</span>
-          <span class="anal-row-value" style="font-weight:700{% if pipeline.badge_caution %};color:var(--amber){% else %};color:var(--green){% endif %}">{{ pipeline.badge_text }}</span>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1346,7 +1366,7 @@ a.portal-review-link:hover{color:var(--green)}
   overlay.onclick=function(e){if(e.target===overlay)closeModal();};
   modalBox.onclick=function(e){e.stopPropagation();};
   document.onkeydown=function(e){
-    if(e.key==="Escape"){closeModal();closeAnalytics();}
+    if(e.key==="Escape"){closeModal();}
   };
   mDetToggle.onclick=function(){mDetPanel.classList.toggle("expanded");mDetToggle.classList.toggle("expanded");};
   mBtnCall.onclick=function(){
@@ -1420,23 +1440,6 @@ a.portal-review-link:hover{color:var(--green)}
       }
     })(sectionIds[s]);
   }
-
-  /* ── ANALYTICS MODAL ──────────────────────────────── */
-  var analyticsOverlay=document.getElementById("analyticsOverlay");
-  var analyticsCloseBtn=document.getElementById("analyticsCloseBtn");
-  var pipelineSection=document.getElementById("pipelineSection");
-
-  function closeAnalytics(){
-    analyticsOverlay.classList.remove("open");
-    document.body.style.overflow="";
-  }
-
-  pipelineSection.onclick=function(){
-    analyticsOverlay.classList.add("open");
-    document.body.style.overflow="hidden";
-  };
-  analyticsCloseBtn.onclick=function(e){e.stopPropagation();closeAnalytics();};
-  analyticsOverlay.onclick=function(e){if(e.target===analyticsOverlay)closeAnalytics();};
 
   /* ── STATS BAR — scroll to sections ───────────────── */
   var statMap={
@@ -1531,110 +1534,118 @@ a.portal-review-link:hover{color:var(--green)}
 
 
 
-def _parse_dashboard_date(val):
-    """Parse YYYY-MM-DD from ISO strings or date-ish values; None if missing."""
-    if val is None:
-        return None
-    s = str(val).strip()[:10]
-    if len(s) != 10:
-        return None
-    try:
-        return datetime.strptime(s, "%Y-%m-%d").date()
-    except ValueError:
-        return None
+# Section 2.5 — weighted forecast score (sum of points for non-null fields; total 100).
+FORECAST_SCORE_WEIGHTS = (
+    ("welcome_emails_sent", 5),
+    ("protocol_forms_returned", 10),
+    ("seller_forms_returned", 10),
+    ("survey_instructed", 10),
+    ("searches_ordered", 10),
+    ("searches_received", 15),
+    ("draft_contract_sent", 10),
+    ("enquiries_raised", 15),
+    ("enquiries_answered", 10),  # brief: enquiries_resolved
+    ("exchange_target", 5),  # brief: exchange_date
+)
+
+# Six funnel rows: cumulative keys per stage, then bar colour (brief).
+FUNNEL_STEPS = (
+    ("Welcome", ("welcome_emails_sent",), "#1B3A5C"),
+    (
+        "Forms",
+        ("protocol_forms_returned", "seller_forms_returned"),
+        "#3D5A73",
+    ),
+    (
+        "Searches",
+        ("searches_ordered", "searches_received"),
+        "#3d6b66",
+    ),
+    ("Survey", ("survey_instructed",), "#4A7C6F"),
+    (
+        "Enquiries",
+        ("enquiries_raised", "enquiries_answered"),
+        "#4A7C6F",
+    ),
+    ("Exchange", ("exchange_target",), "#C4704B"),
+)
 
 
-def _calendar_week_bounds(d: date):
-    """Monday–Sunday week containing d."""
-    mon = d - timedelta(days=d.weekday())
-    sun = mon + timedelta(days=6)
-    return mon, sun
+def _field_populated(p, key):
+    v = p.get(key)
+    if v is None:
+        return False
+    if isinstance(v, str) and not str(v).strip():
+        return False
+    return True
 
 
-def _calendar_month_bounds(d: date):
-    start = date(d.year, d.month, 1)
+def _milestone_forecast_score(p):
+    """0–100: sum of brief weights for populated progression fields."""
+    return sum(
+        w for k, w in FORECAST_SCORE_WEIGHTS if _field_populated(p, k)
+    )
+
+
+def _fmt_gbp_k(amount: float) -> str:
+    """Display GBP in £Xk (thousands), no spurious decimals."""
+    k = amount / 1000.0
+    if k == 0:
+        return "£0k"
+    r = round(k, 1)
+    if abs(r - round(r)) < 0.001:
+        return f"£{int(round(r)):,}k"
+    return f"£{r:,.1f}k"
+
+
+def _first_of_next_month(d: date) -> date:
     if d.month == 12:
-        end = date(d.year, 12, 31)
-    else:
-        end = date(d.year, d.month + 1, 1) - timedelta(days=1)
-    return start, end
+        return date(d.year + 1, 1, 1)
+    return date(d.year, d.month + 1, 1)
 
 
-def _calendar_quarter_bounds(d: date):
-    q0 = (d.month - 1) // 3 * 3 + 1
-    start = date(d.year, q0, 1)
-    if q0 == 1:
-        end = date(d.year, 3, 31)
-    elif q0 == 4:
-        end = date(d.year, 6, 30)
-    elif q0 == 7:
-        end = date(d.year, 9, 30)
-    else:
-        end = date(d.year, 12, 31)
-    return start, end
+def _add_months_first(d: date, months: int) -> date:
+    """d is always the 1st of a month; return 1st of month d + months."""
+    y, m = d.year, d.month + months
+    while m > 12:
+        m -= 12
+        y += 1
+    while m < 1:
+        m += 12
+        y -= 1
+    return date(y, m, 1)
 
 
-def _fmt_short_date_range(start: date, end: date):
-    if start.year == end.year:
-        if start.month == end.month:
-            return f"{start.strftime('%d')}–{end.strftime('%d %b %Y')}"
-        return f"{start.strftime('%d %b')} – {end.strftime('%d %b %Y')}"
-    return f"{start.strftime('%d %b %Y')} – {end.strftime('%d %b %Y')}"
+def _fee_bar_month_offset(score: int) -> int:
+    """Map score band to one of five fee-chart month columns (0 = earliest)."""
+    if score >= 70:
+        return 0
+    if score >= 45:
+        return 1
+    if score >= 25:
+        return 2
+    if score >= 12:
+        return 3
+    return 4
 
 
-def _props_completion_between(properties, start: date, end: date):
-    """Properties with completion_target in [start, end] (read-only slice)."""
-    out = []
-    for p in properties:
-        cd = _parse_dashboard_date(p.get("completion_target"))
-        if cd is None:
-            continue
-        if start <= cd <= end:
-            out.append(p)
-    return out
+def _bucket_stats(items):
+    return {
+        "count": len(items),
+        "value": sum(int(p.get("price") or 0) for p in items),
+        "fee": sum(float(p.get("_pipe_fee") or 0) for p in items),
+    }
 
 
 def _build_pipeline_forecast(properties, today, needs_attention_count):
     """
     Read-only forecast from merged live rows (EATOC + progression overlay).
-    Never writes to sales_pipeline or sales_progression.
+    Uses milestone fill scoring (section 2.5); does not use completion_target
+    for date bucketing. Never writes to sales_pipeline or sales_progression.
     """
-    w0, w1 = _calendar_week_bounds(today)
-    m0, m1 = _calendar_month_bounds(today)
-    q0, q1 = _calendar_quarter_bounds(today)
-
-    week_props = _props_completion_between(properties, w0, w1)
-    month_props = _props_completion_between(properties, m0, m1)
-    quarter_props = _props_completion_between(properties, q0, q1)
-
-    def _bucket(items):
-        return {
-            "count": len(items),
-            "value": sum(int(p.get("price") or 0) for p in items),
-            "fee": sum(float(p.get("_pipe_fee") or 0) for p in items),
-        }
-
     active = [p for p in properties if not p.get("_is_exchanged")]
     active_n = len(active)
-    board_n = len(properties)
-    with_target_board = sum(
-        1 for p in properties if _parse_dashboard_date(p.get("completion_target"))
-    )
-    coverage_pct = int(round(100 * with_target_board / max(1, board_n)))
-    coverage_note = (
-        f"Target completion date recorded for {with_target_board} of {board_n} "
-        f"case{'s' if board_n != 1 else ''} on this board"
-    )
-
-    deltas = []
-    for p in active:
-        ct = _parse_dashboard_date(p.get("completion_target"))
-        od = _parse_dashboard_date(p.get("_date_agreed")) or _parse_dashboard_date(
-            p.get("offer_date")
-        )
-        if ct and od and ct >= od:
-            deltas.append((ct - od).days)
-    avg_days = int(round(sum(deltas) / len(deltas))) if deltas else None
+    pipeline_value = sum(int(p.get("price") or 0) for p in active)
 
     if active_n == 0:
         badge_text = "No active pre-exchange cases on the board"
@@ -1654,58 +1665,150 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
             )
             badge_caution = True
 
-    wk = _bucket(week_props)
-    mo = _bucket(month_props)
-    qu = _bucket(quarter_props)
-    counts = [wk["count"], mo["count"], qu["count"]]
-    mx = max(counts) if counts else 0
-    mx_div = max(mx, 1)
-    hi = counts.index(mx) if mx > 0 else 0
-    labels = ("This week", "This month", "This quarter")
-    chart_bars = []
-    for i, label in enumerate(labels):
-        c = counts[i]
-        chart_bars.append(
+    anchor = _first_of_next_month(today)
+    fee_month_starts = [_add_months_first(anchor, i) for i in range(5)]
+    fee_labels = [d.strftime("%b") for d in fee_month_starts]
+    fee_totals = [0.0] * 5
+    for p in active:
+        sc = _milestone_forecast_score(p)
+        idx = _fee_bar_month_offset(sc)
+        fee_totals[idx] += float(p.get("_pipe_fee") or 0)
+
+    mx_fee = max(fee_totals) if fee_totals else 0.0
+    mx_div = mx_fee if mx_fee > 0 else 1.0
+    fee_bars = []
+    for i, lab in enumerate(fee_labels):
+        f = fee_totals[i]
+        fee_bars.append(
             {
-                "label": label,
-                "count": c,
-                "h_pct": max(18, int(100 * c / mx_div)),
-                "highlight": bool(mx > 0 and i == hi),
+                "label": lab,
+                "fee": int(round(f)),
+                "h_pct": max(6, int(round(100.0 * f / mx_div))),
+                "remainder": i >= 3,
             }
         )
 
-    def _fmt_money(v):
-        if v >= 1_000_000:
-            return f"£{v / 1000000:.1f}M"
-        if v >= 1000:
-            return f"£{v / 1000:.1f}k"
-        return f"£{v:,}"
+    on_track_n = max(0, active_n - needs_attention_count)
+    likely_30 = [p for p in active if _milestone_forecast_score(p) >= 70]
+    n_30 = len(likely_30)
+    val_30 = sum(int(p.get("price") or 0) for p in likely_30)
+
+    if active_n:
+        avg_days_active = int(
+            round(
+                sum(int(p.get("_bucket_days") or 0) for p in active)
+                / float(active_n)
+            )
+        )
+        on_track_pct = int(round(100.0 * on_track_n / float(active_n)))
+    else:
+        avg_days_active = 0
+        on_track_pct = 0
+
+    kpi_cards = [
+        {
+            "label": "Pipeline value",
+            "value": _fmt_gbp_k(float(pipeline_value)),
+            "sub": f"{active_n} {'property' if active_n == 1 else 'properties'}",
+        },
+        {
+            "label": "30-day forecast",
+            "value": _fmt_gbp_k(float(val_30)),
+            "sub": f"{n_30} likely completion{'s' if n_30 != 1 else ''}",
+        },
+        {
+            "label": "Avg days active",
+            "value": str(avg_days_active),
+            "sub": "Target: sub-90",
+        },
+        {
+            "label": "On track",
+            "value": f"{on_track_pct}%",
+            "sub": f"{needs_attention_count} need attention",
+        },
+    ]
+
+    funnel = []
+    denom = max(1, active_n)
+    cum_funnel_keys = []
+    for label, keys, fill in FUNNEL_STEPS:
+        cum_funnel_keys.extend(keys)
+        reached = sum(
+            1
+            for p in active
+            if all(_field_populated(p, kk) for kk in cum_funnel_keys)
+        )
+        pct = int(round(100.0 * reached / denom))
+        funnel.append({"label": label, "pct": pct, "fill": fill})
+
+    band_high = [p for p in active if _milestone_forecast_score(p) >= 70]
+    band_mid = [
+        p for p in active if 45 <= _milestone_forecast_score(p) <= 69
+    ]
+    band_low = [
+        p for p in active if 25 <= _milestone_forecast_score(p) <= 44
+    ]
+    band_rem = [p for p in active if _milestone_forecast_score(p) <= 24]
+    bh, bm, bl, br = (
+        _bucket_stats(band_high),
+        _bucket_stats(band_mid),
+        _bucket_stats(band_low),
+        _bucket_stats(band_rem),
+    )
+
+    month_cards = [
+        {
+            "title": "Month 1 completion forecast",
+            "count": bh["count"],
+            "value": bh["value"],
+            "fee": int(round(bh["fee"])),
+            "note": "Milestone score 70–100 (first fee column).",
+        },
+        {
+            "title": "Month 2 completion forecast",
+            "count": bm["count"],
+            "value": bm["value"],
+            "fee": int(round(bm["fee"])),
+            "note": "Milestone score 45–69 (second fee column).",
+        },
+        {
+            "title": "Month 3 completion forecast",
+            "count": bl["count"],
+            "value": bl["value"],
+            "fee": int(round(bl["fee"])),
+            "note": (
+                "Milestone score 25–44 (third fee column). "
+                f"Remainder 0–24: {br['count']} case"
+                f"{'s' if br['count'] != 1 else ''}, £{br['value']:,} volume, "
+                f"£{int(round(br['fee'])):,} fee — fourth and fifth fee columns."
+            ),
+        },
+    ]
+
+    fee_chart_subtitle = (
+        f"Five months {fee_labels[0]}–{fee_labels[4]} {anchor.year} — "
+        "fees by weighted milestone score (section 2.5); first three columns navy, "
+        "remainder columns tinted."
+    )
+
+    subtitle = (
+        "Read-only view of live CRM plus progression milestones. Each case is scored "
+        "0–100 as the sum of brief weights for non-null fields (welcome 5, protocol/seller "
+        "forms 10 each, survey 10, searches ordered 10 / received 15, draft contract 10, "
+        "enquiries raised 15 / resolved 10, exchange 5). That score drives the fee columns "
+        "and completion forecast cards. Does not use completion_target for bucketing; does "
+        "not write to sales_pipeline or sales_progression."
+    )
 
     return {
-        "this_week": wk,
-        "this_month": mo,
-        "this_quarter": qu,
-        "coverage_pct": coverage_pct,
-        "coverage_note": coverage_note,
+        "subtitle": subtitle,
+        "fee_chart_subtitle": fee_chart_subtitle,
+        "kpi_cards": kpi_cards,
+        "fee_bars": fee_bars,
+        "funnel": funnel,
+        "month_cards": month_cards,
         "badge_text": badge_text,
         "badge_caution": badge_caution,
-        "week_hint": _fmt_short_date_range(w0, w1),
-        "month_hint": today.strftime("%B %Y"),
-        "quarter_hint": f"Q{(today.month - 1) // 3 + 1} {today.year}",
-        "avg_days_offer_to_completion": avg_days,
-        "chart_bars": chart_bars,
-        "modal_week_detail": (
-            f"{wk['count']} with completion in this week · {_fmt_money(wk['value'])} · "
-            f"fees {_fmt_money(int(wk['fee']))}"
-        ),
-        "modal_month_detail": (
-            f"{mo['count']} in {today.strftime('%B %Y')} · {_fmt_money(mo['value'])} · "
-            f"fees {_fmt_money(int(mo['fee']))}"
-        ),
-        "modal_quarter_detail": (
-            f"{qu['count']} in Q{(today.month - 1) // 3 + 1} {today.year} · "
-            f"{_fmt_money(qu['value'])} · fees {_fmt_money(int(qu['fee']))}"
-        ),
     }
 
 

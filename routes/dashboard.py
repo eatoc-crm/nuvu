@@ -1,5 +1,5 @@
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from flask import Blueprint, render_template_string
 
@@ -96,6 +96,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   padding:7px 16px;border-radius:20px;font-size:.82rem;font-weight:700;
   display:flex;align-items:center;gap:6px;
 }
+.ahead-badge.caution{
+  background:rgba(232,138,58,.15);color:var(--amber);
+}
 .pipeline-grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
   max-width:1280px;margin:0 auto;
@@ -105,6 +108,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   border-radius:14px;padding:22px 24px;
 }
 .pipe-period{font-size:.68rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.45);font-weight:600;margin-bottom:10px}
+.pipe-period-hint{font-size:.62rem;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.35);font-weight:500;margin-top:4px;line-height:1.35}
 .pipe-count{font-size:2rem;font-weight:900;color:var(--white);line-height:1}
 .pipe-value{font-size:1.05rem;font-weight:800;color:var(--lime);margin-top:4px}
 .pipe-bar{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:14px;overflow:hidden}
@@ -377,18 +381,27 @@ a.portal-review-link:hover{color:var(--green)}
 .analytics-chart{
   height:200px;background:linear-gradient(135deg,var(--navy-lt),var(--navy-md));
   border-radius:12px;display:flex;align-items:flex-end;justify-content:center;
-  gap:20px;padding:24px 32px;margin-bottom:16px;
+  gap:28px;padding:24px 32px 16px;margin-bottom:16px;
+}
+.analytics-chart .bar-col{
+  display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:flex-end;
+  height:100%;
 }
 .analytics-chart .bar{
-  width:40px;border-radius:6px 6px 0 0;background:var(--lime);opacity:.8;
-  transition:opacity .2s;position:relative;
+  width:44px;border-radius:6px 6px 0 0;background:var(--lime);opacity:.75;
+  transition:opacity .2s;position:relative;min-height:18px;
 }
+.analytics-chart .bar.bar-hit{opacity:1;box-shadow:0 0 0 2px rgba(196,226,51,.35)}
 .analytics-chart .bar:hover{opacity:1}
 .analytics-chart .bar span{
   position:absolute;top:-20px;left:50%;transform:translateX(-50%);
-  font-size:.65rem;color:var(--lime);font-weight:700;white-space:nowrap;
+  font-size:.72rem;color:var(--lime);font-weight:800;white-space:nowrap;
 }
-.analytics-coming{text-align:center;color:var(--txt-light);font-size:.88rem;margin:12px 0 16px;font-style:italic}
+.analytics-chart .bar-x{
+  font-size:.65rem;color:rgba(255,255,255,.55);text-align:center;font-weight:600;
+  max-width:76px;line-height:1.25;
+}
+.analytics-coming{text-align:center;color:var(--txt-light);font-size:.82rem;margin:4px 0 14px;line-height:1.45}
 .analytics-rows{display:flex;flex-direction:column;gap:8px}
 .anal-row{
   display:flex;justify-content:space-between;align-items:center;
@@ -745,39 +758,42 @@ a.portal-review-link:hover{color:var(--green)}
   </div>
 </div>
 
-<!-- ═══ PIPELINE FORECAST (clickable) ═══════════════════ -->
+<!-- ═══ PIPELINE FORECAST (clickable, read-only) ══════════ -->
 <div class="pipeline-section" id="pipelineSection">
   <div class="pipeline-header">
     <div>
       <div class="pipeline-title">&#x1F4CA; Pipeline Forecast</div>
-      <div class="pipeline-sub">Click to view full analytics &bull; Manager access only</div>
+      <div class="pipeline-sub">Target completions from live CRM + progression (read-only) &bull; Click for analytics</div>
     </div>
-    <div class="ahead-badge">&#x26A1; 15% ahead of target</div>
+    <div class="ahead-badge{% if pipeline.badge_caution %} caution{% endif %}">{% if pipeline.badge_caution %}&#x26A0;&#xFE0F;{% else %}&#x26A1;{% endif %} {{ pipeline.badge_text }}</div>
   </div>
   <div class="pipeline-grid">
     <div class="pipe-card">
       <div class="pipe-period">This Week</div>
+      <div class="pipe-period-hint">{{ pipeline.week_hint }}</div>
       <div class="pipe-count">{{ pipeline.this_week.count }}</div>
-      <div class="pipe-value">&pound;{{ "%.1f" | format(pipeline.this_week.value / 1000000) }}M</div>
+      <div class="pipe-value">{% if pipeline.this_week.value >= 1000000 %}&pound;{{ "%.1f" | format(pipeline.this_week.value / 1000000) }}M{% elif pipeline.this_week.value >= 1000 %}&pound;{{ "%.1f" | format(pipeline.this_week.value / 1000) }}k{% else %}&pound;{{ "{:,.0f}".format(pipeline.this_week.value) }}{% endif %}</div>
       <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_week.fee) }}</div>
-      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.this_week.confidence }}%"></div></div>
-      <div class="pipe-confidence">{{ pipeline.this_week.confidence }}% Confidence</div>
+      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.coverage_pct }}%"></div></div>
+      <div class="pipe-confidence">{{ pipeline.coverage_pct }}% of cases on this board have a target completion</div>
     </div>
     <div class="pipe-card">
       <div class="pipe-period">This Month</div>
+      <div class="pipe-period-hint">{{ pipeline.month_hint }}</div>
       <div class="pipe-count">{{ pipeline.this_month.count }}</div>
-      <div class="pipe-value">&pound;{{ "%.1f" | format(pipeline.this_month.value / 1000000) }}M</div>
+      <div class="pipe-value">{% if pipeline.this_month.value >= 1000000 %}&pound;{{ "%.1f" | format(pipeline.this_month.value / 1000000) }}M{% elif pipeline.this_month.value >= 1000 %}&pound;{{ "%.1f" | format(pipeline.this_month.value / 1000) }}k{% else %}&pound;{{ "{:,.0f}".format(pipeline.this_month.value) }}{% endif %}</div>
       <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_month.fee) }}</div>
-      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.this_month.confidence }}%"></div></div>
-      <div class="pipe-confidence">{{ pipeline.this_month.confidence }}% Confidence</div>
+      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.coverage_pct }}%"></div></div>
+      <div class="pipe-confidence">{{ pipeline.coverage_pct }}% of cases on this board have a target completion</div>
     </div>
     <div class="pipe-card">
       <div class="pipe-period">This Quarter</div>
+      <div class="pipe-period-hint">{{ pipeline.quarter_hint }}</div>
       <div class="pipe-count">{{ pipeline.this_quarter.count }}</div>
-      <div class="pipe-value">&pound;{{ "%.1f" | format(pipeline.this_quarter.value / 1000000) }}M</div>
+      <div class="pipe-value">{% if pipeline.this_quarter.value >= 1000000 %}&pound;{{ "%.1f" | format(pipeline.this_quarter.value / 1000000) }}M{% elif pipeline.this_quarter.value >= 1000 %}&pound;{{ "%.1f" | format(pipeline.this_quarter.value / 1000) }}k{% else %}&pound;{{ "{:,.0f}".format(pipeline.this_quarter.value) }}{% endif %}</div>
       <div class="pipe-confidence" style="color:var(--lime);font-weight:700">Fee: &pound;{{ "{:,.0f}".format(pipeline.this_quarter.fee) }}</div>
-      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.this_quarter.confidence }}%"></div></div>
-      <div class="pipe-confidence">{{ pipeline.this_quarter.confidence }}% Confidence</div>
+      <div class="pipe-bar"><div class="pipe-bar-fill" style="width:{{ pipeline.coverage_pct }}%"></div></div>
+      <div class="pipe-confidence">{{ pipeline.coverage_pct }}% of cases on this board have a target completion</div>
     </div>
   </div>
 </div>
@@ -979,42 +995,41 @@ a.portal-review-link:hover{color:var(--green)}
     <div class="m-hdr">
       <div>
         <h2>Pipeline Analytics</h2>
-        <div class="m-loc">Full analytics dashboard</div>
+        <div class="m-loc">Read-only view &mdash; same data as the strip above</div>
       </div>
       <button class="m-close" id="analyticsCloseBtn">&times;</button>
     </div>
     <div class="m-body" style="padding-bottom:20px">
       <hr class="m-div">
       <div class="analytics-chart">
-        <div class="bar" style="height:30%"><span>Oct</span></div>
-        <div class="bar" style="height:45%"><span>Nov</span></div>
-        <div class="bar" style="height:60%"><span>Dec</span></div>
-        <div class="bar" style="height:75%"><span>Jan</span></div>
-        <div class="bar" style="height:95%;background:var(--lime);opacity:1"><span>Feb</span></div>
-        <div class="bar" style="height:55%;opacity:.4"><span>Mar</span></div>
-        <div class="bar" style="height:40%;opacity:.3"><span>Apr</span></div>
+        {% for bar in pipeline.chart_bars %}
+        <div class="bar-col">
+          <div class="bar{% if bar.highlight %} bar-hit{% endif %}" style="height:{{ bar.h_pct }}%"><span>{{ bar.count }}</span></div>
+          <div class="bar-x">{{ bar.label }}</div>
+        </div>
+        {% endfor %}
       </div>
-      <div class="analytics-coming">Full analytics coming soon</div>
+      <div class="analytics-coming">{{ pipeline.coverage_note }}. Does not write to <code style="font-size:.78em">sales_pipeline</code> or <code style="font-size:.78em">sales_progression</code>.</div>
       <div class="analytics-rows">
         <div class="anal-row">
-          <span class="anal-row-label">This Week</span>
-          <span class="anal-row-value">5 completions &bull; &pound;1.2M</span>
+          <span class="anal-row-label">This week ({{ pipeline.week_hint }})</span>
+          <span class="anal-row-value">{{ pipeline.modal_week_detail }}</span>
         </div>
         <div class="anal-row">
-          <span class="anal-row-label">This Month</span>
-          <span class="anal-row-value">12 completions &bull; &pound;2.9M</span>
+          <span class="anal-row-label">This month ({{ pipeline.month_hint }})</span>
+          <span class="anal-row-value">{{ pipeline.modal_month_detail }}</span>
         </div>
         <div class="anal-row">
-          <span class="anal-row-label">This Quarter</span>
-          <span class="anal-row-value">28 completions &bull; &pound;6.8M</span>
+          <span class="anal-row-label">This quarter ({{ pipeline.quarter_hint }})</span>
+          <span class="anal-row-value">{{ pipeline.modal_quarter_detail }}</span>
         </div>
         <div class="anal-row">
-          <span class="anal-row-label">Average Days to Completion</span>
-          <span class="anal-row-value">14.2 days</span>
+          <span class="anal-row-label">Avg. days (offer to target completion)</span>
+          <span class="anal-row-value">{% if pipeline.avg_days_offer_to_completion is not none %}{{ pipeline.avg_days_offer_to_completion }} days{% else %}Need offer + completion targets on active cases{% endif %}</span>
         </div>
         <div class="anal-row">
-          <span class="anal-row-label">Target Performance</span>
-          <span class="anal-row-value" style="color:var(--green);font-weight:700">15% ahead</span>
+          <span class="anal-row-label">Attention</span>
+          <span class="anal-row-value" style="font-weight:700{% if pipeline.badge_caution %};color:var(--amber){% else %};color:var(--green){% endif %}">{{ pipeline.badge_text }}</span>
         </div>
       </div>
     </div>
@@ -1516,6 +1531,184 @@ a.portal-review-link:hover{color:var(--green)}
 
 
 
+def _parse_dashboard_date(val):
+    """Parse YYYY-MM-DD from ISO strings or date-ish values; None if missing."""
+    if val is None:
+        return None
+    s = str(val).strip()[:10]
+    if len(s) != 10:
+        return None
+    try:
+        return datetime.strptime(s, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _calendar_week_bounds(d: date):
+    """Monday–Sunday week containing d."""
+    mon = d - timedelta(days=d.weekday())
+    sun = mon + timedelta(days=6)
+    return mon, sun
+
+
+def _calendar_month_bounds(d: date):
+    start = date(d.year, d.month, 1)
+    if d.month == 12:
+        end = date(d.year, 12, 31)
+    else:
+        end = date(d.year, d.month + 1, 1) - timedelta(days=1)
+    return start, end
+
+
+def _calendar_quarter_bounds(d: date):
+    q0 = (d.month - 1) // 3 * 3 + 1
+    start = date(d.year, q0, 1)
+    if q0 == 1:
+        end = date(d.year, 3, 31)
+    elif q0 == 4:
+        end = date(d.year, 6, 30)
+    elif q0 == 7:
+        end = date(d.year, 9, 30)
+    else:
+        end = date(d.year, 12, 31)
+    return start, end
+
+
+def _fmt_short_date_range(start: date, end: date):
+    if start.year == end.year:
+        if start.month == end.month:
+            return f"{start.strftime('%d')}–{end.strftime('%d %b %Y')}"
+        return f"{start.strftime('%d %b')} – {end.strftime('%d %b %Y')}"
+    return f"{start.strftime('%d %b %Y')} – {end.strftime('%d %b %Y')}"
+
+
+def _props_completion_between(properties, start: date, end: date):
+    """Properties with completion_target in [start, end] (read-only slice)."""
+    out = []
+    for p in properties:
+        cd = _parse_dashboard_date(p.get("completion_target"))
+        if cd is None:
+            continue
+        if start <= cd <= end:
+            out.append(p)
+    return out
+
+
+def _build_pipeline_forecast(properties, today, needs_attention_count):
+    """
+    Read-only forecast from merged live rows (EATOC + progression overlay).
+    Never writes to sales_pipeline or sales_progression.
+    """
+    w0, w1 = _calendar_week_bounds(today)
+    m0, m1 = _calendar_month_bounds(today)
+    q0, q1 = _calendar_quarter_bounds(today)
+
+    week_props = _props_completion_between(properties, w0, w1)
+    month_props = _props_completion_between(properties, m0, m1)
+    quarter_props = _props_completion_between(properties, q0, q1)
+
+    def _bucket(items):
+        return {
+            "count": len(items),
+            "value": sum(int(p.get("price") or 0) for p in items),
+            "fee": sum(float(p.get("_pipe_fee") or 0) for p in items),
+        }
+
+    active = [p for p in properties if not p.get("_is_exchanged")]
+    active_n = len(active)
+    board_n = len(properties)
+    with_target_board = sum(
+        1 for p in properties if _parse_dashboard_date(p.get("completion_target"))
+    )
+    coverage_pct = int(round(100 * with_target_board / max(1, board_n)))
+    coverage_note = (
+        f"Target completion date recorded for {with_target_board} of {board_n} "
+        f"case{'s' if board_n != 1 else ''} on this board"
+    )
+
+    deltas = []
+    for p in active:
+        ct = _parse_dashboard_date(p.get("completion_target"))
+        od = _parse_dashboard_date(p.get("_date_agreed")) or _parse_dashboard_date(
+            p.get("offer_date")
+        )
+        if ct and od and ct >= od:
+            deltas.append((ct - od).days)
+    avg_days = int(round(sum(deltas) / len(deltas))) if deltas else None
+
+    if active_n == 0:
+        badge_text = "No active pre-exchange cases on the board"
+        badge_caution = False
+    else:
+        na_ratio = needs_attention_count / active_n
+        if needs_attention_count == 0:
+            badge_text = "Pipeline clear — nothing flagged for attention"
+            badge_caution = False
+        elif na_ratio <= 0.2:
+            badge_text = "Few cases need attention"
+            badge_caution = False
+        else:
+            badge_text = (
+                f"{needs_attention_count} case{'s' if needs_attention_count != 1 else ''} "
+                "need attention"
+            )
+            badge_caution = True
+
+    wk = _bucket(week_props)
+    mo = _bucket(month_props)
+    qu = _bucket(quarter_props)
+    counts = [wk["count"], mo["count"], qu["count"]]
+    mx = max(counts) if counts else 0
+    mx_div = max(mx, 1)
+    hi = counts.index(mx) if mx > 0 else 0
+    labels = ("This week", "This month", "This quarter")
+    chart_bars = []
+    for i, label in enumerate(labels):
+        c = counts[i]
+        chart_bars.append(
+            {
+                "label": label,
+                "count": c,
+                "h_pct": max(18, int(100 * c / mx_div)),
+                "highlight": bool(mx > 0 and i == hi),
+            }
+        )
+
+    def _fmt_money(v):
+        if v >= 1_000_000:
+            return f"£{v / 1000000:.1f}M"
+        if v >= 1000:
+            return f"£{v / 1000:.1f}k"
+        return f"£{v:,}"
+
+    return {
+        "this_week": wk,
+        "this_month": mo,
+        "this_quarter": qu,
+        "coverage_pct": coverage_pct,
+        "coverage_note": coverage_note,
+        "badge_text": badge_text,
+        "badge_caution": badge_caution,
+        "week_hint": _fmt_short_date_range(w0, w1),
+        "month_hint": today.strftime("%B %Y"),
+        "quarter_hint": f"Q{(today.month - 1) // 3 + 1} {today.year}",
+        "avg_days_offer_to_completion": avg_days,
+        "chart_bars": chart_bars,
+        "modal_week_detail": (
+            f"{wk['count']} with completion in this week · {_fmt_money(wk['value'])} · "
+            f"fees {_fmt_money(int(wk['fee']))}"
+        ),
+        "modal_month_detail": (
+            f"{mo['count']} in {today.strftime('%B %Y')} · {_fmt_money(mo['value'])} · "
+            f"fees {_fmt_money(int(mo['fee']))}"
+        ),
+        "modal_quarter_detail": (
+            f"{qu['count']} in Q{(today.month - 1) // 3 + 1} {today.year} · "
+            f"{_fmt_money(qu['value'])} · fees {_fmt_money(int(qu['fee']))}"
+        ),
+    }
+
+
 def _normalize_addr(addr):
     """Normalize address for fuzzy matching between tables."""
     return " ".join(addr.lower().replace(",", " ").replace(".", " ").split())
@@ -1603,7 +1796,11 @@ def _merge_sales_pipeline_for_dashboard(properties, pipe_rows, today):
 
 
 def _build_live_dashboard_data():
-    """EATOC list + Supabase progression, pipeline, images, needs-attention engine."""
+    """EATOC list + Supabase progression, pipeline, images, needs-attention engine.
+
+    Pipeline Forecast aggregates read-only fields only; it never mutates
+    sales_pipeline or sales_progression (see ARCHITECTURE.md).
+    """
     from routes.crm import _map_live_properties
     from utils.address import normalise_address
     from utils.needs_attention import get_needs_attention
@@ -1783,26 +1980,9 @@ def _build_live_dashboard_data():
         "needs_header_severity": "red" if any_red_na else ("amber" if na_raw else "none"),
     }
 
-    pipeline = {
-        "this_week": {
-            "count": len(b0),
-            "value": sum(int(p.get("price") or 0) for p in b0),
-            "fee": sum(p.get("_pipe_fee") or 0 for p in b0),
-            "confidence": 90,
-        },
-        "this_month": {
-            "count": len(b1),
-            "value": sum(int(p.get("price") or 0) for p in b1),
-            "fee": sum(p.get("_pipe_fee") or 0 for p in b1),
-            "confidence": 75,
-        },
-        "this_quarter": {
-            "count": len(b2),
-            "value": pipeline_value,
-            "fee": sum(p.get("_pipe_fee") or 0 for p in active_props),
-            "confidence": 60,
-        },
-    }
+    pipeline = _build_pipeline_forecast(
+        properties, today, needs_attention_count
+    )
 
     return properties, sections, stats, pipeline, needs_attention_items
 

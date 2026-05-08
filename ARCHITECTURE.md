@@ -139,3 +139,9 @@ nuvu-live/
 6. **Decisions locked before briefs are written.** Briefs to Cursor must be complete and unambiguous.
 7. **Risks flagged before builds, not after.** Compliance, data, and operational risks surfaced at design time.
 8. **Tone: professional dignity, not aggression.** Every AI communication should make people feel supported and excited. Consistent and persistent, never pushy or low-rent.
+
+---
+
+## Pipeline Forecast (dashboard)
+
+The **Pipeline Forecast** strip and analytics modal are **read-only**. They aggregate what is already in the live stack (EATOC plus Supabase overlays): they **must not** insert, update, or delete rows in `sales_pipeline` or `sales_progression`. Those tables are the source of truth for pipeline state; the forecast only reads merged in-memory property rows (including target completion dates) and surfaces counts, values, and fees. Other routes (intake, progression patches, and so on) continue to own writes to those tables where product behaviour requires it.

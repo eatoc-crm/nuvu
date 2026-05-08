@@ -1,0 +1,73 @@
+{% extends "portal/portal_base.html" %}
+{% block title %}Review your answers — NUVU{% endblock %}
+{% block body %}
+{% if staff_view %}
+<div class="staff-preview-banner" role="status">
+  <span class="pill">NUVU staff preview</span>
+  Read-only — seller edit and submit controls are hidden.
+</div>
+{% endif %}
+
+<header class="portal-top">
+  <div class="portal-top-inner">
+    <a class="portal-brand" href="{{ url_for('portal_forms.portal_form_page', session_id=session_id, form=form_type) }}">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="" width="36" height="36">
+      <span>NUVU</span>
+    </a>
+    <div class="portal-top-meta desktop-only">
+      <span class="portal-addr">{{ property_address }}</span>
+      <span class="portal-name">{{ seller_name }}</span>
+    </div>
+  </div>
+  <div class="portal-top-mobile mobile-only">
+    <span class="portal-addr">{{ property_address }}</span>
+  </div>
+</header>
+
+<main class="portal-review-main">
+  <section class="portal-review-hero">
+    <p class="portal-review-form-title">{{ form_title }}</p>
+    <h1>Review your answers</h1>
+    <p>Check your answers below. You can edit any answer before submitting.</p>
+  </section>
+
+  {% for sec in sections %}
+  <section class="portal-review-section">
+    <h2>{{ sec.title }}</h2>
+    <div class="portal-review-answers">
+    {% for item in sec["items"] %}
+      <article class="portal-review-row {% if item.status == 'skipped' %}is-skipped{% endif %}">
+        <div class="portal-review-row-body">
+          <h3>{{ item.question_text }}</h3>
+          {% if item.status == 'skipped' %}
+          <p class="portal-review-skipped">Skipped</p>
+          {% elif item.status == 'answered' %}
+          <p class="portal-review-answer">{{ item.display_answer or "—" }}</p>
+          {% else %}
+          <p class="portal-review-missing">Not answered yet</p>
+          {% endif %}
+        </div>
+        {% if not staff_view %}
+        <a class="portal-review-edit" href="{{ url_for('portal_forms.portal_form_page', session_id=session_id, form=form_type, q=item.question_index) }}">Edit</a>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  <div class="portal-review-actions">
+    <a class="portal-btn secondary" href="{{ back_url }}">Back to form</a>
+    {% if not staff_view %}
+    <button
+      type="button"
+      class="portal-btn primary"
+      disabled
+      title="Submission will be available when your solicitor's forms are ready"
+    >
+      Submit
+    </button>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

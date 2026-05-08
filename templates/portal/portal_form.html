@@ -9,38 +9,51 @@
     sellerName: {{ seller_name | tojson }},
     portalAiEnabled: {{ portal_ai_enabled | tojson }},
     staffView: {{ staff_view | tojson }},
+    initialForm: {{ initial_form | tojson }},
     formStateUrl: {{ url_for('portal_forms.api_form_state') | tojson }},
     chatUrl: {{ url_for('portal_forms.api_chat') | tojson }},
-    saveUrl: {{ url_for('portal_forms.api_save_answer') | tojson }}
+    saveUrl: {{ url_for('portal_forms.api_save_answer') | tojson }},
+    reviewUrl: {{ url_for('portal_forms.portal_form_review_page', session_id=session_id, form=form_type) | tojson }}
   };
 </script>
 {% if staff_view %}
 <style>
-  .staff-preview-banner{
-    position:sticky;top:0;z-index:50;
-    background:#fff7e0;border-bottom:1px solid #f1c34a;
-    color:#5a4400;font-size:.82rem;font-weight:600;
-    padding:8px 16px;text-align:center;
+  .staff-preview-banner {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: #d4f57a;
+    border-bottom: 1px solid #9fc72a;
+    color: #1a2e05;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 16px;
+    text-align: center;
   }
-  .staff-preview-banner .pill{
-    display:inline-block;background:#f1c34a;color:#3a2a00;
-    font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
-    padding:2px 8px;border-radius:10px;margin-right:8px;
+  .staff-preview-banner .pill {
+    display: inline-block;
+    background: #1a2e05;
+    color: #d4f57a;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 8px;
   }
-  body.is-staff-view .portal-compose,
-  body.is-staff-view .portal-answer-block{opacity:.55;pointer-events:none}
-  body.is-staff-view .portal-skip{display:none}
 </style>
 {% endif %}
 {% endblock %}
 {% block body %}
 {% if staff_view %}
 <div class="staff-preview-banner" role="status">
-  <span class="pill">Staff preview</span>
-  Read-only view of the seller portal. Saving, skipping and chat are disabled.
+  <span class="pill">NUVU staff preview</span>
+  Read-only — you can move between questions but cannot save or skip.
 </div>
-<script>document.body.classList.add('is-staff-view');</script>
+<script>document.body.classList.add("is-staff-view");</script>
 {% endif %}
+
 <header class="portal-top">
   <div class="portal-top-inner">
     <a class="portal-brand" href="{{ url_for('portal_forms.portal_form_page', session_id=session_id, form=form_type) }}">
@@ -57,75 +70,64 @@
   </div>
 </header>
 
-<div class="portal-shell">
-  <aside class="portal-sidebar" id="sidebar">
-    <button type="button" class="portal-accordion-toggle mobile-only" id="sectionToggle" aria-expanded="false">
-      Sections &amp; progress
-    </button>
-    <div class="portal-sidebar-inner" id="sidebarInner">
-      <h2 class="portal-sidebar-title">Your form</h2>
-      <p class="portal-form-label" id="formTitleLabel">Property form</p>
-      <nav class="portal-section-nav" id="sectionNav"></nav>
-    </div>
-  </aside>
+<main class="portal-wizard-main">
+  <div id="loadingState" class="portal-loading">
+    <div class="portal-spinner" aria-hidden="true"></div>
+    <p>Loading your form…</p>
+  </div>
 
-  <main class="portal-main">
-    <div id="loadingState" class="portal-loading">
-      <div class="portal-spinner" aria-hidden="true"></div>
-      <p>Loading your form…</p>
-    </div>
+  <div id="errorState" class="portal-panel portal-hidden">
+    <p class="portal-error-text" id="errorText"></p>
+    <button type="button" class="portal-btn secondary" id="retryBtn">Try again</button>
+  </div>
 
-    <div id="errorState" class="portal-panel portal-hidden">
-      <p class="portal-error-text" id="errorText"></p>
-      <button type="button" class="portal-btn secondary" id="retryBtn">Try again</button>
-    </div>
+  <div id="completeState" class="portal-panel portal-hidden">
+    <h1 class="portal-complete-title">Thank you</h1>
+    <p class="portal-complete-text">Your form has been submitted for review. Your estate agent will be in touch.</p>
+  </div>
 
-    <div id="completeState" class="portal-panel portal-hidden">
-      <h1>Thank you</h1>
-      <p>Your form has been submitted for review. Your estate agent will be in touch.</p>
-    </div>
-
-    <div id="activeState" class="portal-hidden">
-      <div class="portal-progress-wrap">
-        <div class="portal-progress-label" id="progressLabel"></div>
-        <div class="portal-progress-bar"><div class="portal-progress-fill" id="progressFill"></div></div>
+  <div id="wizardActive" class="portal-hidden">
+    <div class="portal-progress-sticky">
+      <div class="portal-progress-label" id="progressLabel"></div>
+      <div class="portal-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+        <div class="portal-progress-fill" id="progressFill"></div>
       </div>
+    </div>
 
-      <div class="portal-chat-card">
-        <h2 class="portal-question-title" id="questionTitle"></h2>
-        <p class="portal-help" id="questionHelp"></p>
+    <div class="portal-wizard-center">
+      <div id="cardShell" class="portal-card-shell">
+        <div id="questionPhase">
+          <div id="cardInner" class="portal-card-inner">
+            <h2 class="portal-q-title" id="questionTitle"></h2>
+            <p class="portal-q-desc portal-hidden" id="questionDesc"></p>
+            <div id="answerRegion" class="portal-answer-region"></div>
 
-        <div id="aiChatWrap">
-          <div class="portal-messages" id="messages" aria-live="polite"></div>
-          <div class="portal-compose">
-            <label class="visually-hidden" for="chatInput">Your message</label>
-            <textarea id="chatInput" rows="2" placeholder="Type your reply or ask for clarification…"></textarea>
-            <button type="button" class="portal-btn" id="sendBtn">Send</button>
+            <div id="aiGuidance" class="portal-ai-guidance portal-hidden">
+              <div class="portal-ai-guidance-label">Guidance for you</div>
+              <div id="aiGuidanceLoading" class="portal-ai-loading">Preparing guidance…</div>
+              <div id="aiGuidanceBody" class="portal-ai-guidance-body portal-hidden"></div>
+            </div>
           </div>
         </div>
 
-        <div id="directWrap" class="portal-hidden">
-          <div id="directFields"></div>
+        <div id="transitionPhase" class="portal-hidden">
+          <div class="portal-card-inner portal-transition-card">
+            <p class="portal-transition-kicker" id="transitionKicker">You’re now in</p>
+            <h2 class="portal-transition-title" id="transitionTitle"></h2>
+            <p class="portal-transition-desc portal-hidden" id="transitionDesc"></p>
+          </div>
         </div>
 
-        <div class="portal-answer-block">
-          <label for="answerDraft">Your answer for this question</label>
-          <textarea id="answerDraft" rows="4" placeholder="Summarise your final answer here. You can edit before saving."></textarea>
-          <div class="portal-actions">
-            <button type="button" class="portal-btn" id="saveBtn">Save answer</button>
-            <button type="button" class="portal-btn secondary portal-hidden" id="useSummaryBtn">Use last assistant message</button>
-          </div>
-          <button type="button" class="portal-skip" id="skipBtn">Skip this question</button>
+        <div class="portal-wiz-actions portal-card-actions" id="wizardActions">
+          <button type="button" class="portal-btn ghost" id="btnBack">Back</button>
+          <button type="button" class="portal-btn skip" id="btnSkip">Skip</button>
+          <button type="button" class="portal-btn primary" id="btnNext">Next</button>
+          <button type="button" class="portal-btn primary portal-hidden" id="btnTransitionContinue">Continue</button>
         </div>
       </div>
-
-      <section class="portal-review" id="reviewSection">
-        <h3>Previous answers</h3>
-        <ul class="portal-review-list" id="reviewList"></ul>
-      </section>
     </div>
-  </main>
-</div>
+  </div>
+</main>
 
 <div id="toast" class="portal-toast portal-hidden" role="status"></div>
 <script src="{{ url_for('static', filename='portal/portal.js') }}" defer></script>

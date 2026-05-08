@@ -7,7 +7,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-from flask import Blueprint, jsonify, render_template, request, session as flask_session
+from flask import Blueprint, jsonify, render_template, request, session as flask_session, url_for
 
 from db_portal import (
     DEMO_SESSION_ID,
@@ -85,6 +85,35 @@ def _public_form(form: dict) -> dict:
 
 def _responses_index(rows: list[dict]) -> dict[tuple[str, str], dict]:
     return {(r.get("section_key"), r.get("question_key")): r for r in rows}
+
+
+def _display_review_answer(question: dict, answer) -> str:
+    if answer is None:
+        return ""
+    if isinstance(answer, dict):
+        if isinstance(answer.get("values"), list):
+            return ", ".join(str(v) for v in answer["values"] if v is not None)
+        if "value" in answer:
+            value = answer.get("value")
+            q_type = (question.get("answer_type") or question.get("type") or "").lower()
+            if isinstance(value, bool):
+                return "Yes" if value else "No"
+            if value is None and q_type in ("boolean", "yes_no_not_known"):
+                return "Not known"
+            return "" if value is None else str(value)
+        parts = []
+        for key, value in answer.items():
+            if value is None:
+                continue
+            if isinstance(value, list):
+                value = ", ".join(str(v) for v in value)
+            parts.append(f"{key}: {value}")
+        return "\n".join(parts)
+    if isinstance(answer, list):
+        return ", ".join(str(v) for v in answer if v is not None)
+    if isinstance(answer, bool):
+        return "Yes" if answer else "No"
+    return str(answer)
 
 
 def _prior_answers_text(form: dict, rows: list[dict], until_section: str, until_key: str) -> str:
@@ -183,6 +212,7 @@ def portal_form_page():
             404,
         )
     staff_view = bool(flask_session.get("nuvu_email"))
+    form = load_form(form_type)
     return render_template(
         "portal/portal_form.html",
         session_id=session_id,
@@ -191,6 +221,93 @@ def portal_form_page():
         seller_name=session.get("seller_name", ""),
         portal_ai_enabled=_portal_ai_enabled(),
         staff_view=staff_view,
+        initial_form=_public_form(form),
+    )
+
+
+@portal_forms_bp.route("/form/review")
+def portal_form_review_page():
+    if not portal_forms_enabled():
+        return render_template("portal/coming_soon.html"), 503
+    session_id = (request.args.get("session_id") or "").strip()
+    if not session_id and demo_enabled():
+        session_id = DEMO_SESSION_ID
+    form_type = (request.args.get("form") or "ta6").lower()
+    if not session_id:
+        return (
+            render_template(
+                "portal/portal_error.html",
+                message="This page needs a valid session link. Please use the link from your email or ask your estate agent to resend it.",
+            ),
+            400,
+        )
+    session = fetch_portal_session(session_id, form_type=form_type)
+    if not session:
+        return (
+            render_template(
+                "portal/portal_error.html",
+                message="This link is not valid or has expired. Please request a new link from your estate agent.",
+            ),
+            404,
+        )
+
+    staff_view = bool(flask_session.get("nuvu_email"))
+    form = load_form(form_type)
+    rows = fetch_form_responses(session_id)
+    by_q = _responses_index(rows)
+    flat = _flatten_questions(form)
+    first_open = next(
+        (
+            i
+            for i, item in enumerate(flat)
+            if (by_q.get((item["section_key"], item["question"]["key"])) or {}).get("status")
+            not in ("answered", "skipped")
+        ),
+        None,
+    )
+    back_index = first_open if first_open is not None else max(len(flat) - 1, 0)
+
+    sections = []
+    question_index = 0
+    for sec in form.get("sections") or []:
+        section_key = sec.get("key") or ""
+        items = []
+        for question in sec.get("questions") or []:
+            question_key = question.get("key") or ""
+            row = by_q.get((section_key, question_key)) or {}
+            status = row.get("status") or "pending"
+            items.append(
+                {
+                    "question_index": question_index,
+                    "question_text": question.get("text") or question_key,
+                    "status": status,
+                    "display_answer": _display_review_answer(question, row.get("answer")),
+                }
+            )
+            question_index += 1
+        sections.append(
+            {
+                "key": section_key,
+                "title": sec.get("title") or section_key,
+                "items": items,
+            }
+        )
+
+    return render_template(
+        "portal/portal_seller_review.html",
+        session_id=session_id,
+        form_type=form_type,
+        property_address=session.get("property_address", ""),
+        seller_name=session.get("seller_name", ""),
+        form_title=form.get("title") or form_type.upper(),
+        sections=sections,
+        staff_view=staff_view,
+        back_url=url_for(
+            "portal_forms.portal_form_page",
+            session_id=session_id,
+            form=form_type,
+            q=back_index,
+        ),
     )
 
 

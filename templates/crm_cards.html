@@ -470,7 +470,13 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 {% set problem_count = properties|selectattr('status','equalto','problem')|list|length %}
 {% set chain_count = properties|selectattr('status','equalto','incomplete_chain')|list|length %}
 {% set ns_pipe = namespace(total=0) %}
-{% for p in properties %}{% if p.sale_price %}{% set ns_pipe.total = ns_pipe.total + p.sale_price|float %}{% endif %}{% endfor %}
+{% for p in properties %}
+  {% if p.agreed_fee is defined and p.agreed_fee is not none and p.agreed_fee != '' %}
+    {% set ns_pipe.total = ns_pipe.total + p.agreed_fee|float %}
+  {% elif p._fee %}
+    {% set ns_pipe.total = ns_pipe.total + p._fee|float %}
+  {% endif %}
+{% endfor %}
 
 <!-- ═══ HERO ══════════════════════════════════════════════ -->
 <div class="hero">

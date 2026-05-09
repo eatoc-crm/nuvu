@@ -1093,22 +1093,19 @@ a.portal-review-link:hover{color:var(--green)}
       <div class="pipe-fc pipe-fc-sage">
         <div class="pipe-fc-h">{{ pipeline.month_cards[0].title }}</div>
         <div class="pipe-fc-count">{{ pipeline.month_cards[0].count }} cases</div>
-        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[0].value) }} volume</div>
-        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[0].fee) }}</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[0].fee) }} pipeline fee</div>
         <div class="pipe-fc-note">{{ pipeline.month_cards[0].note }}</div>
       </div>
       <div class="pipe-fc pipe-fc-navy">
         <div class="pipe-fc-h">{{ pipeline.month_cards[1].title }}</div>
         <div class="pipe-fc-count">{{ pipeline.month_cards[1].count }} cases</div>
-        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[1].value) }} volume</div>
-        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[1].fee) }}</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[1].fee) }} pipeline fee</div>
         <div class="pipe-fc-note">{{ pipeline.month_cards[1].note }}</div>
       </div>
       <div class="pipe-fc pipe-fc-amber">
         <div class="pipe-fc-h">{{ pipeline.month_cards[2].title }}</div>
         <div class="pipe-fc-count">{{ pipeline.month_cards[2].count }} cases</div>
-        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[2].value) }} volume</div>
-        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[2].fee) }}</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[2].fee) }} pipeline fee</div>
         <div class="pipe-fc-note">{{ pipeline.month_cards[2].note }}</div>
       </div>
     </div>
@@ -2064,6 +2061,21 @@ def _field_populated(p, key):
     return True
 
 
+def _pipeline_fee_gbp(p: dict) -> float:
+    """Commission for pipeline £ totals: agreed_fee when set, else CRM fee (_fee)."""
+    for key in ("agreed_fee", "_fee"):
+        v = p.get(key)
+        if v is None:
+            continue
+        if isinstance(v, str) and not str(v).strip():
+            continue
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            continue
+    return 0.0
+
+
 def _milestone_forecast_score(p):
     """0–100: sum of brief weights for populated progression fields."""
     return sum(
@@ -2114,11 +2126,8 @@ def _fee_bar_month_offset(score: int) -> int:
 
 
 def _bucket_stats(items):
-    return {
-        "count": len(items),
-        "value": sum(int(p.get("price") or 0) for p in items),
-        "fee": sum(float(p.get("_pipe_fee") or 0) for p in items),
-    }
+    fee_sum = sum(float(p.get("_pipe_fee") or 0) for p in items)
+    return {"count": len(items), "fee": int(round(fee_sum))}
 
 
 def _build_pipeline_forecast(properties, today, needs_attention_count):
@@ -2129,7 +2138,7 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
     """
     active = [p for p in properties if not p.get("_is_exchanged")]
     active_n = len(active)
-    pipeline_value = sum(int(p.get("price") or 0) for p in active)
+    pipeline_value = sum(float(p.get("_pipe_fee") or 0) for p in active)
 
     if active_n == 0:
         badge_text = "No active pre-exchange cases on the board"
@@ -2156,7 +2165,7 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
     for p in active:
         sc = _milestone_forecast_score(p)
         idx = _fee_bar_month_offset(sc)
-        fee_totals[idx] += float(p.get("_pipe_fee") or 0)
+        fee_totals[idx] += float(p.get("_pipe_fee") or 0.0)
 
     mx_fee = max(fee_totals) if fee_totals else 0.0
     mx_div = mx_fee if mx_fee > 0 else 1.0
@@ -2175,7 +2184,7 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
     on_track_n = max(0, active_n - needs_attention_count)
     likely_30 = [p for p in active if _milestone_forecast_score(p) >= 70]
     n_30 = len(likely_30)
-    val_30 = sum(int(p.get("price") or 0) for p in likely_30)
+    val_30 = sum(float(p.get("_pipe_fee") or 0.0) for p in likely_30)
 
     if active_n:
         avg_days_active = int(
@@ -2244,27 +2253,24 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         {
             "title": "Month 1 completion forecast",
             "count": bh["count"],
-            "value": bh["value"],
-            "fee": int(round(bh["fee"])),
+            "fee": bh["fee"],
             "note": "Milestone score 70–100 (first fee column).",
         },
         {
             "title": "Month 2 completion forecast",
             "count": bm["count"],
-            "value": bm["value"],
-            "fee": int(round(bm["fee"])),
+            "fee": bm["fee"],
             "note": "Milestone score 45–69 (second fee column).",
         },
         {
             "title": "Month 3 completion forecast",
             "count": bl["count"],
-            "value": bl["value"],
-            "fee": int(round(bl["fee"])),
+            "fee": bl["fee"],
             "note": (
                 "Milestone score 25–44 (third fee column). "
                 f"Remainder 0–24: {br['count']} case"
-                f"{'s' if br['count'] != 1 else ''}, £{br['value']:,} volume, "
-                f"£{int(round(br['fee'])):,} fee — fourth and fifth fee columns."
+                f"{'s' if br['count'] != 1 else ''}, £{br['fee']:,} pipeline fee — "
+                "fourth and fifth fee columns."
             ),
         },
     ]
@@ -2357,6 +2363,18 @@ def _merge_sales_pipeline_for_dashboard(properties, pipe_rows, today):
                     p["price"] = int(float(cp))
                 except (TypeError, ValueError):
                     pass
+            af = pr.get("agreed_fee")
+            if af is not None and str(af).strip() != "":
+                try:
+                    p["agreed_fee"] = float(af)
+                except (TypeError, ValueError):
+                    pass
+            fe = pr.get("fee")
+            if fe is not None and str(fe).strip() != "":
+                try:
+                    p["_fee"] = float(fe)
+                except (TypeError, ValueError):
+                    pass
         else:
             p.setdefault("chain_status", "stable")
             p.setdefault("local_authority", "")
@@ -2436,11 +2454,7 @@ def _build_live_dashboard_data():
         pid = _propid_by_addr.get(addr_norm)
         p["chain_links"] = _chain_by_propid.get(pid or "", [])
         p.setdefault("activity", [])
-        fee = p.get("_fee")
-        try:
-            p["_pipe_fee"] = float(fee) if fee is not None else 0.0
-        except (TypeError, ValueError):
-            p["_pipe_fee"] = 0.0
+        p["_pipe_fee"] = _pipeline_fee_gbp(p)
         if not (p.get("image_url") or "").strip():
             p["image_url"] = _img_by_addr.get(addr_norm, "")
 
@@ -2556,14 +2570,14 @@ def _build_live_dashboard_data():
     active_count = len(active_props)
     needs_attention_count = len(needs_attention_items)
     on_track_count = max(0, active_count - needs_attention_count)
-    pipeline_value = sum(int(p.get("price") or 0) for p in active_props)
+    pipeline_value = sum(float(p.get("_pipe_fee") or 0.0) for p in active_props)
 
     stats = {
         "active": active_count,
         "on_track": on_track_count,
         "needs_attention": needs_attention_count,
         "exchanged": exchanged_count,
-        "pipeline_value": pipeline_value,
+        "pipeline_value": int(round(pipeline_value)),
         "needs_header_severity": "red" if any_red_na else ("amber" if na_raw else "none"),
     }
 

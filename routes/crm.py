@@ -334,6 +334,7 @@ def _map_live_properties():
                 "_vendor_email": r.get("vendor_email") or "\u2014",
                 "_nuvu_notes": r.get("nuvu_notes") or "\u2014",
                 "_staff_initials": r.get("staff_initials") or "\u2014",
+                "agreed_fee": r.get("agreed_fee"),
                 "_fee": r.get("fee"),
                 "_invoice_status": r.get("invoice_status") or "\u2014",
                 "_beds": r.get("beds"),

@@ -272,8 +272,14 @@ def _merge_supabase_progression_overlay(raw_rows):
             if not row:
                 continue
             for col in SALES_PROGRESSION_OVERLAY_COLS:
-                if col in row:
-                    r[col] = row[col]
+                if col not in row:
+                    continue
+                val = row[col]
+                # Supabase often returns null for untouched columns; do not wipe
+                # EATOC-sourced values (e.g. nuvu_notes only on progression row).
+                if val is None:
+                    continue
+                r[col] = val
             rid = row.get("id")
             if rid is not None:
                 r["sales_progression_supabase_id"] = rid

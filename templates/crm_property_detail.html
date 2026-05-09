@@ -401,6 +401,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
           </div>
         </div>
         <textarea id="d-note-txt-{{ loop.index0 }}" class="d-note-raw-hidden{% if not p.nuvu_notes %} empty{% endif %}" aria-hidden="true" tabindex="-1" readonly></textarea>
+        <!-- NUVU notes: collapsible .nuvu-note-card articles are inserted into #d-nuvu-notes-mount by the script below (not server-rendered). -->
         <div id="d-nuvu-notes-mount"></div>
         <div class="note-block-txt{{ ' empty' if not p.nuvu_notes }}" id="d-nuvu-notes-fallback" style="display:none">{{ p.nuvu_notes or 'No notes yet' }}</div>
       </div>

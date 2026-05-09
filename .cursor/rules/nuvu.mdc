@@ -22,7 +22,7 @@ Before making any changes, read `ARCHITECTURE.md` in the project root. It contai
 ### Architecture
 
 - `app.py` is the Flask entry point. It registers Blueprints only. Do not add routes or logic here.
-- All routes live in `routes/` as Flask Blueprints: `auth.py`, `intake.py`, `progression.py`, `crm.py`, `dashboard.py`, `property_api.py`, `chase_engine.py`, `chain_chase.py`
+- All routes live in `routes/` as Flask Blueprints: `auth.py`, `intake.py`, `progression.py`, `dashboard.py`, `property_api.py`, `chase_engine.py`, `chain_chase.py`
 - Shared config (Supabase client, Resend key, constants) lives in `shared.py`
 - Never import from `app.py` in route modules. Import from `shared.py` or sibling route modules.
 

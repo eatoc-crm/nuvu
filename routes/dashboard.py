@@ -1,7 +1,7 @@
 import json
 from datetime import date, datetime
 
-from flask import Blueprint, render_template_string, request
+from flask import Blueprint, abort, render_template_string, request
 
 from db_supabase import (
     fetch_chain_links,
@@ -3253,7 +3253,7 @@ def _build_live_dashboard_data(show_test_properties=False):
     Pipeline Forecast aggregates read-only fields only; it never mutates
     sales_pipeline or sales_progression (see ARCHITECTURE.md).
     """
-    from routes.crm import _map_live_properties, _map_supabase_test_property
+    from utils.eatoc_live_map import _map_live_properties, _map_supabase_test_property
     from utils.address import normalise_address
     from routes.chain_chase import fetch_property_ids_chain_solicitor_unresponsive
     from routes.chase_engine import (
@@ -3525,6 +3525,41 @@ def _build_live_dashboard_data(show_test_properties=False):
         )
 
     return properties, sections, stats, pipeline, needs_attention_items, chase_confirmation_items
+
+
+@dashboard_bp.route("/crm")
+def _deprecated_crm_root():
+    abort(404)
+
+
+@dashboard_bp.route("/crm/<path:_rest>")
+def _deprecated_crm_nested(_rest):
+    abort(404)
+
+
+_DEPRECATED_CRM_API_METHODS = (
+    "GET",
+    "HEAD",
+    "POST",
+    "PATCH",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
+)
+
+
+@dashboard_bp.route(
+    "/api/crm",
+    defaults={"_rest": ""},
+    strict_slashes=False,
+    methods=_DEPRECATED_CRM_API_METHODS,
+)
+@dashboard_bp.route(
+    "/api/crm/<path:_rest>",
+    methods=_DEPRECATED_CRM_API_METHODS,
+)
+def _deprecated_api_crm(_rest=""):
+    abort(404)
 
 
 @dashboard_bp.route("/")

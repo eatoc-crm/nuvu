@@ -31,10 +31,6 @@ from routes.intake import intake_bp
 app.register_blueprint(progression_bp)
 app.register_blueprint(intake_bp)
 
-from routes.crm import crm_bp
-
-app.register_blueprint(crm_bp)
-
 from routes.dashboard import dashboard_bp
 
 app.register_blueprint(dashboard_bp)

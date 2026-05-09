@@ -176,8 +176,6 @@ AUTH_EXEMPT_PREFIXES = (
     "/auth/",
     "/logout",
     "/static/",
-    "/crm",
-    "/api/crm/",
     "/api/intake",
     "/api/update",
 )
@@ -186,6 +184,11 @@ AUTH_EXEMPT_PREFIXES = (
 @auth_bp.before_app_request
 def require_login():
     path = request.path
+    # Legacy CRM URLs removed; dashboard registers 404 handlers — skip login so they are not 302.
+    if path == "/crm" or path.startswith("/crm/"):
+        return None
+    if path in ("/api/crm", "/api/crm/") or path.startswith("/api/crm/"):
+        return None
     if path.startswith("/portal/review") or path.rstrip("/") == "/portal/api/dispatch":
         if not session.get("nuvu_email"):
             return redirect("/login")

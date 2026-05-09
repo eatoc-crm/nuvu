@@ -26,7 +26,7 @@ from db_supabase import (
     fetch_sales_progression_by_id,
     fetch_sales_progression_recent,
 )
-from routes.crm import (
+from utils.eatoc_live_map import (
     FALLBACK_GRADIENTS,
     STATUS_LABELS,
     STATUS_MAP,

@@ -94,28 +94,30 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pipeline-sub{font-size:13px;color:var(--stone);margin-top:6px;max-width:42rem;line-height:1.45}
 .pipe-hint{font-size:12px;color:var(--stone);margin-top:10px;line-height:1.4;max-width:40rem}
 .ahead-badge{
-  background:rgba(197,217,58,.15);color:var(--olive-text);
   padding:6px 12px;border-radius:4px;font-size:.8rem;font-weight:500;
-  display:flex;align-items:center;gap:6px;flex-shrink:0;border:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;flex-shrink:0;border:none;
 }
-.ahead-badge.caution{
-  background:rgba(212,148,10,.12);color:var(--amber);border-color:var(--border);
+.ahead-badge--healthy{
+  background:#C5D93A;color:#2A3A0C;
+}
+.ahead-badge--attention{
+  background:#962D3E;color:#fff;
 }
 .pipe-kpi-row{
   display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;
 }
 .pipe-kpi{
-  background:var(--page-warm);border:2px solid var(--navy);border-radius:6px;
-  padding:14px 16px;
+  background:#1B3A5C;border:none;border-radius:6px;
+  padding:16px 18px;
 }
-.pipe-kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--stone);font-weight:400;margin-bottom:6px}
-.pipe-kpi-val{font-size:1.35rem;font-weight:500;color:var(--navy);line-height:1.1;font-variant-numeric:tabular-nums}
-.pipe-kpi-sub{font-size:.8rem;color:var(--stone);margin-top:6px;line-height:1.35}
+.pipe-kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.6);font-weight:500;margin-bottom:8px}
+.pipe-kpi-val{font-size:1.4rem;font-weight:700;color:#fff;line-height:1.1;font-variant-numeric:tabular-nums}
+.pipe-kpi-sub{font-size:.8rem;color:rgba(255,255,255,.6);margin-top:8px;line-height:1.35;font-weight:500}
 .pipe-split{
   display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;
 }
 .pipe-panel{
-  background:var(--white);border:2px solid var(--navy);border-radius:6px;
+  background:var(--white);border:1px solid #E8E8E8;border-radius:6px;
   padding:18px 20px 20px;
 }
 .pipe-panel-h{font-size:.95rem;font-weight:500;color:var(--txt);margin-bottom:4px}
@@ -123,7 +125,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pipe-fee-chart{
   display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
   height:180px;padding:12px 8px 0;border-radius:6px;background:var(--muted-bg);
-  border:2px solid var(--navy);
+  border:1px solid #E8E8E8;
 }
 .pipe-fee-col{
   flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;
@@ -162,16 +164,16 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pipe-fun-pct{font-size:.72rem;font-weight:500;color:var(--txt-secondary);width:36px;text-align:right;flex-shrink:0}
 .pipe-forecast-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .pipe-fc{
-  border-radius:6px;padding:18px 20px;border:2px solid var(--navy);
+  border-radius:6px;padding:18px 20px;
   background:var(--white);
 }
-.pipe-fc-sage{background:#eef4ef}
+.pipe-fc-sage{background:#eef4ef;border:1px solid rgba(74,124,111,.35)}
 .pipe-fc-sage .pipe-fc-h{color:#2d4a38}
-.pipe-fc-m1{background:rgba(197,217,58,.12)}
+.pipe-fc-m1{background:rgba(197,217,58,.12);border:1px solid rgba(197,217,58,.45)}
 .pipe-fc-m1 .pipe-fc-h{color:#4A5A1A}
-.pipe-fc-navy{background:#e9eef7}
+.pipe-fc-navy{background:#e9eef7;border:1px solid rgba(27,58,92,.35)}
 .pipe-fc-navy .pipe-fc-h{color:#1B3A5C}
-.pipe-fc-amber{background:#fdf6ee}
+.pipe-fc-amber{background:#fdf6ee;border:1px solid rgba(212,148,10,.45)}
 .pipe-fc-amber .pipe-fc-h{color:#7a4a12}
 .pipe-fc-h{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:10px;color:var(--txt-secondary)}
 .pipe-fc-count{font-size:1.75rem;font-weight:500;line-height:1;color:var(--txt)}
@@ -201,52 +203,112 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .dash-tab--active{background:var(--nuvu-green);color:var(--olive);font-weight:600}
 .tab-panel{display:none}
 .tab-panel.tab-panel--active{display:block}
-.lb-wrap{max-width:900px;margin:0 auto;padding:24px 20px 48px}
-.lb-header{margin-bottom:6px}
-.lb-header h2{font-size:1rem;font-weight:500;color:var(--txt);margin:0}
-.lb-header p{font-size:.85rem;color:var(--txt-secondary);margin-top:6px;line-height:1.45}
-.lb-metric-note{
-  font-size:11px;color:var(--txt-secondary);margin:0 0 22px;line-height:1.45;
-  cursor:help;max-width:42rem;
+.lb-wrap{max-width:960px;margin:0 auto;padding:24px 20px 48px}
+.lb-header{
+  display:flex;align-items:stretch;gap:16px;margin-bottom:22px;
 }
-.lb-cards{display:flex;flex-direction:column;gap:12px}
+.lb-header-accent{
+  width:4px;flex-shrink:0;border-radius:2px;background:#1B3A5C;
+  align-self:stretch;min-height:52px;
+}
+.lb-header-text{flex:1;min-width:0}
+.lb-header-text h2{
+  font-size:20px;font-weight:700;color:#1B3A5C;margin:0;letter-spacing:-.02em;line-height:1.2;
+}
+.lb-header-sub{
+  font-size:12px;color:#8B8680;margin:8px 0 0;line-height:1.45;max-width:42rem;
+}
+.lb-cards{display:flex;flex-direction:column;gap:14px}
+/* — Rank 2–5 — */
 .lb-card{
   display:flex;flex-wrap:wrap;align-items:stretch;gap:16px 20px;
-  background:var(--white);border:2px solid var(--navy);border-radius:6px;
-  padding:14px;
+  background:var(--white);border:2px solid #1B3A5C;border-radius:6px;
+  padding:16px 18px;position:relative;
 }
 .lb-rank-col{
-  flex:0 0 48px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  flex:0 0 52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
   text-align:center;padding-top:2px;
 }
-.lb-rank-num{font-size:1.2rem;font-weight:500;color:var(--navy);line-height:1;font-variant-numeric:tabular-nums}
-.lb-move{font-size:11px;margin-top:6px;font-weight:500;line-height:1.2}
-.lb-arr--up{color:var(--nuvu-green)}
-.lb-arr--down{color:var(--claret)}
-.lb-arr--flat{color:var(--txt-secondary)}
-.lb-arr-rest{color:var(--txt-secondary);font-weight:500}
+.lb-rank-num{font-size:1.65rem;font-weight:700;color:#1B3A5C;line-height:1;font-variant-numeric:tabular-nums}
+.lb-move{font-size:11px;margin-top:8px;font-weight:600;line-height:1.2}
+.lb-arr--up{color:#C5D93A}
+.lb-arr--down{color:#962D3E}
+.lb-arr--flat{color:#A8A39D}
+.lb-arr-rest{color:#6B6560;font-weight:600}
 .lb-mid{flex:1;min-width:160px}
-.lb-company{font-size:.95rem;font-weight:500;color:var(--navy);line-height:1.25;letter-spacing:-.01em}
+.lb-company{font-size:1rem;font-weight:600;color:#1B3A5C;line-height:1.25;letter-spacing:-.01em}
 .lb-location{font-size:.82rem;color:var(--txt-secondary);margin-top:4px}
-.lb-stars{font-size:.85rem;color:var(--amber);margin-top:8px;font-weight:500;font-variant-numeric:tabular-nums}
+.lb-stars{font-size:.88rem;color:#D4940A;margin-top:8px;font-weight:600;font-variant-numeric:tabular-nums}
 .lb-metrics{
-  flex:0 0 auto;display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:10px 16px;
-  min-width:200px;align-content:start;
+  flex:0 0 auto;display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:12px 18px;
+  min-width:220px;align-content:start;
 }
-.lb-metric-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--txt-secondary);font-weight:400}
-.lb-metric-val{font-size:.82rem;font-weight:500;color:var(--txt)}
+.lb-metric-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--txt-secondary);font-weight:500}
+.lb-metric-val{font-size:.85rem;font-weight:600;color:var(--txt)}
 .lb-pill{
-  display:inline-block;margin-top:2px;padding:6px 10px;border-radius:4px;
-  font-size:.85rem;font-weight:500;
+  display:inline-block;margin-top:4px;padding:6px 12px;border-radius:999px;
+  font-size:.82rem;font-weight:600;
 }
-.lb-pill--good{background:rgba(197,217,58,.15);color:var(--olive-text)}
-.lb-pill--mid{background:var(--muted-bg);color:var(--txt)}
-.lb-pill--warn{background:rgba(150,45,62,.12);color:var(--claret)}
+.lb-pill--good{background:rgba(197,217,58,.2);color:#4A5A1A}
+.lb-pill--mid{background:rgba(27,58,92,.08);color:#1B3A5C}
+.lb-pill--warn{background:rgba(150,45,62,.1);color:#962D3E}
+/* — Rank 6+ — */
+.lb-card--rest{
+  border-width:1px;border-color:#E8E8E8;
+  opacity:.92;
+}
+.lb-card--rest .lb-rank-num{color:#8B8680;font-weight:700}
+.lb-card--rest .lb-company{color:#5c5854}
+.lb-card--rest .lb-arr-rest{color:#A8A39D}
+.lb-card--rest .lb-location,.lb-card--rest .lb-metric-lbl,.lb-card--rest .lb-metric-val{color:#8B8680}
+/* — Rank 1 hero — */
+.lb-card--hero{
+  display:block;border:none;border-radius:8px;padding:22px 24px 24px;
+  background:#1B3A5C;overflow:hidden;position:relative;
+}
+.lb-card--hero .lb-hero-deco{
+  position:absolute;top:-36px;right:-36px;width:120px;height:120px;border-radius:50%;
+  background:rgba(197,217,58,.08);pointer-events:none;
+}
+.lb-hero-pod .lb-pill--good{background:rgba(197,217,58,.22);color:#C5D93A}
+.lb-hero-pod .lb-pill--mid{background:rgba(255,255,255,.1);color:#e8eef5}
+.lb-hero-pod .lb-pill--warn{background:rgba(150,45,62,.4);color:#fff}
+.lb-hero-top{
+  display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px 20px;
+  position:relative;z-index:1;margin-bottom:18px;
+}
+.lb-hero-rank{
+  font-size:3.25rem;font-weight:800;line-height:1;color:#C5D93A;
+  font-variant-numeric:tabular-nums;flex-shrink:0;
+}
+.lb-hero-main{flex:1;min-width:180px}
+.lb-card--hero .lb-company{font-size:1.15rem;font-weight:700;color:#fff;letter-spacing:-.02em}
+.lb-card--hero .lb-location{color:rgba(255,255,255,.55);margin-top:6px;font-size:.85rem}
+.lb-card--hero .lb-stars{color:#D4940A;margin-top:10px}
+.lb-card--hero .lb-move{margin-top:10px;font-size:11px}
+.lb-card--hero .lb-arr--up{color:#C5D93A}
+.lb-card--hero .lb-arr--down{color:#962D3E}
+.lb-card--hero .lb-arr--flat{color:rgba(255,255,255,.45)}
+.lb-card--hero .lb-arr-rest{color:rgba(255,255,255,.55)}
+.lb-hero-move{
+  flex:0 0 auto;margin-left:auto;text-align:right;min-width:52px;padding-top:6px;
+}
+.lb-hero-move .lb-move{margin-top:0}
 .lb-badge-rec{
-  display:inline-block;margin-top:8px;padding:2px 8px;border-radius:4px;
-  font-size:10px;font-weight:500;background:var(--claret);color:#fff;
-  text-transform:uppercase;letter-spacing:.03em;
+  display:inline-block;margin-top:10px;padding:4px 10px;border-radius:4px;
+  font-size:10px;font-weight:700;background:#C5D93A;color:#2A3A0C;
+  text-transform:uppercase;letter-spacing:.04em;
 }
+.lb-hero-metrics{
+  display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:10px;
+  position:relative;z-index:1;
+}
+.lb-hero-pod{
+  background:rgba(255,255,255,.08);border-radius:6px;padding:12px 14px;
+}
+.lb-hero-pod .lb-metric-lbl{color:rgba(255,255,255,.45);font-weight:500}
+.lb-hero-pod .lb-metric-val{color:#C5D93A;font-size:.9rem;font-weight:700}
+.lb-hero-pod .lb-pill{margin-top:6px}
 .portal-dash-card{
   max-width:640px;margin:24px auto 48px;padding:24px 26px;
   background:var(--white);border:2px solid var(--navy);border-radius:6px;
@@ -554,8 +616,9 @@ a.portal-review-link:hover{color:var(--claret)}
   .hero-badge-text h1{font-size:1.3rem}
   .hs{padding:14px 10px}.hs-val{font-size:1.4rem}
   .dash-tab{padding:12px 12px 10px;font-size:13px}
-  .lb-card{flex-direction:column}
+  .lb-card:not(.lb-card--hero){flex-direction:column}
   .lb-metrics{width:100%;min-width:0}
+  .lb-hero-metrics{grid-template-columns:1fr}
   .lb-wrap{padding:22px 16px 40px}
   .pipeline-section{padding:22px 16px}
   .pipe-kpi-row{grid-template-columns:1fr}
@@ -815,29 +878,65 @@ a.portal-review-link:hover{color:var(--claret)}
 {% macro dash_leaderboard_panel(lb) %}
 <div id="tab-panel-{{ lb.tab_id }}" class="tab-panel">
   <div class="lb-wrap">
-    <div class="lb-header">
-      <h2>{{ lb.title }}</h2>
-      <p>{{ lb.subtitle }}</p>
-    </div>
-    <p class="lb-metric-note" title="{{ lb.metric_note }}">{{ lb.metric_note }}</p>
+    <header class="lb-header">
+      <div class="lb-header-accent" aria-hidden="true"></div>
+      <div class="lb-header-text">
+        <h2>{{ lb.title }}</h2>
+        <p class="lb-header-sub">{{ lb.subtitle }}</p>
+      </div>
+    </header>
     <div class="lb-cards">
       {% for e in lb.rows %}
-      <article class="lb-card">
+      {% set mv = e.movement %}
+      {% if e.rank == 1 %}
+      <article class="lb-card lb-card--hero">
+        <span class="lb-hero-deco" aria-hidden="true"></span>
+        <div class="lb-hero-top">
+          <div class="lb-hero-rank">{{ e.rank }}</div>
+          <div class="lb-hero-main">
+            <div class="lb-company">{{ e.company }}</div>
+            <div class="lb-location">{{ e.location }}</div>
+            <div class="lb-stars">{{ e.rating|round(1) }} &#9733;</div>
+            <span class="lb-badge-rec">Recommended</span>
+          </div>
+          <div class="lb-hero-move">
+            <div class="lb-move">{% if mv.startswith('▲') %}<span class="lb-arr lb-arr--up">▲</span><span class="lb-arr-rest">{{ mv[1:] }}</span>{% elif mv.startswith('▼') %}<span class="lb-arr lb-arr--down">▼</span><span class="lb-arr-rest">{{ mv[1:] }}</span>{% else %}<span class="lb-arr lb-arr--flat">{{ mv }}</span>{% endif %}</div>
+          </div>
+        </div>
+        <div class="lb-hero-metrics">
+          <div class="lb-hero-pod">
+            <div class="lb-metric-lbl">Avg time</div>
+            <div><span class="lb-pill {% if e.avg_days < 70 %}lb-pill--good{% elif e.avg_days <= 80 %}lb-pill--mid{% else %}lb-pill--warn{% endif %}">{{ e.avg_days }} day{% if e.avg_days != 1 %}s{% endif %}</span></div>
+          </div>
+          <div class="lb-hero-pod">
+            <div class="lb-metric-lbl">Response</div>
+            <div class="lb-metric-val">{{ e.response }}</div>
+          </div>
+          <div class="lb-hero-pod">
+            <div class="lb-metric-lbl">Completion</div>
+            <div class="lb-metric-val">{{ e.comp_pct }}</div>
+          </div>
+          <div class="lb-hero-pod">
+            <div class="lb-metric-lbl">Transactions</div>
+            <div class="lb-metric-val">{{ e.txns }}</div>
+          </div>
+        </div>
+      </article>
+      {% else %}
+      <article class="lb-card{% if e.rank > 5 %} lb-card--rest{% endif %}">
         <div class="lb-rank-col">
           <div class="lb-rank-num">{{ e.rank }}</div>
-          {% set mv = e.movement %}
           <div class="lb-move">{% if mv.startswith('▲') %}<span class="lb-arr lb-arr--up">▲</span><span class="lb-arr-rest">{{ mv[1:] }}</span>{% elif mv.startswith('▼') %}<span class="lb-arr lb-arr--down">▼</span><span class="lb-arr-rest">{{ mv[1:] }}</span>{% else %}<span class="lb-arr lb-arr--flat">{{ mv }}</span>{% endif %}</div>
         </div>
         <div class="lb-mid">
           <div class="lb-company">{{ e.company }}</div>
           <div class="lb-location">{{ e.location }}</div>
           <div class="lb-stars">{{ e.rating|round(1) }} &#9733;</div>
-          {% if e.rank == 1 %}<span class="lb-badge-rec">Recommended</span>{% endif %}
         </div>
         <div class="lb-metrics">
           <div>
             <div class="lb-metric-lbl">Avg time</div>
-            <div><span class="lb-pill {% if e.avg_days < 70 %}lb-pill--good{% elif e.avg_days <= 90 %}lb-pill--mid{% else %}lb-pill--warn{% endif %}">{{ e.avg_days }} day{% if e.avg_days != 1 %}s{% endif %}</span></div>
+            <div><span class="lb-pill {% if e.avg_days < 70 %}lb-pill--good{% elif e.avg_days <= 80 %}lb-pill--mid{% else %}lb-pill--warn{% endif %}">{{ e.avg_days }} day{% if e.avg_days != 1 %}s{% endif %}</span></div>
           </div>
           <div>
             <div class="lb-metric-lbl">Response</div>
@@ -853,6 +952,7 @@ a.portal-review-link:hover{color:var(--claret)}
           </div>
         </div>
       </article>
+      {% endif %}
       {% endfor %}
     </div>
   </div>
@@ -1008,7 +1108,7 @@ a.portal-review-link:hover{color:var(--claret)}
         <div class="pipeline-title">Pipeline forecast</div>
         <div class="pipeline-sub">{{ pipeline.subtitle }}</div>
       </div>
-      <div class="ahead-badge{% if pipeline.badge_caution %} caution{% endif %}">{{ pipeline.badge_text }}</div>
+      <div class="ahead-badge{% if pipeline.needs_attention_count > 0 %} ahead-badge--attention{% else %} ahead-badge--healthy{% endif %}">{{ pipeline.badge_text }}</div>
     </div>
     <div class="pipe-kpi-row">
       {% for k in pipeline.kpi_cards %}
@@ -1693,15 +1793,12 @@ a.portal-review-link:hover{color:var(--claret)}
 
 
 # Demo leaderboard rows (read-only; future: dedicated leaderboard/reviews table).
+_LB_SUBTITLE = "Ranked by average transaction time across tracked progressions."
 LEADERBOARD_TABS = [
     {
         "tab_id": "solicitors",
-        "title": "Solicitor Leaderboard",
-        "subtitle": "Ranked by average transaction time",
-        "metric_note": (
-            "Average days reflects each firm's typical contribution to overall "
-            "transaction time on the properties we track (demo data)."
-        ),
+        "title": "Solicitor leaderboard",
+        "subtitle": _LB_SUBTITLE,
         "rows": [
             {
                 "rank": 1,
@@ -1773,12 +1870,8 @@ LEADERBOARD_TABS = [
     },
     {
         "tab_id": "mortgage",
-        "title": "Mortgage Leaderboard",
-        "subtitle": "Ranked by average transaction time",
-        "metric_note": (
-            "Average days reflects typical contribution to transaction time from "
-            "mortgage processing on our sample (demo data)."
-        ),
+        "title": "Mortgage leaderboard",
+        "subtitle": _LB_SUBTITLE,
         "rows": [
             {
                 "rank": 1,
@@ -1850,11 +1943,8 @@ LEADERBOARD_TABS = [
     },
     {
         "tab_id": "surveyors",
-        "title": "Surveyor Leaderboard",
-        "subtitle": "Ranked by average time to report",
-        "metric_note": (
-            "Average days is from instruction to report delivered (demo data)."
-        ),
+        "title": "Surveyor leaderboard",
+        "subtitle": _LB_SUBTITLE,
         "rows": [
             {
                 "rank": 1,
@@ -1915,11 +2005,8 @@ LEADERBOARD_TABS = [
     },
     {
         "tab_id": "removals",
-        "title": "Removals Leaderboard",
-        "subtitle": "Ranked by average days to confirm booking",
-        "metric_note": (
-            "Average days is from enquiry to booking confirmed (demo data)."
-        ),
+        "title": "Removals leaderboard",
+        "subtitle": _LB_SUBTITLE,
         "rows": [
             {
                 "rank": 1,
@@ -2403,6 +2490,7 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         "month_cards": month_cards,
         "badge_text": badge_text,
         "badge_caution": badge_caution,
+        "needs_attention_count": needs_attention_count,
         "show_fee_chart_hint": fee_primary_zero,
         "show_funnel_hint": funnel_all_zero,
     }

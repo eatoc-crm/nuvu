@@ -182,14 +182,16 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   box-shadow:0 1px 0 rgba(15,27,45,.04);
 }
 .dash-tab-inner{
-  max-width:1280px;margin:0 auto;padding:0 16px;
-  display:flex;flex-wrap:nowrap;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  width:100%;margin:0;padding:0;
+  display:flex;flex-wrap:nowrap;align-items:stretch;gap:0;
 }
 .dash-tab{
-  flex:0 0 auto;padding:14px 16px 12px;font-size:14px;font-weight:500;
+  flex:1;min-width:0;padding:14px 8px 12px;font-size:14px;font-weight:500;
   font-family:inherit;color:#5a6a7a;background:transparent;border:none;
   border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color .15s ease;
+  text-align:center;border-right:1px solid #e2e8f0;
 }
+.dash-tab:last-child{border-right:none}
 .dash-tab:hover{color:#1b3a5c}
 .dash-tab--active{color:#1b3a5c;font-weight:700;border-bottom-color:#1b3a5c}
 .tab-panel{display:none}

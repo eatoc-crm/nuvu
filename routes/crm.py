@@ -251,6 +251,13 @@ def _milestones_from_record(r):
     ]
 
 
+# Free-text note columns: Supabase row may exist for milestones while these stay
+# null in Postgres; do not overwrite non-null EATOC payloads with null.
+_OVERLAY_SKIP_SUPABASE_NULL = frozenset(
+    {"notes", "nuvu_notes", "buyer_solicitor_notes", "seller_solicitor_notes"}
+)
+
+
 def _merge_supabase_progression_overlay(raw_rows):
     """NUVU PATCH writes to Supabase; EATOC list may lag. Overlay authoritative columns."""
     if not raw_rows:
@@ -275,9 +282,7 @@ def _merge_supabase_progression_overlay(raw_rows):
                 if col not in row:
                     continue
                 val = row[col]
-                # Supabase often returns null for untouched columns; do not wipe
-                # EATOC-sourced values (e.g. nuvu_notes only on progression row).
-                if val is None:
+                if val is None and col in _OVERLAY_SKIP_SUPABASE_NULL:
                     continue
                 r[col] = val
             rid = row.get("id")

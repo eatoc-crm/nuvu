@@ -346,7 +346,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
 /* ═══ CARD GRID ═══════════════════════════════════════════ */
 .card-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;
   margin-bottom:12px;
 }
 
@@ -604,7 +604,7 @@ a.portal-review-link:hover{color:var(--claret)}
 
 /* ═══ RESPONSIVE ══════════════════════════════════════════ */
 @media(max-width:960px){
-  .card-grid{grid-template-columns:repeat(2,1fr)}
+  .card-grid{grid-template-columns:1fr 1fr}
   .pipe-kpi-row{grid-template-columns:repeat(2,1fr)}
   .pipe-split{grid-template-columns:1fr}
   .pipe-forecast-row{grid-template-columns:1fr}
@@ -725,7 +725,7 @@ a.portal-review-link:hover{color:var(--claret)}
 .section-collapse-body{overflow:hidden}
 .section-collapse-body:not(.open){display:none}
 .na-empty{padding:24px;text-align:center;color:var(--txt-secondary)}
-.card-grid-na{grid-template-columns:repeat(2,1fr)}
+.card-grid-na{grid-template-columns:1fr 1fr}
 .prop-card-na{min-height:auto}
 .na-overdue{font-size:14px;font-weight:600;color:var(--claret);margin:0 0 6px}
 .na-action{font-size:.85rem;color:var(--txt);line-height:1.4;margin-bottom:10px}
@@ -743,7 +743,7 @@ a.portal-review-link:hover{color:var(--claret)}
 .m-pipe-row select:focus,.m-pipe-row input:focus{outline:none;border-color:var(--navy)}
 .m-pipe-save{background:var(--navy);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:.78rem;font-weight:500;cursor:pointer;margin-top:4px;transition:var(--t)}
 .m-pipe-save:hover{filter:brightness(1.05)}
-@media(max-width:960px){.card-grid-na{grid-template-columns:1fr}}
+@media(max-width:640px){.card-grid-na{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1017,18 +1017,18 @@ a.portal-review-link:hover{color:var(--claret)}
     </button>
     <div class="section-collapse-body open" id="panel-needs-attention">
       <div class="card-grid card-grid-na">
-        {% for item in nai[:3] %}
+        {% for item in nai[:4] %}
         {{ na_card(item.property, item.triggers) }}
         {% endfor %}
       </div>
-      {% if nai|length > 3 %}
+      {% if nai|length > 4 %}
       <button class="show-more-btn" id="showMore-needs-attention">
-        Show More ({{ nai|length - 3 }})
+        Show More ({{ nai|length - 4 }})
         <span class="sm-chev" aria-hidden="true">&#9660;</span>
       </button>
       <div class="show-more-panel" id="morePanel-needs-attention">
         <div class="card-grid card-grid-na">
-          {% for item in nai[3:] %}
+          {% for item in nai[4:] %}
           {{ na_card(item.property, item.triggers) }}
           {% endfor %}
         </div>
@@ -2712,8 +2712,8 @@ def _build_live_dashboard_data():
             b2.append(p)
 
     def _make_section(sid, icon, title, subtitle, border, items):
-        visible = items[:3]
-        hidden = items[3:]
+        visible = items[:4]
+        hidden = items[4:]
         avg = int(sum(p["progress"] for p in items) / len(items)) if items else 0
         color = (
             "#962D3E"

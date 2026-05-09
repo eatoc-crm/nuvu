@@ -610,6 +610,56 @@ a.portal-review-link:hover{color:var(--claret)}
 .act-item{background:var(--muted-bg);border:1px solid var(--border);border-radius:4px;padding:8px 12px;margin-bottom:6px;font-size:.8rem;line-height:1.45;color:var(--txt)}
 .act-idx{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--txt-secondary);font-weight:400}
 
+/* modal — CRM detail panels (Direction C) */
+.m-crm-panels{margin-top:4px;margin-bottom:4px;display:flex;flex-direction:column;gap:10px}
+.m-crm-sec{
+  background:var(--white);border:1px solid #E5E7EB;border-radius:4px;overflow:hidden;
+}
+.m-crm-sec-toggle{
+  width:100%;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;
+  text-align:left;background:var(--white);border:none;cursor:pointer;
+  padding:10px 14px 12px;font-family:inherit;
+}
+.m-crm-sec-toggle:hover{background:#FAFAFA}
+.m-crm-sec-kicker{
+  width:100%;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:#6B7280;margin-bottom:2px;
+}
+.m-crm-sec-h{font-size:.95rem;font-weight:700;color:#1B3A5C;letter-spacing:-.02em;flex:1;min-width:0}
+.m-crm-sec-chev{font-size:10px;color:#6B7280;transition:transform .15s ease;flex-shrink:0}
+.m-crm-sec-toggle[aria-expanded="true"] .m-crm-sec-chev{transform:rotate(180deg)}
+.m-crm-sec-body{display:none;padding:12px 14px;border-top:1px solid #E5E7EB;font-size:.84rem;line-height:1.45}
+.m-crm-sec-toggle[aria-expanded="true"] + .m-crm-sec-body{display:block}
+.m-crm-empty{color:#6B7280;font-size:.86rem;padding:4px 0}
+.m-crm-feed-row{border-bottom:1px solid #F3F4F6;padding:12px 0}
+.m-crm-feed-row:last-child{border-bottom:none;padding-bottom:0}
+.m-crm-feed-row--pend{border-left:4px solid #D97706;padding-left:12px;margin-left:-4px}
+.m-crm-feed-meta{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:6px;color:#6B7280;font-size:.8rem;align-items:center}
+.m-crm-muted{color:#6B7280;font-size:.8rem;margin-top:6px;line-height:1.4;word-break:break-word}
+.m-crm-party-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.m-crm-party-card{border:1px solid #E5E7EB;border-radius:4px;padding:12px 14px;background:#FAFAFA}
+.m-crm-party-card h4{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#6B7280;margin-bottom:6px;font-weight:600}
+.m-crm-party-card p{font-size:.84rem;margin:2px 0;word-break:break-word;color:var(--txt)}
+.m-crm-badge{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  padding:3px 8px;border-radius:4px;
+}
+.m-crm-badge--buyer{background:#EFF6FF;color:#1D4ED8}
+.m-crm-badge--seller{background:#FDF2F8;color:#9D174D}
+.m-crm-badge--seller-sol{background:#F5F3FF;color:#5B21B6}
+.m-crm-badge--buyer-sol{background:#ECFDF5;color:#4A7C6F}
+.m-crm-badge--chain{background:#1B3A5C;color:#fff}
+.m-crm-badge--team{background:#E5E7EB;color:#1A1A1A}
+.m-crm-badge--reply-yes{background:#ECFDF5;color:#4A7C6F}
+.m-crm-badge--reply-wait{background:#F3F4F6;color:#6B7280}
+.m-crm-badge--dry{background:#FEF3C7;color:#92400E}
+.m-crm-badge--pend{border:1px solid #FCD34D;color:#92400E;background:#FFFBEB}
+.m-crm-badge--conf{background:#ECFDF5;color:#4A7C6F}
+.m-crm-badge--dismiss{background:#F3F4F6;color:#6B7280}
+.m-crm-badge--ns{background:#F3F4F6;color:#6B7280}
+.m-crm-badge--cont{background:#EFF6FF;color:#2563EB}
+.m-crm-badge--confirmed{background:#ECFDF5;color:#4A7C6F}
+.m-crm-badge--unresp{background:#FEF2F2;color:#E85D3A}
+
 /* expandable details */
 .m-det-toggle{
   width:100%;background:var(--muted-bg);border:1px solid var(--border);
@@ -1340,6 +1390,7 @@ a.portal-review-link:hover{color:var(--claret)}
         <h3>Notes &amp; Activity</h3>
         <div id="mActivityList"></div>
       </div>
+      <div id="mCrmPanels" class="m-crm-panels" aria-label="CRM detail panels"></div>
       <hr class="m-div">
       <button type="button" class="m-det-toggle" id="mDetToggle">
         Full Details
@@ -1391,6 +1442,17 @@ a.portal-review-link:hover{color:var(--claret)}
   var mLocalAuthority = document.getElementById("mLocalAuthority");
   var mPipeSave  = document.getElementById("mPipeSave");
   var mStatusChip = document.getElementById("mStatusChip");
+  var mCrmPanels = document.getElementById("mCrmPanels");
+
+  if(modalBox && mCrmPanels){
+    modalBox.addEventListener("click", function(ev){
+      var hdr = ev.target.closest(".m-crm-sec-toggle");
+      if(!hdr || !mCrmPanels.contains(hdr)) return;
+      ev.preventDefault();
+      var open = hdr.getAttribute("aria-expanded") === "true";
+      hdr.setAttribute("aria-expanded", open ? "false" : "true");
+    });
+  }
 
   function fmt(d){
     if(!d) return "\u2014";
@@ -1576,6 +1638,255 @@ a.portal-review-link:hover{color:var(--claret)}
       })(items[ii]);
     }
     mountEl.appendChild(stack);
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function parseIsoMs(v){
+    if(v == null || v === "") return 0;
+    var t = Date.parse(String(v).replace(/Z$/i, "+00:00"));
+    return isNaN(t) ? 0 : t;
+  }
+  function formatDetailDt(val){
+    if(val == null) return "";
+    var s = String(val).trim();
+    if(!s) return "";
+    var d = new Date(s.replace(/Z$/i, "+00:00"));
+    if(isNaN(d.getTime())) return s.length > 19 ? s.slice(0, 19) : s;
+    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var day = d.getDate(), mo = months[d.getMonth()], y = d.getFullYear();
+    var h = d.getHours(), m = d.getMinutes(), sec = d.getSeconds();
+    if(h || m || sec){
+      var hh = (h < 10 ? "0" : "") + h, mm = (m < 10 ? "0" : "") + m;
+      return day + " " + mo + " " + y + ", " + hh + ":" + mm;
+    }
+    return day + " " + mo + " " + y;
+  }
+  var CHASE_STAGE_LABELS = {
+    buyer_protocol_forms: "Buyer protocol forms",
+    seller_ta6_ta10: "Seller TA6 / TA10",
+    survey_instruction: "Survey instruction",
+    post_survey_followup: "Post-survey follow-up"
+  };
+  function chaseStageBase(stage){
+    var st = (stage || "").trim();
+    if(CHASE_STAGE_LABELS[st]) return CHASE_STAGE_LABELS[st];
+    if(!st) return "Chase";
+    return st.replace(/_/g, " ").replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+  }
+  function chaseDayNum(day){
+    var d = parseInt(day, 10);
+    return isNaN(d) ? 0 : d;
+  }
+  var RECIPIENT_LABELS = {
+    buyer: "Buyer",
+    seller: "Seller",
+    buyer_solicitor: "Buyer Sol.",
+    seller_solicitor: "Seller Sol.",
+    negotiator: "Team",
+    chain_solicitor: "Chain Sol."
+  };
+  function recipientTypeLabel(rt){
+    var k = (rt || "").trim().toLowerCase();
+    if(RECIPIENT_LABELS[k]) return RECIPIENT_LABELS[k];
+    if(!rt) return "Party";
+    return String(rt).replace(/_/g, " ").replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+  }
+  function recipientBadgeClass(rt){
+    var k = (rt || "").trim().toLowerCase();
+    if(k === "buyer") return "m-crm-badge--buyer";
+    if(k === "seller") return "m-crm-badge--seller";
+    if(k === "buyer_solicitor") return "m-crm-badge--buyer-sol";
+    if(k === "seller_solicitor") return "m-crm-badge--seller-sol";
+    if(k === "chain_solicitor") return "m-crm-badge--chain";
+    return "m-crm-badge--team";
+  }
+  function chainSolicitorStatusClass(cl){
+    var raw = (cl.solicitor_status || "").trim().toLowerCase();
+    if(raw === "not_set" || raw === "contacted" || raw === "confirmed" || raw === "unresponsive") return raw;
+    if(cl.solicitor_acting_confirmed_at || cl.solicitor_details_received) return "confirmed";
+    if(cl.last_chain_inform_sent_at || cl.last_chain_request_sent_at ||
+      cl.chain_solicitor_intro_sent_at || cl.nuvu_introduced) return "contacted";
+    return "not_set";
+  }
+  function chainStatusBadgeClass(sc){
+    if(sc === "confirmed") return "m-crm-badge--confirmed";
+    if(sc === "contacted") return "m-crm-badge--cont";
+    if(sc === "unresponsive") return "m-crm-badge--unresp";
+    return "m-crm-badge--ns";
+  }
+  function titleizeLoose(s){
+    var t = (s || "").trim().toLowerCase();
+    if(!t) return "";
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  function strTrim(v){
+    return v == null ? "" : String(v).trim();
+  }
+  function firstCoalesce(p, keys){
+    for(var i = 0; i < keys.length; i++){
+      var x = strTrim(p[keys[i]]);
+      if(x) return x;
+    }
+    return "";
+  }
+  function sortByTsDesc(arr, key){
+    return (arr || []).slice().sort(function(a, b){
+      return parseIsoMs(b[key]) - parseIsoMs(a[key]);
+    });
+  }
+  function crmSec(kicker, title, innerHtml){
+    return '<section class="m-crm-sec">' +
+      '<button type="button" class="m-crm-sec-toggle" aria-expanded="false">' +
+      '<span class="m-crm-sec-kicker">' + escapeHtml(kicker) + '</span>' +
+      '<span class="m-crm-sec-h">' + escapeHtml(title) + '</span>' +
+      '<span class="m-crm-sec-chev" aria-hidden="true">\u25BE</span></button>' +
+      '<div class="m-crm-sec-body">' + innerHtml + "</div></section>";
+  }
+  function buildCrmPanelsHtml(p){
+    var parts = [];
+
+    /* Chase log */
+    var cms = Array.isArray(p.chase_messages) ? p.chase_messages : [];
+    var cmsSorted = sortByTsDesc(cms, "sent_at");
+    var chaseInner;
+    if(!cmsSorted.length){
+      chaseInner = '<p class="m-crm-empty">No chases sent yet</p>';
+    }else{
+      chaseInner = "";
+      for(var ci = 0; ci < cmsSorted.length; ci++){
+        var cm = cmsSorted[ci] || {};
+        var stg = chaseStageBase(cm.chase_stage);
+        var dn = chaseDayNum(cm.chase_day);
+        var sent = formatDetailDt(cm.sent_at) || "\u2014";
+        var rt = cm.recipient_type;
+        var rlab = recipientTypeLabel(rt);
+        var rb = recipientBadgeClass(rt);
+        var em = strTrim(cm.recipient_email) || "\u2014";
+        var dry = cm.dry_run ? '<span class="m-crm-badge m-crm-badge--dry">Dry run</span>' : "";
+        var repYes = cm.response_received;
+        var repB = repYes ? "m-crm-badge--reply-yes" : "m-crm-badge--reply-wait";
+        var repT = repYes ? "Reply received" : "Awaiting reply";
+        chaseInner += '<div class="m-crm-feed-row">' +
+          '<div><strong>' + escapeHtml(stg) + '</strong> ' + dry + "</div>" +
+          '<div class="m-crm-feed-meta">' +
+          '<span>Day ' + dn + "</span>" +
+          "<span>" + escapeHtml(sent) + "</span>" +
+          '<span class="m-crm-badge ' + rb + '">' + escapeHtml(rlab) + "</span>" +
+          "<span>" + escapeHtml(em) + "</span>" +
+          '<span class="m-crm-badge ' + repB + '">' + repT + "</span></div></div>";
+      }
+    }
+    parts.push(crmSec("Chase engine", "Chase Log", chaseInner));
+
+    /* Chase confirmations */
+    var cfl = Array.isArray(p.chase_confirmations_list) ? p.chase_confirmations_list : [];
+    var cflSorted = sortByTsDesc(cfl, "created_at");
+    var confInner;
+    if(!cflSorted.length){
+      confInner = '<p class="m-crm-empty">No confirmations</p>';
+    }else{
+      confInner = "";
+      for(var fi = 0; fi < cflSorted.length; fi++){
+        var c = cflSorted[fi] || {};
+        var st = (c.status || "").trim().toLowerCase();
+        var pendCls = st === "pending" ? " m-crm-feed-row--pend" : "";
+        var bcls = st === "pending" ? "m-crm-badge--pend" : st === "confirmed" ? "m-crm-badge--conf" : "m-crm-badge--dismiss";
+        var snip = strTrim(c.email_snippet);
+        var cr = formatDetailDt(c.created_at) || "\u2014";
+        var act = c.actioned_at ? formatDetailDt(c.actioned_at) : "";
+        confInner += '<div class="m-crm-feed-row' + pendCls + '">' +
+          "<div><strong>" + escapeHtml(strTrim(c.suggested_milestone) || "\u2014") + "</strong> " +
+          '<span class="m-crm-badge ' + bcls + '">' + escapeHtml(titleizeLoose(st || "Unknown")) + "</span></div>";
+        if(snip) confInner += '<p class="m-crm-muted">' + escapeHtml(snip) + "</p>";
+        confInner += '<div class="m-crm-feed-meta"><span>Created ' + escapeHtml(cr) + "</span>";
+        if(act) confInner += "<span>Actioned " + escapeHtml(act) + "</span>";
+        confInner += "</div></div>";
+      }
+    }
+    parts.push(crmSec("Confirmations", "Chase Confirmations", confInner));
+
+    /* Inbound emails */
+    var eml = Array.isArray(p.inbound_emails_list) ? p.inbound_emails_list : [];
+    var emlSorted = sortByTsDesc(eml, "received_at");
+    var emInner;
+    if(!emlSorted.length){
+      emInner = '<p class="m-crm-empty">No inbound emails</p>';
+    }else{
+      emInner = "";
+      for(var ei = 0; ei < emlSorted.length; ei++){
+        var e = emlSorted[ei] || {};
+        var subj = strTrim(e.subject) || "(no subject)";
+        var snd = strTrim(e.sender_name) || strTrim(e.sender_email) || "Unknown sender";
+        var rec = formatDetailDt(e.received_at) || "\u2014";
+        var prev = strTrim(e.body_preview);
+        if(prev.length > 100) prev = prev.slice(0, 100) + "\u2026";
+        emInner += '<div class="m-crm-feed-row">' +
+          "<div><strong>" + escapeHtml(subj) + "</strong></div>" +
+          '<div class="m-crm-feed-meta"><span>' + escapeHtml(snd) + "</span><span>" + escapeHtml(rec) + "</span></div>";
+        if(prev) emInner += '<p class="m-crm-muted">' + escapeHtml(prev) + "</p>";
+        emInner += "</div>";
+      }
+    }
+    parts.push(crmSec("Inbox", "Inbound Emails", emInner));
+
+    /* Chain solicitors */
+    var links = Array.isArray(p.chain_links) ? p.chain_links : [];
+    var sols = [];
+    for(var li = 0; li < links.length; li++){
+      var L = links[li];
+      if(L && strTrim(L.solicitor_email)) sols.push(L);
+    }
+    var chainInner;
+    if(!sols.length){
+      chainInner = '<p class="m-crm-empty">No chain solicitor data</p>';
+    }else{
+      chainInner = "";
+      for(var si = 0; si < sols.length; si++){
+        var cl = sols[si] || {};
+        var addr = strTrim(cl.link_address) || "Chain property";
+        var sem = strTrim(cl.solicitor_email) || "";
+        var sc = chainSolicitorStatusClass(cl);
+        var scDisp = sc.replace(/_/g, " ");
+        var lu = cl.last_chain_inform_sent_at || cl.last_chain_request_sent_at;
+        var luDisp = lu ? formatDetailDt(lu) : "";
+        var lrDisp = cl.last_chain_solicitor_reply_at ? formatDetailDt(cl.last_chain_solicitor_reply_at) : "";
+        var bbc = chainStatusBadgeClass(sc);
+        chainInner += '<div class="m-crm-feed-row">' +
+          "<div><strong>" + escapeHtml(addr) + "</strong></div>" +
+          (sem ? '<p class="m-crm-muted">' + escapeHtml(sem) + "</p>" : "") +
+          '<div class="m-crm-feed-meta">' +
+          '<span class="m-crm-badge ' + bbc + '">' + escapeHtml(scDisp) + "</span>";
+        if(luDisp) chainInner += "<span>Last update " + escapeHtml(luDisp) + "</span>";
+        if(lrDisp) chainInner += "<span>Last reply " + escapeHtml(lrDisp) + "</span>";
+        chainInner += "</div></div>";
+      }
+    }
+    parts.push(crmSec("Chain", "Chain Solicitors", chainInner));
+
+    /* Parties — only if at least one field */
+    var sellerName = firstCoalesce(p, ["vendor_name", "_vendor_name"]);
+    var sellerPhone = firstCoalesce(p, ["vendor_phone", "_vendor_phone"]);
+    var sellerEmail = firstCoalesce(p, ["vendor_email", "_vendor_email"]);
+    var buyerEm = firstCoalesce(p, ["buyer_email", "_buyer_email"]);
+    var broker = firstCoalesce(p, ["mortgage_broker", "_mortgage_broker"]);
+    if(sellerName || sellerPhone || sellerEmail || buyerEm || broker){
+      var partyInner = '<div class="m-crm-party-grid">';
+      if(sellerName) partyInner += '<div class="m-crm-party-card"><h4>Seller name</h4><p>' + escapeHtml(sellerName) + "</p></div>";
+      if(sellerPhone) partyInner += '<div class="m-crm-party-card"><h4>Seller phone</h4><p>' + escapeHtml(sellerPhone) + "</p></div>";
+      if(sellerEmail) partyInner += '<div class="m-crm-party-card"><h4>Seller email</h4><p>' + escapeHtml(sellerEmail) + "</p></div>";
+      if(buyerEm) partyInner += '<div class="m-crm-party-card"><h4>Buyer email</h4><p>' + escapeHtml(buyerEm) + "</p></div>";
+      if(broker) partyInner += '<div class="m-crm-party-card"><h4>Mortgage broker</h4><p>' + escapeHtml(broker) + "</p></div>";
+      partyInner += "</div>";
+      parts.push(crmSec("Contacts", "Parties", partyInner));
+    }
+
+    return parts.join("");
   }
 
   /* ── open modal ───────────────────────────────────── */
@@ -1832,6 +2143,8 @@ a.portal-review-link:hover{color:var(--claret)}
         };
       })(noteBtns[nb]);
     }
+
+    if(mCrmPanels){ mCrmPanels.innerHTML = buildCrmPanelsHtml(p); }
 
     var rows=[
       ["Buyer",p.buyer],["Buyer Phone",p.buyer_phone],

@@ -175,6 +175,81 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pipe-fc-fee{font-size:.82rem;font-weight:700;color:var(--txt-mid);margin-top:6px}
 .pipe-fc-note{font-size:.68rem;color:var(--txt-light);margin-top:10px;line-height:1.35}
 
+/* ═══ DASH TABS + LEADERBOARDS ════════════════════════════ */
+.dash-tab-toolbar{
+  position:sticky;top:0;z-index:100;width:100%;
+  background:#fff;border-bottom:1px solid #e2e8f0;
+  box-shadow:0 1px 0 rgba(15,27,45,.04);
+}
+.dash-tab-inner{
+  max-width:1280px;margin:0 auto;padding:0 16px;
+  display:flex;flex-wrap:nowrap;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.dash-tab{
+  flex:0 0 auto;padding:14px 16px 12px;font-size:14px;font-weight:500;
+  font-family:inherit;color:#5a6a7a;background:transparent;border:none;
+  border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color .15s ease;
+}
+.dash-tab:hover{color:#1b3a5c}
+.dash-tab--active{color:#1b3a5c;font-weight:700;border-bottom-color:#1b3a5c}
+.tab-panel{display:none}
+.tab-panel.tab-panel--active{display:block}
+.lb-wrap{max-width:900px;margin:0 auto;padding:28px 32px 48px}
+.lb-header{margin-bottom:6px}
+.lb-header h2{font-size:1.25rem;font-weight:800;color:#1b3a5c;margin:0}
+.lb-header p{font-size:.88rem;color:var(--txt-mid);margin-top:6px;line-height:1.45}
+.lb-metric-note{
+  font-size:.75rem;color:var(--txt-light);margin:0 0 22px;line-height:1.45;
+  cursor:help;max-width:42rem;
+}
+.lb-cards{display:flex;flex-direction:column;gap:14px}
+.lb-card{
+  display:flex;flex-wrap:wrap;align-items:stretch;gap:16px 20px;
+  background:var(--white);border:1px solid #e2e8f0;border-radius:14px;
+  padding:16px 18px;box-shadow:var(--card-shadow);
+}
+.lb-card--top{border-left:3px solid #8fbc9a;background:linear-gradient(90deg,rgba(143,188,154,.12) 0%,#fff 48%)}
+.lb-rank-col{
+  flex:0 0 52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  text-align:center;padding-top:2px;
+}
+.lb-rank-num{font-size:1.35rem;font-weight:900;color:#1b3a5c;line-height:1}
+.lb-rank-dot{width:8px;height:8px;border-radius:50%;margin-top:8px;background:#cbd5e1}
+.lb-rank-dot--1{background:linear-gradient(135deg,#d4af37,#f0e6a8)}
+.lb-rank-dot--2{background:linear-gradient(135deg,#a8a8a8,#e8e8e8)}
+.lb-rank-dot--3{background:linear-gradient(135deg,#cd7f32,#e9b896)}
+.lb-move{font-size:.72rem;color:var(--txt-mid);margin-top:4px;font-weight:600}
+.lb-mid{flex:1;min-width:160px}
+.lb-company{font-size:1.02rem;font-weight:800;color:#1b3a5c;line-height:1.25}
+.lb-location{font-size:.82rem;color:var(--txt-mid);margin-top:4px}
+.lb-stars{font-size:.8rem;color:var(--txt-mid);margin-top:8px}
+.lb-stars .star-gold{color:#b8860b}
+.lb-metrics{
+  flex:0 0 auto;display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:10px 16px;
+  min-width:200px;align-content:start;
+}
+.lb-metric-lbl{font-size:.62rem;text-transform:uppercase;letter-spacing:.6px;color:var(--txt-light);font-weight:700}
+.lb-metric-val{font-size:.82rem;font-weight:700;color:var(--txt)}
+.lb-pill{
+  display:inline-block;margin-top:2px;padding:6px 12px;border-radius:999px;
+  font-size:.88rem;font-weight:800;
+}
+.lb-pill--good{background:rgba(47,168,104,.15);color:#1d5c38}
+.lb-pill--mid{background:rgba(27,58,92,.1);color:#1b3a5c}
+.lb-pill--warn{background:rgba(232,138,58,.2);color:#7a3d0f}
+.lb-badge-rec{
+  display:inline-block;margin-top:8px;padding:3px 10px;border-radius:6px;
+  font-size:.65rem;font-weight:800;background:#1b3a5c;color:#fff;letter-spacing:.3px;
+}
+.portal-dash-card{
+  max-width:640px;margin:28px auto 48px;padding:24px 26px;
+  background:var(--white);border:1px solid #e2e8f0;border-radius:14px;box-shadow:var(--card-shadow);
+}
+.portal-dash-card h2{font-size:1.15rem;font-weight:800;color:#1b3a5c;margin:0 0 12px}
+.portal-dash-card p{font-size:.9rem;color:var(--txt);line-height:1.55;margin:0 0 12px}
+.portal-dash-card__muted{font-size:.82rem;color:var(--txt-mid)}
+.portal-dash-card a.na-cta{margin-top:8px;text-decoration:none}
+
 /* ═══ MAIN CONTENT ════════════════════════════════════════ */
 .content{max-width:1280px;margin:0 auto;padding:0 32px 60px}
 
@@ -450,6 +525,10 @@ a.portal-review-link:hover{color:var(--green)}
   .hero-badge img{width:36px;height:36px}
   .hero-badge-text h1{font-size:1.3rem}
   .hs{padding:14px 10px}.hs-val{font-size:1.4rem}
+  .dash-tab{padding:12px 12px 10px;font-size:13px}
+  .lb-card{flex-direction:column}
+  .lb-metrics{width:100%;min-width:0}
+  .lb-wrap{padding:22px 16px 40px}
   .pipeline-section{padding:22px 16px}
   .pipe-kpi-row{grid-template-columns:1fr}
   .card-grid{grid-template-columns:1fr}
@@ -465,7 +544,7 @@ a.portal-review-link:hover{color:var(--green)}
 
 /* ── Search bar ─────────────────────────────────────────── */
 .search-wrap{
-  position:sticky;top:0;z-index:90;
+  position:sticky;top:48px;z-index:90;
   background:var(--navy);
   padding:12px 40px;
   border-bottom:1px solid rgba(255,255,255,.08);
@@ -772,6 +851,53 @@ a.portal-review-link:hover{color:var(--green)}
 </div>
 {% endmacro %}
 
+{% macro dash_leaderboard_panel(lb) %}
+<div id="tab-panel-{{ lb.tab_id }}" class="tab-panel">
+  <div class="lb-wrap">
+    <div class="lb-header">
+      <h2>{{ lb.title }}</h2>
+      <p>{{ lb.subtitle }}</p>
+    </div>
+    <p class="lb-metric-note" title="{{ lb.metric_note }}">{{ lb.metric_note }}</p>
+    <div class="lb-cards">
+      {% for e in lb.rows %}
+      <article class="lb-card{% if e.rank == 1 %} lb-card--top{% endif %}">
+        <div class="lb-rank-col">
+          <div class="lb-rank-num">{{ e.rank }}</div>
+          {% if e.rank <= 3 %}<span class="lb-rank-dot lb-rank-dot--{{ e.rank }}"></span>{% else %}<span class="lb-rank-dot"></span>{% endif %}
+          <div class="lb-move">{{ e.movement }}</div>
+        </div>
+        <div class="lb-mid">
+          <div class="lb-company">{{ e.company }}</div>
+          <div class="lb-location">{{ e.location }}</div>
+          <div class="lb-stars">{{ e.rating|round(1) }} <span class="star-gold">&#9733;</span></div>
+          {% if e.rank == 1 %}<span class="lb-badge-rec">Recommended</span>{% endif %}
+        </div>
+        <div class="lb-metrics">
+          <div>
+            <div class="lb-metric-lbl">Avg time</div>
+            <div><span class="lb-pill {% if e.avg_days < 70 %}lb-pill--good{% elif e.avg_days <= 90 %}lb-pill--mid{% else %}lb-pill--warn{% endif %}">{{ e.avg_days }} day{% if e.avg_days != 1 %}s{% endif %}</span></div>
+          </div>
+          <div>
+            <div class="lb-metric-lbl">Response</div>
+            <div class="lb-metric-val">{{ e.response }}</div>
+          </div>
+          <div>
+            <div class="lb-metric-lbl">Completion</div>
+            <div class="lb-metric-val">{{ e.comp_pct }}</div>
+          </div>
+          <div>
+            <div class="lb-metric-lbl">Transactions</div>
+            <div class="lb-metric-val">{{ e.txns }}</div>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
 <!-- ═══ HERO ══════════════════════════════════════════════ -->
 <div class="hero">
   <img class="hero-img" src="/static/street-scene.PNG" alt="NUVU sold boards">
@@ -791,79 +917,21 @@ a.portal-review-link:hover{color:var(--green)}
   </div>
 </div>
 
-<!-- ═══ PIPELINE FORECAST (read-only, milestone score heuristic) ═ -->
-<div class="pipeline-section" id="pipelineSection">
-  <div class="pipe-inner">
-    <div class="pipeline-header">
-      <div>
-        <div class="pipeline-title">&#x1F4CA; Pipeline Forecast</div>
-        <div class="pipeline-sub">{{ pipeline.subtitle }}</div>
-      </div>
-      <div class="ahead-badge{% if pipeline.badge_caution %} caution{% endif %}">{% if pipeline.badge_caution %}&#x26A0;&#xFE0F;{% else %}&#x26A1;{% endif %} {{ pipeline.badge_text }}</div>
-    </div>
-    <div class="pipe-kpi-row">
-      {% for k in pipeline.kpi_cards %}
-      <div class="pipe-kpi">
-        <div class="pipe-kpi-lbl">{{ k.label }}</div>
-        <div class="pipe-kpi-val">{{ k.value }}</div>
-        {% if k.sub %}<div class="pipe-kpi-sub">{{ k.sub }}</div>{% endif %}
-      </div>
-      {% endfor %}
-    </div>
-    <div class="pipe-split">
-      <div class="pipe-panel">
-        <div class="pipe-panel-h">Fee income forecast</div>
-        <div class="pipe-panel-sub">{{ pipeline.fee_chart_subtitle }}</div>
-        <div class="pipe-fee-chart">
-          {% for b in pipeline.fee_bars %}
-          <div class="pipe-fee-col">
-            <div class="pipe-fee-bar-wrap">
-              <div class="pipe-fee-bar{% if b.remainder %} pipe-fee-bar--remainder{% endif %}" style="height:{{ b.h_pct }}%"><span>&pound;{{ "{:,.0f}".format(b.fee) }}</span></div>
-            </div>
-            <div class="pipe-fee-x">{{ b.label }}</div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="pipe-panel">
-        <div class="pipe-panel-h">Sales progression funnel</div>
-        <div class="pipe-panel-sub">Active cases only &mdash; share reaching each milestone (cumulative)</div>
-        <div class="pipe-funnel-rows">
-          {% for f in pipeline.funnel %}
-          <div class="pipe-fun-row">
-            <div class="pipe-fun-lbl">{{ f.label }}</div>
-            <div class="pipe-fun-track"><div class="pipe-fun-fill" style="width:{{ f.pct }}%;background:{{ f.fill }}"></div></div>
-            <div class="pipe-fun-pct">{{ f.pct }}%</div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-    <div class="pipe-forecast-row">
-      <div class="pipe-fc pipe-fc-sage">
-        <div class="pipe-fc-h">{{ pipeline.month_cards[0].title }}</div>
-        <div class="pipe-fc-count">{{ pipeline.month_cards[0].count }} cases</div>
-        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[0].value) }} volume</div>
-        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[0].fee) }}</div>
-        <div class="pipe-fc-note">{{ pipeline.month_cards[0].note }}</div>
-      </div>
-      <div class="pipe-fc pipe-fc-navy">
-        <div class="pipe-fc-h">{{ pipeline.month_cards[1].title }}</div>
-        <div class="pipe-fc-count">{{ pipeline.month_cards[1].count }} cases</div>
-        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[1].value) }} volume</div>
-        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[1].fee) }}</div>
-        <div class="pipe-fc-note">{{ pipeline.month_cards[1].note }}</div>
-      </div>
-      <div class="pipe-fc pipe-fc-amber">
-        <div class="pipe-fc-h">{{ pipeline.month_cards[2].title }}</div>
-        <div class="pipe-fc-count">{{ pipeline.month_cards[2].count }} cases</div>
-        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[2].value) }} volume</div>
-        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[2].fee) }}</div>
-        <div class="pipe-fc-note">{{ pipeline.month_cards[2].note }}</div>
-      </div>
-    </div>
+<nav class="dash-tab-toolbar" aria-label="Dashboard views">
+  <div class="dash-tab-inner">
+    <button type="button" class="dash-tab dash-tab--active" data-tab="properties">Properties</button>
+    <button type="button" class="dash-tab" data-tab="pipeline">Pipeline</button>
+    <button type="button" class="dash-tab" data-tab="portal">Portal</button>
+    <button type="button" class="dash-tab" data-tab="solicitors">Solicitors</button>
+    <button type="button" class="dash-tab" data-tab="mortgage">Mortgage</button>
+    <button type="button" class="dash-tab" data-tab="surveyors">Surveyors</button>
+    <button type="button" class="dash-tab" data-tab="removals">Removals</button>
   </div>
-</div>
+</nav>
+
+<div class="dash-tab-panels">
+
+<div id="tab-panel-properties" class="tab-panel tab-panel--active">
 
 <!-- ═══ SEARCH BAR (sticky) ════════════════════════════════ -->
 <div class="search-wrap" id="searchWrap">
@@ -965,6 +1033,99 @@ a.portal-review-link:hover{color:var(--green)}
     </div>
   </div>
   {% endfor %}
+
+</div>
+
+</div>
+
+<!-- ═══ PIPELINE FORECAST (read-only; Pipeline tab only) ═ -->
+<div id="tab-panel-pipeline" class="tab-panel">
+<div class="pipeline-section" id="pipelineSection">
+  <div class="pipe-inner">
+    <div class="pipeline-header">
+      <div>
+        <div class="pipeline-title">&#x1F4CA; Pipeline Forecast</div>
+        <div class="pipeline-sub">{{ pipeline.subtitle }}</div>
+      </div>
+      <div class="ahead-badge{% if pipeline.badge_caution %} caution{% endif %}">{% if pipeline.badge_caution %}&#x26A0;&#xFE0F;{% else %}&#x26A1;{% endif %} {{ pipeline.badge_text }}</div>
+    </div>
+    <div class="pipe-kpi-row">
+      {% for k in pipeline.kpi_cards %}
+      <div class="pipe-kpi">
+        <div class="pipe-kpi-lbl">{{ k.label }}</div>
+        <div class="pipe-kpi-val">{{ k.value }}</div>
+        {% if k.sub %}<div class="pipe-kpi-sub">{{ k.sub }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="pipe-split">
+      <div class="pipe-panel">
+        <div class="pipe-panel-h">Fee income forecast</div>
+        <div class="pipe-panel-sub">{{ pipeline.fee_chart_subtitle }}</div>
+        <div class="pipe-fee-chart">
+          {% for b in pipeline.fee_bars %}
+          <div class="pipe-fee-col">
+            <div class="pipe-fee-bar-wrap">
+              <div class="pipe-fee-bar{% if b.remainder %} pipe-fee-bar--remainder{% endif %}" style="height:{{ b.h_pct }}%"><span>&pound;{{ "{:,.0f}".format(b.fee) }}</span></div>
+            </div>
+            <div class="pipe-fee-x">{{ b.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="pipe-panel">
+        <div class="pipe-panel-h">Sales progression funnel</div>
+        <div class="pipe-panel-sub">Active cases only &mdash; share reaching each milestone (cumulative)</div>
+        <div class="pipe-funnel-rows">
+          {% for f in pipeline.funnel %}
+          <div class="pipe-fun-row">
+            <div class="pipe-fun-lbl">{{ f.label }}</div>
+            <div class="pipe-fun-track"><div class="pipe-fun-fill" style="width:{{ f.pct }}%;background:{{ f.fill }}"></div></div>
+            <div class="pipe-fun-pct">{{ f.pct }}%</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="pipe-forecast-row">
+      <div class="pipe-fc pipe-fc-sage">
+        <div class="pipe-fc-h">{{ pipeline.month_cards[0].title }}</div>
+        <div class="pipe-fc-count">{{ pipeline.month_cards[0].count }} cases</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[0].value) }} volume</div>
+        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[0].fee) }}</div>
+        <div class="pipe-fc-note">{{ pipeline.month_cards[0].note }}</div>
+      </div>
+      <div class="pipe-fc pipe-fc-navy">
+        <div class="pipe-fc-h">{{ pipeline.month_cards[1].title }}</div>
+        <div class="pipe-fc-count">{{ pipeline.month_cards[1].count }} cases</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[1].value) }} volume</div>
+        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[1].fee) }}</div>
+        <div class="pipe-fc-note">{{ pipeline.month_cards[1].note }}</div>
+      </div>
+      <div class="pipe-fc pipe-fc-amber">
+        <div class="pipe-fc-h">{{ pipeline.month_cards[2].title }}</div>
+        <div class="pipe-fc-count">{{ pipeline.month_cards[2].count }} cases</div>
+        <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[2].value) }} volume</div>
+        <div class="pipe-fc-fee">Fee &pound;{{ "{:,.0f}".format(pipeline.month_cards[2].fee) }}</div>
+        <div class="pipe-fc-note">{{ pipeline.month_cards[2].note }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="tab-panel-portal" class="tab-panel">
+  <div class="portal-dash-card">
+    <h2>Customer Portal</h2>
+    <p>Manage seller portal links, track form completion, and view submitted responses. Full portal admin for staff is planned; today, portal journeys live under <code>/portal</code> (buyer/vendor demo login) and TA6/TA10 flows under <code>/portal/form</code>.</p>
+    <p class="portal-dash-card__muted">There is no separate consolidated portal admin dashboard page in this codebase yet. Per-property portal status, seller links, and staff read-only previews are available from each property card modal (Buyer &amp; vendor portal and TA6 / TA10 sections).</p>
+    <p><a class="na-cta" href="/portal" target="_blank" rel="noopener">Open portal entry</a></p>
+  </div>
+</div>
+
+{% for lb in leaderboard_tabs %}
+{{ dash_leaderboard_panel(lb) }}
+{% endfor %}
 
 </div>
 
@@ -1527,11 +1688,332 @@ a.portal-review-link:hover{color:var(--green)}
     }
   };
 
+  /* ── Tabbed dashboard (URL hash) ─────────────────────── */
+  var DASH_TABS = [
+    "properties","pipeline","portal","solicitors","mortgage","surveyors","removals"
+  ];
+  function syncDashTab(){
+    var raw = (location.hash || "").replace(/^#/,"").toLowerCase() || "properties";
+    if (DASH_TABS.indexOf(raw) < 0) raw = "properties";
+    for (var ti = 0; ti < DASH_TABS.length; ti++) {
+      var id = DASH_TABS[ti];
+      var panel = document.getElementById("tab-panel-" + id);
+      var btn = document.querySelector('.dash-tab[data-tab="' + id + '"]');
+      if (panel) {
+        if (id === raw) panel.classList.add("tab-panel--active");
+        else panel.classList.remove("tab-panel--active");
+      }
+      if (btn) {
+        if (id === raw) btn.classList.add("dash-tab--active");
+        else btn.classList.remove("dash-tab--active");
+      }
+    }
+  }
+  document.querySelectorAll(".dash-tab").forEach(function(b){
+    b.addEventListener("click", function(ev){
+      ev.preventDefault();
+      var id = b.getAttribute("data-tab");
+      if (!id) return;
+      if (location.hash === "#" + id) syncDashTab();
+      else location.hash = "#" + id;
+    });
+  });
+  window.addEventListener("hashchange", syncDashTab);
+  syncDashTab();
+
 })();
 </script>
 </body>
 </html>"""
 
+
+# Demo leaderboard rows (read-only; future: dedicated leaderboard/reviews table).
+LEADERBOARD_TABS = [
+    {
+        "tab_id": "solicitors",
+        "title": "Solicitor Leaderboard",
+        "subtitle": "Ranked by average transaction time",
+        "metric_note": (
+            "Average days reflects each firm's typical contribution to overall "
+            "transaction time on the properties we track (demo data)."
+        ),
+        "rows": [
+            {
+                "rank": 1,
+                "company": "Napthens",
+                "location": "Preston, Lancashire",
+                "avg_days": 58,
+                "response": "3 hrs",
+                "comp_pct": "96%",
+                "rating": 4.8,
+                "txns": 214,
+                "movement": "▲ 1",
+            },
+            {
+                "rank": 2,
+                "company": "Forbes Solicitors",
+                "location": "Blackburn, Lancashire",
+                "avg_days": 64,
+                "response": "5 hrs",
+                "comp_pct": "93%",
+                "rating": 4.6,
+                "txns": 187,
+                "movement": "▼ 1",
+            },
+            {
+                "rank": 3,
+                "company": "Harrison Drury",
+                "location": "Lancaster, Preston",
+                "avg_days": 67,
+                "response": "4 hrs",
+                "comp_pct": "95%",
+                "rating": 4.7,
+                "txns": 156,
+                "movement": "—",
+            },
+            {
+                "rank": 4,
+                "company": "Oglethorpe Sturton",
+                "location": "Lancaster",
+                "avg_days": 72,
+                "response": "6 hrs",
+                "comp_pct": "91%",
+                "rating": 4.4,
+                "txns": 98,
+                "movement": "▲ 2",
+            },
+            {
+                "rank": 5,
+                "company": "SDA Law",
+                "location": "Garstang, Wyre",
+                "avg_days": 78,
+                "response": "8 hrs",
+                "comp_pct": "89%",
+                "rating": 4.2,
+                "txns": 73,
+                "movement": "▼ 1",
+            },
+            {
+                "rank": 6,
+                "company": "JMW Solicitors",
+                "location": "Manchester",
+                "avg_days": 85,
+                "response": "12 hrs",
+                "comp_pct": "87%",
+                "rating": 4.0,
+                "txns": 142,
+                "movement": "▼ 2",
+            },
+        ],
+    },
+    {
+        "tab_id": "mortgage",
+        "title": "Mortgage Leaderboard",
+        "subtitle": "Ranked by average transaction time",
+        "metric_note": (
+            "Average days reflects typical contribution to transaction time from "
+            "mortgage processing on our sample (demo data)."
+        ),
+        "rows": [
+            {
+                "rank": 1,
+                "company": "L&C Mortgages",
+                "location": "Nationwide (online)",
+                "avg_days": 18,
+                "response": "2 hrs",
+                "comp_pct": "97%",
+                "rating": 4.9,
+                "txns": 342,
+                "movement": "—",
+            },
+            {
+                "rank": 2,
+                "company": "Mortgage Advice Bureau",
+                "location": "Lancaster",
+                "avg_days": 21,
+                "response": "3 hrs",
+                "comp_pct": "95%",
+                "rating": 4.7,
+                "txns": 289,
+                "movement": "▲ 1",
+            },
+            {
+                "rank": 3,
+                "company": "Habito",
+                "location": "Nationwide (online)",
+                "avg_days": 24,
+                "response": "1 hr",
+                "comp_pct": "92%",
+                "rating": 4.5,
+                "txns": 198,
+                "movement": "▼ 1",
+            },
+            {
+                "rank": 4,
+                "company": "Alexander Hall",
+                "location": "Preston",
+                "avg_days": 26,
+                "response": "4 hrs",
+                "comp_pct": "94%",
+                "rating": 4.6,
+                "txns": 156,
+                "movement": "▲ 2",
+            },
+            {
+                "rank": 5,
+                "company": "John Charcol",
+                "location": "Nationwide",
+                "avg_days": 29,
+                "response": "6 hrs",
+                "comp_pct": "90%",
+                "rating": 4.3,
+                "txns": 231,
+                "movement": "▼ 1",
+            },
+            {
+                "rank": 6,
+                "company": "Trinity Financial",
+                "location": "London, remote",
+                "avg_days": 32,
+                "response": "5 hrs",
+                "comp_pct": "91%",
+                "rating": 4.4,
+                "txns": 178,
+                "movement": "—",
+            },
+        ],
+    },
+    {
+        "tab_id": "surveyors",
+        "title": "Surveyor Leaderboard",
+        "subtitle": "Ranked by average time to report",
+        "metric_note": (
+            "Average days is from instruction to report delivered (demo data)."
+        ),
+        "rows": [
+            {
+                "rank": 1,
+                "company": "SDL Surveying",
+                "location": "Lancashire wide",
+                "avg_days": 52,
+                "response": "2 hrs",
+                "comp_pct": "98%",
+                "rating": 4.8,
+                "txns": 312,
+                "movement": "▲ 1",
+            },
+            {
+                "rank": 2,
+                "company": "e.surv",
+                "location": "Nationwide",
+                "avg_days": 64,
+                "response": "4 hrs",
+                "comp_pct": "96%",
+                "rating": 4.5,
+                "txns": 487,
+                "movement": "▼ 1",
+            },
+            {
+                "rank": 3,
+                "company": "Hollis & Associates",
+                "location": "Lancaster, Morecambe",
+                "avg_days": 73,
+                "response": "3 hrs",
+                "comp_pct": "97%",
+                "rating": 4.7,
+                "txns": 89,
+                "movement": "▲ 1",
+            },
+            {
+                "rank": 4,
+                "company": "Rook Matthews Sayer",
+                "location": "North West",
+                "avg_days": 86,
+                "response": "4 hrs",
+                "comp_pct": "94%",
+                "rating": 4.4,
+                "txns": 145,
+                "movement": "—",
+            },
+            {
+                "rank": 5,
+                "company": "Countrywide Surveying",
+                "location": "Nationwide",
+                "avg_days": 108,
+                "response": "8 hrs",
+                "comp_pct": "92%",
+                "rating": 4.2,
+                "txns": 534,
+                "movement": "▼ 2",
+            },
+        ],
+    },
+    {
+        "tab_id": "removals",
+        "title": "Removals Leaderboard",
+        "subtitle": "Ranked by average days to confirm booking",
+        "metric_note": (
+            "Average days is from enquiry to booking confirmed (demo data)."
+        ),
+        "rows": [
+            {
+                "rank": 1,
+                "company": "Bradshaw's Removals",
+                "location": "Lancaster, Morecambe",
+                "avg_days": 1,
+                "response": "1 hr",
+                "comp_pct": "99%",
+                "rating": 4.9,
+                "txns": 178,
+                "movement": "—",
+            },
+            {
+                "rank": 2,
+                "company": "Fox Moving",
+                "location": "Lancashire wide",
+                "avg_days": 1,
+                "response": "2 hrs",
+                "comp_pct": "98%",
+                "rating": 4.8,
+                "txns": 234,
+                "movement": "▲ 1",
+            },
+            {
+                "rank": 3,
+                "company": "Kiwi Movers",
+                "location": "North West",
+                "avg_days": 2,
+                "response": "3 hrs",
+                "comp_pct": "97%",
+                "rating": 4.7,
+                "txns": 156,
+                "movement": "▼ 1",
+            },
+            {
+                "rank": 4,
+                "company": "Britannia Movers",
+                "location": "Nationwide",
+                "avg_days": 2,
+                "response": "4 hrs",
+                "comp_pct": "96%",
+                "rating": 4.5,
+                "txns": 312,
+                "movement": "▲ 2",
+            },
+            {
+                "rank": 5,
+                "company": "AnyVan",
+                "location": "Nationwide (online)",
+                "avg_days": 1,
+                "response": "1 hr",
+                "comp_pct": "95%",
+                "rating": 4.3,
+                "txns": 567,
+                "movement": "▼ 1",
+            },
+        ],
+    },
+]
 
 
 # Section 2.5 — weighted forecast score (sum of points for non-null fields; total 100).
@@ -2107,5 +2589,6 @@ def dashboard():
         stats=stats,
         pipeline=pipeline,
         properties_json=json.dumps(properties, default=str),
+        leaderboard_tabs=LEADERBOARD_TABS,
     )
 

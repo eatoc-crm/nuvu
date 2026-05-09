@@ -145,3 +145,11 @@ nuvu-live/
 ## Pipeline Forecast (dashboard)
 
 The **Pipeline Forecast** block is **read-only**. It aggregates what is already in the live stack (EATOC plus Supabase overlays): it **must not** insert, update, or delete rows in `sales_pipeline` or `sales_progression`. Those tables are the source of truth for pipeline state; the forecast only reads merged in-memory property rows, applies the agreed milestone-score heuristic for forward allocation (not `completion_target`), and surfaces counts, values, and fees. Other routes (intake, progression patches, and so on) continue to own writes to those tables where product behaviour requires it.
+
+## Tabbed dashboard and service leaderboards
+
+The main dashboard HTML (`DASHBOARD_HTML` in `routes/dashboard.py`) uses a **tab bar** under the hero with seven views: **Properties** (default), **Pipeline**, **Portal**, **Solicitors**, **Mortgage**, **Surveyors**, and **Removals**. Which tab is active is driven by the URL **fragment** (`#properties`, `#pipeline`, `#portal`, and so on) so bookmarks and reloads preserve the view. All tab bodies stay in the DOM; inactive panels are hidden with CSS so switching tabs does not tear down the property list or the pipeline block.
+
+The **Pipeline** tab contains only the Pipeline Forecast section (it is no longer duplicated above the property list). **Portal** does not yet embed a dedicated staff admin UI: buyer/vendor flows and TA6/TA10 tooling live under the `portal` and `portal_forms` blueprints (`/portal`, `/portal/form`, review routes, staff property preview). The Portal tab currently explains that and links to `/portal`; per-property portal actions remain in the property modal.
+
+**Solicitors / Mortgage / Surveyors / Removals** render a shared leaderboard card layout fed by **`LEADERBOARD_TABS`** in `routes/dashboard.py`: hardcoded Lancashire-style demo rows only (no Supabase reads or writes for leaderboards). When real leaderboards ship, they are expected to load from a future **leaderboard/reviews** table or API — not from `sales_pipeline` or `sales_progression`.

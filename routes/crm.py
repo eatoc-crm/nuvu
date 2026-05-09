@@ -800,7 +800,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 @crm_bp.route("/crm")
 def crm_dashboard():
     """Live CRM dashboard using NUVU design with real property data."""
-    from routes.dashboard import DASHBOARD_HTML, _build_live_dashboard_data
+    from routes.dashboard import (
+        DASHBOARD_HTML,
+        LEADERBOARD_TABS,
+        _build_live_dashboard_data,
+    )
 
     try:
         props, sections, stats, pipeline, needs_attention_items = (
@@ -817,6 +821,7 @@ def crm_dashboard():
         pipeline=pipeline,
         properties_json=json.dumps(props, default=str),
         detail_base_url="/crm/property",
+        leaderboard_tabs=LEADERBOARD_TABS,
     )
     return html
 

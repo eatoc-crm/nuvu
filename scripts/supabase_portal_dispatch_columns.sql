@@ -29,7 +29,17 @@ ALTER TABLE portal_sessions
   ADD CONSTRAINT portal_sessions_form_type_check
   CHECK (form_type IN ('ta6', 'ta10', 'ta6_ta10'));
 
-ALTER TABLE form_completions DROP CONSTRAINT IF EXISTS form_completions_form_type_check;
-ALTER TABLE form_completions
-  ADD CONSTRAINT form_completions_form_type_check
-  CHECK (form_type IN ('ta6', 'ta10', 'ta6_ta10'));
+-- Only when Window 3 form_completions table exists (some environments omit it).
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'form_completions'
+  ) THEN
+    ALTER TABLE form_completions DROP CONSTRAINT IF EXISTS form_completions_form_type_check;
+    ALTER TABLE form_completions
+      ADD CONSTRAINT form_completions_form_type_check
+      CHECK (form_type IN ('ta6', 'ta10', 'ta6_ta10'));
+  END IF;
+END $$;

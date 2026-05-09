@@ -58,7 +58,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .hero-badge-top{display:flex;align-items:center;gap:14px}
 .hero-badge img{width:48px;height:48px;border-radius:50%}
 .hero-badge-top h1{font-size:2rem;font-weight:500;color:var(--white);letter-spacing:12px;line-height:1;margin:0;text-indent:12px}
-.hero-badge-strapline{font-size:.6rem;color:var(--claret);text-transform:uppercase;letter-spacing:3px;font-weight:500;margin-top:8px;text-align:center;white-space:nowrap}
+.hero-badge-strapline{font-size:.6rem;color:#FFFFFF;text-transform:uppercase;letter-spacing:3px;font-weight:500;margin-top:8px;text-align:center;white-space:nowrap}
 
 /* Stats overlay — Direction C */
 .hero-stats{

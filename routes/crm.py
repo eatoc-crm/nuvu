@@ -534,7 +534,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
 /* cards */
 .detail-card{
-  background:var(--white);border-radius:14px;border:1px solid #e8ecf1;
+  background:var(--white);border-radius:6px;border:2px solid #1B3A5C;
   box-shadow:var(--card-shadow);padding:24px;margin-bottom:20px;
 }
 .detail-card h3{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:14px;display:flex;align-items:center;gap:8px}

@@ -105,7 +105,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;
 }
 .pipe-kpi{
-  background:var(--page-warm);border:1px solid var(--border);border-radius:6px;
+  background:var(--page-warm);border:2px solid var(--navy);border-radius:6px;
   padding:14px 16px;
 }
 .pipe-kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--stone);font-weight:400;margin-bottom:6px}
@@ -115,15 +115,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;
 }
 .pipe-panel{
-  background:var(--white);border:1px solid var(--border);border-radius:6px;
+  background:var(--white);border:2px solid var(--navy);border-radius:6px;
   padding:18px 20px 20px;
 }
 .pipe-panel-h{font-size:.95rem;font-weight:500;color:var(--txt);margin-bottom:4px}
 .pipe-panel-sub{font-size:.8rem;color:var(--txt-secondary);margin-bottom:16px;line-height:1.4}
 .pipe-fee-chart{
   display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
-  height:180px;padding:12px 8px 0;border-radius:4px;background:var(--muted-bg);
-  border:1px solid var(--border);
+  height:180px;padding:12px 8px 0;border-radius:6px;background:var(--muted-bg);
+  border:2px solid var(--navy);
 }
 .pipe-fee-col{
   flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;
@@ -162,15 +162,16 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pipe-fun-pct{font-size:.72rem;font-weight:500;color:var(--txt-secondary);width:36px;text-align:right;flex-shrink:0}
 .pipe-forecast-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .pipe-fc{
-  border-radius:4px;padding:18px 20px;border:1px solid var(--border);
+  border-radius:6px;padding:18px 20px;border:2px solid var(--navy);
+  background:var(--white);
 }
-.pipe-fc-sage{background:#eef4ef;border-color:#c5d4c8}
+.pipe-fc-sage{background:#eef4ef}
 .pipe-fc-sage .pipe-fc-h{color:#2d4a38}
-.pipe-fc-m1{background:rgba(197,217,58,.12);border-color:rgba(197,217,58,.35)}
+.pipe-fc-m1{background:rgba(197,217,58,.12)}
 .pipe-fc-m1 .pipe-fc-h{color:#4A5A1A}
-.pipe-fc-navy{background:#e9eef7;border-color:#c5cedd}
+.pipe-fc-navy{background:#e9eef7}
 .pipe-fc-navy .pipe-fc-h{color:#1B3A5C}
-.pipe-fc-amber{background:#fdf6ee;border-color:#edd4ad}
+.pipe-fc-amber{background:#fdf6ee}
 .pipe-fc-amber .pipe-fc-h{color:#7a4a12}
 .pipe-fc-h{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:10px;color:var(--txt-secondary)}
 .pipe-fc-count{font-size:1.75rem;font-weight:500;line-height:1;color:var(--txt)}
@@ -211,11 +212,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .lb-cards{display:flex;flex-direction:column;gap:12px}
 .lb-card{
   display:flex;flex-wrap:wrap;align-items:stretch;gap:16px 20px;
-  background:var(--white);border:1px solid var(--border);border-radius:4px;
-  padding:14px;border-left:4px solid var(--border);
+  background:var(--white);border:2px solid var(--navy);border-radius:6px;
+  padding:14px;
 }
-.lb-card--r1{border-left-color:var(--claret)}
-.lb-card--r23{border-left-color:var(--navy)}
 .lb-rank-col{
   flex:0 0 48px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
   text-align:center;padding-top:2px;
@@ -250,7 +249,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 }
 .portal-dash-card{
   max-width:640px;margin:24px auto 48px;padding:24px 26px;
-  background:var(--white);border:1px solid var(--border);border-radius:4px;
+  background:var(--white);border:2px solid var(--navy);border-radius:6px;
 }
 .portal-dash-card h2{font-size:1rem;font-weight:500;color:var(--txt);margin:0 0 12px}
 .portal-dash-card p{font-size:.88rem;color:var(--txt);line-height:1.55;margin:0 0 12px}
@@ -289,20 +288,28 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   margin-bottom:12px;
 }
 
-/* ═══ PROPERTY CARD — rich horizontal ═══════════════════════ */
+/* ═══ PROPERTY CARD — rich horizontal + photo rail ═══════ */
 .rich-card{
   display:flex;flex-direction:row;align-items:stretch;
   background:var(--white);border-radius:6px;overflow:hidden;
   cursor:pointer;transition:var(--t);
-  border:1px solid var(--border);min-width:0;
+  border:2px solid var(--navy);min-width:0;
 }
 .rich-card:hover{background:rgba(27,58,92,.02)}
-.rich-rail{flex:0 0 5px;align-self:stretch}
+.rich-card--attention{border-color:var(--claret)}
+.rich-thumb{
+  flex:0 0 140px;width:140px;min-height:100%;align-self:stretch;
+  position:relative;background:var(--navy);overflow:hidden;flex-shrink:0;
+}
+.rich-thumb img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+}
+.rich-thumb-placeholder{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--navy);
+}
+.rich-thumb-ph-logo{width:48px;height:48px;object-fit:contain;opacity:.35}
 .rich-col{display:flex;flex-direction:column;flex:1;min-width:0}
-.rich-card--attention .rich-rail{background:var(--claret)}
-.rich-card--on-track .rich-rail{background:var(--nuvu-green)}
-.rich-card--exchanged .rich-rail{background:var(--navy)}
-.rich-card--default .rich-rail{background:var(--border)}
 .rich-body{flex:1;min-width:0;padding:16px 18px;display:flex;flex-direction:column;gap:0}
 .rich-badge{
   display:inline-block;font-size:10px;font-weight:600;letter-spacing:.04em;
@@ -385,7 +392,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .extra-summary{
   display:flex;align-items:center;justify-content:space-between;
   padding:14px;margin-top:12px;
-  background:var(--white);border:1px solid var(--border);border-radius:4px;
+  background:var(--white);border:2px solid var(--navy);border-radius:6px;
   color:var(--txt-secondary);font-size:.85rem;
 }
 .extra-note{font-size:.78rem;color:var(--txt-secondary)}
@@ -553,6 +560,7 @@ a.portal-review-link:hover{color:var(--claret)}
   .pipeline-section{padding:22px 16px}
   .pipe-kpi-row{grid-template-columns:1fr}
   .card-grid{grid-template-columns:1fr}
+  .rich-thumb{flex:0 0 100px;width:100px}
   .content{padding:0 16px 40px}
   .section-banner{flex-direction:column;align-items:flex-start;gap:8px}
   .section-avg{margin-top:4px}
@@ -604,8 +612,8 @@ a.portal-review-link:hover{color:var(--claret)}
 .chain-inner{padding:12px 22px 16px}
 .chain-diagram{display:flex;flex-direction:column;align-items:center;gap:0}
 .chain-link-box{
-  width:100%;background:var(--white);border:1px solid var(--border);
-  border-radius:4px;padding:10px 14px;position:relative;
+  width:100%;background:var(--white);border:2px solid var(--navy);
+  border-radius:6px;padding:10px 14px;position:relative;
 }
 .chain-link-box.chain-anchor{
   border:2px solid var(--navy);background:rgba(27,58,92,.04);
@@ -630,8 +638,8 @@ a.portal-review-link:hover{color:var(--claret)}
 
 /* ═══ NEEDS ATTENTION + COLLAPSIBLE SECTIONS ═══════════ */
 .needs-attention-region{
-  background:var(--white);border-radius:4px;padding:8px 16px 20px;margin-bottom:24px;
-  border:1px solid var(--border);
+  background:var(--white);border-radius:6px;padding:8px 16px 20px;margin-bottom:24px;
+  border:2px solid var(--navy);
 }
 .section-collapse-hdr{
   width:100%;display:flex;justify-content:space-between;align-items:center;
@@ -682,7 +690,16 @@ a.portal-review-link:hover{color:var(--claret)}
 {% set cl = p.chain_links|default([]) %}
 {% set cid = ('na-' ~ p.id) if triggers else p.id %}
 <div class="rich-card prop-card{% if triggers %} prop-card-na{% endif %} rich-card--{{ p._rail }}" {% if triggers %}id="card-na-{{ p.id }}" data-prop-id="{{ p.id }}"{% else %}id="card-{{ p.id }}"{% endif %}>
-  <div class="rich-rail" aria-hidden="true"></div>
+  <div class="rich-thumb" aria-hidden="true">
+    {% set thumb_url = (p.image_url or '')|trim %}
+    {% if thumb_url %}
+    <img src="{{ thumb_url }}" alt="" loading="lazy">
+    {% else %}
+    <div class="rich-thumb-placeholder">
+      <img class="rich-thumb-ph-logo" src="/static/logo.png" width="48" height="48" alt="" loading="lazy">
+    </div>
+    {% endif %}
+  </div>
   <div class="rich-col">
     <div class="rich-body">
       <div class="rich-badge">{{ p._card_badge_text }}</div>
@@ -805,7 +822,7 @@ a.portal-review-link:hover{color:var(--claret)}
     <p class="lb-metric-note" title="{{ lb.metric_note }}">{{ lb.metric_note }}</p>
     <div class="lb-cards">
       {% for e in lb.rows %}
-      <article class="lb-card{% if e.rank == 1 %} lb-card--r1{% elif e.rank <= 3 %} lb-card--r23{% endif %}">
+      <article class="lb-card">
         <div class="lb-rank-col">
           <div class="lb-rank-num">{{ e.rank }}</div>
           {% set mv = e.movement %}
@@ -2517,8 +2534,12 @@ def _build_live_dashboard_data():
         url = (row.get("image_url") or "").strip() or None
         if not url:
             urls = row.get("photo_urls") or []
-            if isinstance(urls, list) and len(urls) > 1:
-                url = (urls[1] or "").strip() or None
+            if isinstance(urls, list):
+                for u in urls:
+                    cand = (u or "").strip()
+                    if cand:
+                        url = cand
+                        break
         if not url:
             continue
         if addr:

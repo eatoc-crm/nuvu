@@ -294,3 +294,23 @@ def fetch_sales_progression_by_id(prog_id: str):
         return rows[0] if rows else None
     except Exception:
         return None
+
+
+def fetch_sales_progression_by_property_address(property_address: str):
+    """First sales_progression row matching property_address (exact)."""
+    addr = (property_address or "").strip()
+    if not addr:
+        return None
+    try:
+        client = supabase_for_backend()
+        res = (
+            client.table("sales_progression")
+            .select("*")
+            .eq("property_address", addr)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None

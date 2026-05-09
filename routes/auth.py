@@ -194,6 +194,7 @@ def require_login():
         "/portal/api/form-state",
         "/portal/api/chat",
         "/portal/api/save-answer",
+        "/portal/api/submit",
     )
     if path.rstrip("/") in {p.rstrip("/") for p in seller_portal_apis}:
         return None

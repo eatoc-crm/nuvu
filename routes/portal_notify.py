@@ -16,6 +16,63 @@ def _base_url() -> str:
     return (os.environ.get("NUVU_BASE_URL") or "http://127.0.0.1:5000").rstrip("/")
 
 
+def send_ta6_ta10_seller_portal_link_email(
+    *,
+    to_email: str,
+    seller_name: str,
+    property_address: str,
+    negotiator_name: str,
+    magic_link_url: str,
+) -> None:
+    subject = f"Your Property Information Forms — {property_address}"
+    who = (negotiator_name or "").strip() or "Your negotiator"
+    html = (
+        f"<p>Dear {(seller_name or 'there').strip() or 'there'},</p>"
+        "<p>Congratulations on your sale of "
+        f"<strong>{property_address}</strong>. To keep things moving smoothly, we need you to complete "
+        "two important forms — your Property Information Form and your Fittings and Contents Form.</p>"
+        "<p>We’ve built a simple online portal that walks you through every question step by step. "
+        "It usually takes around 20–30 minutes, and you can save your progress and come back at any time.</p>"
+        f'<p><a href="{magic_link_url}" style="display:inline-block;padding:12px 28px;'
+        "background:#1B3A5C;color:#ffffff;border-radius:8px;text-decoration:none;"
+        'font-weight:700;font-size:1rem;">Click here to get started</a></p>'
+        "<p>This link is unique to you — please don’t share it. If you have any questions, just reply to this email.</p>"
+        f"<p>Best wishes,<br>{who}<br>David Britton Estates</p>"
+    )
+    resend.Emails.send(
+        {
+            "from": FROM_LINE,
+            "to": [to_email.strip()],
+            "subject": subject,
+            "html": html,
+        }
+    )
+
+
+def notify_negotiator_ta6_ta10_submitted(
+    *,
+    to_email: str,
+    seller_name: str,
+    property_address: str,
+    staff_review_url: str,
+) -> None:
+    subject = f"TA6/TA10 Submitted — {property_address}"
+    body = (
+        f"{(seller_name or 'The seller').strip()} has submitted their Property Information Form and "
+        f"Fittings and Contents Form for {property_address}. "
+        f"Review the answers in the NUVU portal: <a href=\"{staff_review_url}\">{staff_review_url}</a>"
+    )
+    html = f"<p>{body}</p>"
+    resend.Emails.send(
+        {
+            "from": FROM_LINE,
+            "to": [to_email.strip()],
+            "subject": subject,
+            "html": html,
+        }
+    )
+
+
 def notify_team_form_completed(
     *,
     form_label: str,

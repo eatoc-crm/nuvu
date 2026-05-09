@@ -8,9 +8,15 @@
 </div>
 {% endif %}
 
+{% if submitted %}
+<div class="portal-submitted-banner" role="status">
+  These forms were submitted on {{ (submitted_at|string)[:10] if submitted_at else 'a recent date' }}. Contact your estate agent if you need to make changes.
+</div>
+{% endif %}
+
 <header class="portal-top">
   <div class="portal-top-inner">
-    <a class="portal-brand" href="{{ url_for('portal_forms.portal_form_page', session_id=session_id, form=form_type) }}">
+    <a class="portal-brand" href="{{ url_for('portal_forms.portal_form_page', session_id=session_id, form=('ta6' if form_type == 'ta6_ta10' else form_type)) }}">
       <img src="{{ url_for('static', filename='logo.png') }}" alt="" width="36" height="36">
       <span>NUVU</span>
     </a>
@@ -28,7 +34,11 @@
   <section class="portal-review-hero">
     <p class="portal-review-form-title">{{ form_title }}</p>
     <h1>Review your answers</h1>
+    {% if read_only and not staff_view %}
+    <p>Your answers are shown below for your records.</p>
+    {% else %}
     <p>Check your answers below. You can edit any answer before submitting.</p>
+    {% endif %}
   </section>
 
   {% for sec in sections %}
@@ -36,6 +46,7 @@
     <h2>{{ sec.title }}</h2>
     <div class="portal-review-answers">
     {% for item in sec["items"] %}
+      {% set ef = item.get("edit_form") or form_type %}
       <article class="portal-review-row {% if item.status == 'skipped' %}is-skipped{% endif %}">
         <div class="portal-review-row-body">
           <h3>{{ item.question_text }}</h3>
@@ -47,8 +58,8 @@
           <p class="portal-review-missing">Not answered yet</p>
           {% endif %}
         </div>
-        {% if not staff_view %}
-        <a class="portal-review-edit" href="{{ url_for('portal_forms.portal_form_page', session_id=session_id, form=form_type, q=item.question_index) }}">Edit</a>
+        {% if not read_only %}
+        <a class="portal-review-edit" href="{{ url_for('portal_forms.portal_form_page', session_id=session_id, form=ef, q=item.question_index) }}">Edit</a>
         {% endif %}
       </article>
       {% endfor %}
@@ -58,16 +69,101 @@
 
   <div class="portal-review-actions">
     <a class="portal-btn secondary" href="{{ back_url }}">Back to form</a>
-    {% if not staff_view %}
+    {% if form_type == 'ta6_ta10' and portal_token and not read_only %}
     <button
       type="button"
       class="portal-btn primary"
-      disabled
-      title="Submission will be available when your solicitor's forms are ready"
+      id="portalSubmitBtn"
+      {% if not submission_ready %}disabled title="Complete every question on both forms first"{% endif %}
     >
       Submit
     </button>
     {% endif %}
   </div>
 </main>
+
+{% if form_type == 'ta6_ta10' and portal_token and not read_only %}
+<div id="portalConfirmModal" class="portal-modal portal-hidden" role="dialog" aria-modal="true" aria-labelledby="portalConfirmTitle">
+  <div class="portal-modal-backdrop" data-close="1"></div>
+  <div class="portal-modal-card">
+    <h2 id="portalConfirmTitle">Submit forms?</h2>
+    <p id="portalConfirmBody">Are you sure you want to submit? Once submitted, your solicitor will receive these forms and you won’t be able to make further changes.</p>
+    <div class="portal-modal-actions">
+      <button type="button" class="portal-btn secondary" id="portalConfirmBack">Go Back</button>
+      <button type="button" class="portal-btn primary" id="portalConfirmSubmit">Submit Forms</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if portal_token and form_type == 'ta6_ta10' and not read_only %}
+<script>
+(function(){
+  var token = {{ portal_token | tojson }};
+  var dispatchOn = {{ portal_dispatch_enabled | tojson }};
+  var submitUrl = {{ url_for('portal_forms.api_portal_submit') | tojson }};
+  var modal = document.getElementById("portalConfirmModal");
+  var btn = document.getElementById("portalSubmitBtn");
+  var back = document.getElementById("portalConfirmBack");
+  var go = document.getElementById("portalConfirmSubmit");
+  var body = document.getElementById("portalConfirmBody");
+  if(!btn||!modal)return;
+  function openModal(){
+    if(!dispatchOn){
+      body.textContent = "Form submission is currently disabled. Please contact your estate agent.";
+      go.style.display = "none";
+    }else{
+      body.textContent = "Are you sure you want to submit? Once submitted, your solicitor will receive these forms and you won’t be able to make further changes.";
+      go.style.display = "";
+    }
+    modal.classList.remove("portal-hidden");
+  }
+  function closeModal(){ modal.classList.add("portal-hidden"); }
+  btn.addEventListener("click", openModal);
+  modal.querySelector(".portal-modal-backdrop").addEventListener("click", closeModal);
+  back.addEventListener("click", closeModal);
+  go.addEventListener("click", function(){
+    if(!dispatchOn){ closeModal(); return; }
+    go.disabled = true;
+    fetch(submitUrl, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ token: token })
+    }).then(function(r){ return r.json().then(function(j){ return { r: r, j: j }; }); })
+    .then(function(x){
+      if(x.j && x.j.disabled){
+        alert(x.j.error || "Submission disabled.");
+        go.disabled = false;
+        closeModal();
+        return;
+      }
+      if(x.r.ok && x.j && x.j.ok && x.j.redirect){
+        window.location.href = x.j.redirect;
+        return;
+      }
+      var msg = (x.j && (x.j.error || x.j.message)) || "Could not submit.";
+      alert(msg);
+      go.disabled = false;
+      closeModal();
+    }).catch(function(){
+      alert("Network error — try again.");
+      go.disabled = false;
+    });
+  });
+})();
+</script>
+{% endif %}
+<style>
+.portal-submitted-banner{
+  background:#e8f4fc;border-bottom:1px solid #b6d9f0;color:#0f3d5c;
+  padding:12px 20px;text-align:center;font-size:.88rem;font-weight:600;
+}
+.portal-modal{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.portal-modal.portal-hidden{display:none;}
+.portal-modal-backdrop{position:absolute;inset:0;background:rgba(15,27,45,.45);}
+.portal-modal-card{position:relative;max-width:420px;width:100%;background:#fff;border-radius:12px;padding:24px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.portal-modal-card h2{font-size:1.15rem;margin-bottom:10px;color:#1B3A5C;}
+.portal-modal-card p{font-size:.9rem;line-height:1.5;color:#444;margin-bottom:18px;}
+.portal-modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+</style>
 {% endblock %}

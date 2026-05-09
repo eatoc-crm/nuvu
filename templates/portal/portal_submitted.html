@@ -1,0 +1,23 @@
+{% extends "portal/portal_base.html" %}
+{% block title %}Forms submitted — NUVU{% endblock %}
+{% block body %}
+<header class="portal-top">
+  <div class="portal-top-inner">
+    <a class="portal-brand" href="#" aria-current="page">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="" width="36" height="36">
+      <span>NUVU</span>
+    </a>
+    <div class="portal-top-meta desktop-only">
+      <span class="portal-addr">{{ property_address }}</span>
+      <span class="portal-name">{{ seller_name }}</span>
+    </div>
+  </div>
+</header>
+<main class="portal-review-main">
+  <section class="portal-review-hero">
+    <h1>Thank you</h1>
+    <p class="portal-review-form-title">Your forms have been submitted</p>
+    <p>Your solicitor will receive them shortly. You don’t need to do anything else right now.</p>
+  </section>
+</main>
+{% endblock %}

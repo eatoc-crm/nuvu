@@ -22,7 +22,7 @@ def portal_team_notifications_enabled() -> bool:
 
 
 def portal_dispatch_enabled() -> bool:
-    """Approve & dispatch to solicitor. Default off."""
+    """Outbound TA6/TA10 seller magic links, seller submit, and solicitor dispatch. Default off."""
     return env_bool("PORTAL_DISPATCH_ENABLED", "false")
 
 

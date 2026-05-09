@@ -551,6 +551,15 @@ a.portal-action-link{display:inline-block;font-size:.75rem;font-weight:700;color
 a.portal-action-link:hover{color:var(--claret)}
 button.portal-send-btn{font-size:.72rem;font-weight:500;padding:5px 10px;border-radius:4px;border:1px solid var(--border);background:var(--muted-bg);color:var(--txt-secondary);cursor:not-allowed;opacity:.75}
 button.portal-send-btn[disabled]{cursor:not-allowed}
+button.portal-send-ta610-btn{font-size:.72rem;font-weight:600;padding:6px 12px;border-radius:4px;border:1px solid var(--navy);background:var(--white);color:var(--navy);cursor:pointer;transition:var(--t)}
+button.portal-send-ta610-btn:hover:not([disabled]){background:var(--navy);color:var(--white)}
+button.portal-send-ta610-btn[disabled]{cursor:default;border-color:#c8e6c9;background:#f1f8f4}
+.dash-toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:9999;
+  max-width:min(420px,calc(100% - 32px));background:var(--navy);color:var(--white);
+  padding:12px 18px;border-radius:8px;font-size:.85rem;font-weight:500;
+  box-shadow:0 8px 28px rgba(0,0,0,.25);display:none;line-height:1.4;text-align:center;
+}
 a.portal-review-link{display:inline-block;font-size:.75rem;font-weight:700;color:var(--navy);text-decoration:underline}
 a.portal-review-link:hover{color:var(--claret)}
 .ms-edit-form{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
@@ -1311,6 +1320,14 @@ a.portal-review-link:hover{color:var(--claret)}
     var dt=new Date(d);
     return dt.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
   }
+  function dashToast(msg){
+    var el=document.getElementById("dashToast");
+    if(!el){ alert(msg); return; }
+    el.textContent=msg;
+    el.style.display="block";
+    clearTimeout(window._dashToastT);
+    window._dashToastT=setTimeout(function(){ el.style.display="none"; }, 4200);
+  }
   function patchProgression(progId,field,value,onSuccess){
     var body={};body[field]=value;
     fetch("/api/progression/"+encodeURIComponent(progId),{
@@ -1463,11 +1480,65 @@ a.portal-review-link:hover{color:var(--claret)}
     }
     var p6=p.portal_ta6||{};
     var p10=p.portal_ta10||{};
-    var taBlockH='<h3>TA6 / TA10 (seller portal)</h3>'+
+    var pComb=p.portal_ta6_ta10||{};
+    var pipeId=p._sales_pipeline_id||"";
+    var sendTa610="";
+    if(pipeId && (pComb.phase||"")!=="submitted"){
+      var ls=!!pComb.link_sent;
+      var sidComb=pComb.session_id||"";
+      var lbl=ls?"Link Sent \u2713":"Send TA6/TA10 Link";
+      sendTa610='<div class="portal-form-block"><strong>TA6 &amp; TA10 dispatch</strong>'+
+        '<div class="portal-line">'+(pComb.status_line||"Not started")+'</div>'+
+        '<div class="portal-actions-row">'+
+        '<button type="button" class="portal-send-ta610-btn" '+(ls?'disabled ':'')+
+        'data-pipe-id="'+String(pipeId).replace(/"/g,"")+'">'+lbl+'</button>';
+      if(sidComb){
+        sendTa610+='<a class="portal-action-link" href="/portal/form?session_id='+encodeURIComponent(sidComb)+'&form=ta6" target="_blank" rel="noopener">View TA6 as seller</a>'+
+          '<a class="portal-action-link" href="/portal/form/review?session_id='+encodeURIComponent(sidComb)+'&form=ta6_ta10" target="_blank" rel="noopener">Review combined</a>'+
+          '<a class="portal-action-link" href="/portal/review/'+encodeURIComponent(sidComb)+'" target="_blank" rel="noopener">Staff review</a>';
+      }
+      sendTa610+='</div></div>';
+    }else if(pipeId && (pComb.phase||"")==="submitted"){
+      sendTa610='<div class="portal-form-block"><strong>TA6 &amp; TA10 dispatch</strong>'+
+        '<div class="portal-line">Submitted — link hidden for this sale.</div></div>';
+    }
+    var taBlockH='<h3>TA6 / TA10 (seller portal)</h3>'+sendTa610+
       buildPortalBlock("TA6","ta6",p6)+
       buildPortalBlock("TA10","ta10",p10);
     mPortalForms.innerHTML=clientPortalH+'<hr class="m-div" style="margin:14px 0 10px">'+
       taBlockH;
+    var t610Btns=mPortalForms.querySelectorAll(".portal-send-ta610-btn");
+    for(var ti=0;ti<t610Btns.length;ti++){
+      (function(bt){
+        bt.onclick=function(ev){
+          ev.preventDefault();
+          var pid=bt.getAttribute("data-pipe-id");
+          if(!pid){ return; }
+          fetch("/api/portal/send-link",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({property_id:pid,form_type:"ta6_ta10"})
+          }).then(function(r){
+            return r.json().then(function(j){ return {r:r,j:j}; });
+          }).then(function(x){
+            if(x.j&&x.j.disabled){
+              dashToast(x.j.error||"Portal dispatch is currently disabled.");
+              return;
+            }
+            if(!x.r.ok||!x.j||!x.j.success){
+              dashToast((x.j&&x.j.error)||("HTTP "+x.r.status));
+              return;
+            }
+            if(x.j.resent){
+              dashToast("Link resent to seller.");
+            }else{
+              dashToast("Portal link sent to seller.");
+            }
+            openModal(currentProp.id);
+          }).catch(function(e){ dashToast("Network error: "+e.message); });
+        };
+      })(t610Btns[ti]);
+    }
 
     /* milestone edit button handlers */
     var editBtns=mMsList.querySelectorAll(".ms-edit-btn");
@@ -1788,6 +1859,7 @@ a.portal-review-link:hover{color:var(--claret)}
 
 })();
 </script>
+<div id="dashToast" class="dash-toast" role="status" aria-live="polite"></div>
 </body>
 </html>"""
 

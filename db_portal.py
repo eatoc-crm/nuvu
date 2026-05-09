@@ -4,11 +4,41 @@ from __future__ import annotations
 
 import os
 import uuid
+from pathlib import Path
 from typing import Any
 
 from db_supabase import supabase_for_backend
 
 DEMO_SESSION_ID = "00000000-0000-4000-8000-000000000001"
+
+_TA6_TA10_TOTAL_QUESTIONS: int | None = None
+
+
+def ta6_ta10_total_questions() -> int:
+    """Combined TA6 + TA10 question count for combined portal sessions."""
+    global _TA6_TA10_TOTAL_QUESTIONS
+    if _TA6_TA10_TOTAL_QUESTIONS is not None:
+        return _TA6_TA10_TOTAL_QUESTIONS
+    import json
+
+    root = Path(__file__).resolve().parent
+    try:
+        d6 = json.loads((root / "data" / "forms" / "ta6.json").read_text(encoding="utf-8"))
+        d10 = json.loads((root / "data" / "forms" / "ta10.json").read_text(encoding="utf-8"))
+
+        def cnt(d: dict) -> int:
+            return sum(len(s.get("questions") or []) for s in d.get("sections") or [])
+
+        _TA6_TA10_TOTAL_QUESTIONS = cnt(d6) + cnt(d10)
+    except Exception:
+        _TA6_TA10_TOTAL_QUESTIONS = 1
+    return _TA6_TA10_TOTAL_QUESTIONS
+
+
+def count_completed_form_responses(session_id: str) -> int:
+    """How many questions are answered or skipped for this session."""
+    rows = fetch_form_responses(session_id)
+    return sum(1 for r in rows if r.get("status") in ("answered", "skipped"))
 
 
 def demo_enabled() -> bool:
@@ -42,12 +72,18 @@ def fetch_portal_session(
     if not session_id:
         return None
     if demo_enabled() and is_demo_session_id(session_id):
-        return _demo_session(form_type or "ta6")
+        d = _demo_session(form_type or "ta6")
+        d.setdefault("status", "sent")
+        d.setdefault("token", None)
+        d.setdefault("submitted_at", None)
+        d.setdefault("property_id", None)
+        d.setdefault("seller_email", None)
+        return d
     client = supabase_for_backend()
     try:
         res = (
             client.table("portal_sessions")
-            .select("id, property_address, seller_name, form_type")
+            .select("*")
             .eq("id", session_id)
             .limit(1)
             .execute()
@@ -56,6 +92,147 @@ def fetch_portal_session(
         return rows[0] if rows else None
     except Exception:
         return None
+
+
+def fetch_portal_session_by_token(token: str) -> dict[str, Any] | None:
+    t = (token or "").strip()
+    if not t:
+        return None
+    client = supabase_for_backend()
+    try:
+        res = (
+            client.table("portal_sessions")
+            .select("*")
+            .eq("token", t)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None
+
+
+def fetch_ta6_ta10_sessions_for_pipeline_ids(
+    property_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    """Latest ta6_ta10 portal_sessions row per sales_pipeline.id."""
+    ids = [str(i).strip() for i in property_ids if str(i).strip()]
+    if not ids:
+        return {}
+    client = supabase_for_backend()
+    out: dict[str, dict[str, Any]] = {}
+    for chunk in _chunked(list({i for i in ids}), 40):
+        try:
+            res = (
+                client.table("portal_sessions")
+                .select("*")
+                .eq("form_type", "ta6_ta10")
+                .in_("property_id", chunk)
+                .execute()
+            )
+            for row in res.data or []:
+                pid = str(row.get("property_id") or "")
+                if not pid:
+                    continue
+                prev = out.get(pid)
+                if not prev or str(row.get("id") or "") > str(prev.get("id") or ""):
+                    out[pid] = row
+        except Exception:
+            continue
+    return out
+
+
+def fetch_ta6_ta10_session_for_pipeline(property_id: str) -> dict[str, Any] | None:
+    pid = (property_id or "").strip()
+    if not pid:
+        return None
+    client = supabase_for_backend()
+    try:
+        res = (
+            client.table("portal_sessions")
+            .select("*")
+            .eq("property_id", pid)
+            .eq("form_type", "ta6_ta10")
+            .order("id", desc=True)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None
+
+
+def insert_portal_session_after_send(
+    *,
+    session_id: str,
+    token: str,
+    property_id: str,
+    property_address: str,
+    seller_name: str,
+    seller_email: str,
+    form_type: str = "ta6_ta10",
+) -> bool:
+    client = supabase_for_backend()
+    row = {
+        "id": session_id,
+        "token": token,
+        "property_id": property_id,
+        "property_address": property_address,
+        "seller_name": seller_name or "",
+        "seller_email": seller_email,
+        "form_type": form_type,
+        "status": "sent",
+    }
+    try:
+        client.table("portal_sessions").insert(row).execute()
+        return True
+    except Exception:
+        return False
+
+
+def update_portal_session_link_sent(session_id: str) -> None:
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc).isoformat()
+    client = supabase_for_backend()
+    try:
+        client.table("portal_sessions").update(
+            {"status": "sent", "link_sent_at": now}
+        ).eq("id", session_id).execute()
+    except Exception:
+        pass
+
+
+def append_sales_progression_nuvu_note(progression_id: str, line: str) -> bool:
+    from datetime import datetime, timezone
+
+    pid = (progression_id or "").strip()
+    if not pid or not (line or "").strip():
+        return False
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    entry = f"[{stamp}] {(line or '').strip()}"
+    client = supabase_for_backend()
+    try:
+        res = (
+            client.table("sales_progression")
+            .select("nuvu_notes")
+            .eq("id", pid)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        if not rows:
+            return False
+        prev = (rows[0].get("nuvu_notes") or "").strip()
+        merged = f"{prev}\n{entry}".strip() if prev else entry
+        client.table("sales_progression").update({"nuvu_notes": merged}).eq(
+            "id", pid
+        ).execute()
+        return True
+    except Exception:
+        return False
 
 
 def fetch_form_responses(session_id: str) -> list[dict[str, Any]]:
@@ -325,17 +502,24 @@ def _chunked(items: list[str], size: int) -> list[list[str]]:
 
 def fetch_portal_sessions_latest(limit: int = 400) -> list[dict[str, Any]]:
     client = supabase_for_backend()
-    try:
-        res = (
-            client.table("portal_sessions")
-            .select("id, property_address, seller_name, form_type")
-            .order("id", desc=True)
-            .limit(limit)
-            .execute()
-        )
-        return res.data or []
-    except Exception:
-        return []
+    selects = (
+        "id, property_address, seller_name, form_type, status, "
+        "token, property_id, submitted_at, link_sent_at, seller_email",
+        "id, property_address, seller_name, form_type",
+    )
+    for sel in selects:
+        try:
+            res = (
+                client.table("portal_sessions")
+                .select(sel)
+                .order("id", desc=True)
+                .limit(limit)
+                .execute()
+            )
+            return res.data or []
+        except Exception:
+            continue
+    return []
 
 
 def fetch_form_completions_for_sessions(
@@ -444,7 +628,68 @@ def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
             "phase": "in_progress",
         }
 
+    pipe_ids = [str(p.get("_sales_pipeline_id") or "") for p in properties]
+    ta6ta10_by_pipe = fetch_ta6_ta10_sessions_for_pipeline_ids(pipe_ids)
+    total_combo = ta6_ta10_total_questions()
+
+    def ta6_ta10_line(pipe_id: str | None) -> dict[str, Any]:
+        if not pipe_id:
+            return {
+                "status_line": "Not Started",
+                "session_id": None,
+                "progress_pct": None,
+                "phase": "not_started",
+                "link_sent": False,
+            }
+        row = ta6_ta10_by_pipe.get(str(pipe_id))
+        if not row:
+            return {
+                "status_line": "Not Started",
+                "session_id": None,
+                "progress_pct": None,
+                "phase": "not_started",
+                "link_sent": False,
+            }
+        sid = str(row.get("id") or "")
+        st = (row.get("status") or "draft").lower()
+        if st == "submitted":
+            return {
+                "status_line": "Submitted",
+                "session_id": sid,
+                "progress_pct": 100,
+                "phase": "submitted",
+                "link_sent": bool(row.get("link_sent_at")),
+            }
+        done = count_completed_form_responses(sid)
+        tot = max(1, total_combo)
+        pct = int(round(100 * done / tot)) if tot else None
+        link_sent = bool(row.get("link_sent_at")) or st == "sent"
+        if done >= tot:
+            return {
+                "status_line": "Ready to submit",
+                "session_id": sid,
+                "progress_pct": 100,
+                "phase": "ready_to_submit",
+                "link_sent": link_sent,
+            }
+        if pct is not None:
+            return {
+                "status_line": f"{pct}% Complete (TA6 & TA10)",
+                "session_id": sid,
+                "progress_pct": pct,
+                "phase": "in_progress",
+                "link_sent": link_sent,
+            }
+        return {
+            "status_line": "In progress",
+            "session_id": sid,
+            "progress_pct": pct,
+            "phase": "in_progress",
+            "link_sent": link_sent,
+        }
+
     for p in properties:
         nk = normalise_address(p.get("address") or "")
         p["portal_ta6"] = line_for("ta6", nk)
         p["portal_ta10"] = line_for("ta10", nk)
+        p["portal_ta6_ta10"] = ta6_ta10_line(p.get("_sales_pipeline_id"))

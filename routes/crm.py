@@ -569,6 +569,17 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .note-actions{display:flex;gap:6px;margin-top:6px}
 .note-save-btn{background:var(--green);color:#fff;border:none;border-radius:5px;padding:4px 14px;font-size:.72rem;font-weight:600;cursor:pointer}
 .note-cancel-btn{background:#f1f5f9;color:var(--txt-mid);border:none;border-radius:5px;padding:4px 14px;font-size:.72rem;cursor:pointer}
+.crm-send-ta610{
+  font-size:.85rem;font-weight:600;padding:10px 16px;border-radius:6px;border:1px solid var(--navy);
+  background:var(--white);color:var(--navy);cursor:pointer;
+}
+.crm-send-ta610:hover:not([disabled]){background:var(--navy);color:var(--white)}
+.crm-send-ta610[disabled]{cursor:default;border-color:#c8e6c9;background:#f1f8f4;color:#2e7d32}
+#crmToast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;
+  max-width:min(400px,calc(100% - 32px));background:var(--navy-card);color:var(--white);
+  padding:12px 18px;border-radius:8px;font-size:.85rem;display:none;box-shadow:0 8px 24px rgba(0,0,0,.2);
+}
 
 /* alert box */
 .alert-box{
@@ -643,6 +654,24 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div class="next-lbl">Next Action</div>
     <div class="next-txt">{{ p.next_action }}</div>
   </div>
+
+  {% if p._sales_pipeline_id %}
+  <div class="detail-card">
+    <h3>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+      TA6 &amp; TA10 seller dispatch
+    </h3>
+    <p style="font-size:.82rem;color:var(--txt-mid);margin-bottom:12px;line-height:1.45">{{ (p.portal_ta6_ta10 or {}).get('status_line','—') }}</p>
+    {% if (p.portal_ta6_ta10 or {}).get('phase') == 'submitted' %}
+    <p style="font-size:.85rem;color:var(--txt-mid)">Seller has submitted these forms — the send link is no longer available.</p>
+    {% else %}
+    <button type="button" class="crm-send-ta610" id="crmSendTa610" data-pipe-id="{{ p._sales_pipeline_id }}"
+      {% if (p.portal_ta6_ta10 or {}).get('link_sent') %}disabled{% endif %}>
+      {% if (p.portal_ta6_ta10 or {}).get('link_sent') %}Link Sent ✓{% else %}Send TA6/TA10 Link{% endif %}
+    </button>
+    {% endif %}
+  </div>
+  {% endif %}
 
   <div class="two-col">
     <!-- Milestones -->
@@ -796,7 +825,35 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     })(noteBtns[n]);
   }
 })();
+
+(function(){
+  var b = document.getElementById("crmSendTa610");
+  var toast = document.getElementById("crmToast");
+  function show(msg){
+    if(toast){ toast.textContent = msg; toast.style.display = "block";
+      clearTimeout(window._crmToastT);
+      window._crmToastT = setTimeout(function(){ toast.style.display = "none"; }, 4200);
+    } else { alert(msg); }
+  }
+  if (!b || b.disabled) return;
+  b.addEventListener("click", function() {
+    var pid = b.getAttribute("data-pipe-id");
+    if (!pid) return;
+    fetch("/api/portal/send-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ property_id: pid, form_type: "ta6_ta10" })
+    }).then(function(r) { return r.json().then(function(j) { return { r: r, j: j }; }); })
+    .then(function(x) {
+      if (x.j && x.j.disabled) { show(x.j.error || "Portal dispatch is disabled."); return; }
+      if (!x.r.ok || !x.j || !x.j.success) { show((x.j && x.j.error) || ("HTTP " + x.r.status)); return; }
+      show(x.j.resent ? "Link resent to seller." : "Portal link sent to seller.");
+      location.reload();
+    }).catch(function(e) { show("Network error: " + e.message); });
+  });
+})();
 </script>
+<div id="crmToast" role="status" aria-live="polite"></div>
 
 </body>
 </html>"""
@@ -834,13 +891,16 @@ def crm_dashboard():
 @crm_bp.route("/crm/property/<prop_id>")
 def crm_property_detail(prop_id):
     """Full-page detail view for a single CRM property."""
-    props, error = _map_live_properties()
-    if error:
-        return f"<h2>Error fetching live data</h2><pre>{error}</pre>", 500
+    from routes.dashboard import _build_live_dashboard_data
+
+    try:
+        props, _, _, _, _ = _build_live_dashboard_data()
+    except Exception as e:
+        return f"<h2>Error fetching live data</h2><pre>{e}</pre>", 500
 
     prop = None
     for p in props:
-        if str(p["id"]) == str(prop_id):
+        if str(p.get("id")) == str(prop_id):
             prop = p
             break
     if not prop:

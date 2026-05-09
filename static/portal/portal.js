@@ -488,6 +488,14 @@
   function advanceAfterSave(savedAtIndex, data) {
     renderProgress();
     if (isEditMode || data.complete) {
+      var sft = (cfg.sessionFormType || cfg.formType || "").toLowerCase();
+      if (sft === "ta6_ta10" && (cfg.formType || "").toLowerCase() === "ta6" && data.complete) {
+        window.location.href =
+          "/portal/form?session_id=" +
+          encodeURIComponent(cfg.sessionId || "") +
+          "&form=ta10";
+        return;
+      }
       goToReview();
       return;
     }

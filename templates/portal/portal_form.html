@@ -5,6 +5,7 @@
   window.PORTAL_CONFIG = {
     sessionId: {{ session_id | tojson }},
     formType: {{ form_type | tojson }},
+    sessionFormType: {{ session_form_type | tojson }},
     propertyAddress: {{ property_address | tojson }},
     sellerName: {{ seller_name | tojson }},
     portalAiEnabled: {{ portal_ai_enabled | tojson }},
@@ -13,7 +14,7 @@
     formStateUrl: {{ url_for('portal_forms.api_form_state') | tojson }},
     chatUrl: {{ url_for('portal_forms.api_chat') | tojson }},
     saveUrl: {{ url_for('portal_forms.api_save_answer') | tojson }},
-    reviewUrl: {{ url_for('portal_forms.portal_form_review_page', session_id=session_id, form=form_type) | tojson }}
+    reviewUrl: {{ url_for('portal_forms.portal_form_review_page', session_id=session_id, form=('ta6_ta10' if session_form_type == 'ta6_ta10' else form_type)) | tojson }}
   };
 </script>
 {% if staff_view %}

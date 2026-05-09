@@ -142,6 +142,17 @@ nuvu-live/
 
 ---
 
+## Dashboard colour palette (live UI)
+
+The main dashboard (`DASHBOARD_HTML` in `routes/dashboard.py`) uses these accent colours:
+
+- **NUVU green** `#C5D93A` — active tab, on-track / positive indicators, milestone progress and chips for healthy states, leaderboard up-arrows and fast transaction pills (with dark olive text `#2A3A0C` / `#4A5A1A` for contrast).
+- **Deep claret** `#962D3E` — needs-attention, stalled / at-risk, warnings, recommended leaderboard accent where used.
+- **Navy** `#1B3A5C` — toolbar, headings, completed milestone chips, numeric emphasis.
+- **Warm page** `#F5F3EF` — main content background below the hero; white cards sit on top.
+
+Funnel chart row colours may still use intermediate blues/greens for legibility; they are decorative, not status semantics.
+
 ## Pipeline Forecast (dashboard)
 
 The **Pipeline Forecast** block is **read-only**. It aggregates what is already in the live stack (EATOC plus Supabase overlays): it **must not** insert, update, or delete rows in `sales_pipeline` or `sales_progression`. Those tables are the source of truth for pipeline state; the forecast only reads merged in-memory property rows, applies the agreed milestone-score heuristic for forward allocation (not `completion_target`), and surfaces counts, values, and fees. Other routes (intake, progression patches, and so on) continue to own writes to those tables where product behaviour requires it.

@@ -29,16 +29,19 @@ DASHBOARD_HTML = r"""<!DOCTYPE html>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --navy:#1B3A5C;--claret:#962D3E;--sage:#4A7C6F;--amber:#D4940A;
+  --nuvu-green:#C5D93A;--olive:#2A3A0C;--olive-text:#4A5A1A;
+  --page-warm:#F5F3EF;--stone:#8B8680;--stone-dark:#6B6560;
+  --track:#EDEAE5;--chip-pend-bg:#EDEAE5;--chip-pend-txt:#A8A39D;
   --off-white:#FAFAFA;--white:#FFFFFF;--muted-bg:#F4F4F4;--border:#E8E8E8;
   --txt:#1A1A1A;--txt-secondary:#777777;--placeholder:#BBBBBB;
   --navy-md:#2a4a6e;--navy-card:#1B3A5C;
   --red:#962D3E;--red-chip:#962D3E;--amber-chip:#D4940A;
-  --green:#4A7C6F;--green-chip:#4A7C6F;--blue:#1B3A5C;
+  --green:#C5D93A;--green-chip:#C5D93A;--blue:#1B3A5C;
   --txt-mid:#777777;--txt-light:#777777;
   --t:background-color .15s ease;
 }
 html{font-size:15px;scroll-behavior:smooth}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--off-white);color:var(--txt);min-height:100vh;font-weight:400}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--page-warm);color:var(--txt);min-height:100vh;font-weight:400}
 
 /* ═══ HERO ════════════════════════════════════════════════ */
 .hero{position:relative;width:100%;height:480px;overflow:hidden;background:var(--navy)}
@@ -79,7 +82,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
 /* ═══ PIPELINE FORECAST ═══════ */
 .pipeline-section{
-  background:var(--off-white);padding:24px 20px 32px;
+  background:var(--page-warm);padding:24px 20px 32px;
   border-top:1px solid var(--border);border-bottom:1px solid var(--border);
 }
 .pipe-inner{max-width:1280px;margin:0 auto}
@@ -87,10 +90,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   display:flex;justify-content:space-between;align-items:flex-start;
   gap:16px;margin-bottom:20px;
 }
-.pipeline-title{font-size:1rem;font-weight:500;color:var(--txt);display:flex;align-items:center;gap:10px}
-.pipeline-sub{font-size:.85rem;color:var(--txt-secondary);margin-top:4px;max-width:52rem;line-height:1.45}
+.pipeline-title{font-size:20px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
+.pipeline-sub{font-size:13px;color:var(--stone);margin-top:6px;max-width:42rem;line-height:1.45}
+.pipe-hint{font-size:12px;color:var(--stone);margin-top:10px;line-height:1.4;max-width:40rem}
 .ahead-badge{
-  background:rgba(74,124,111,.12);color:var(--sage);
+  background:rgba(197,217,58,.15);color:var(--olive-text);
   padding:6px 12px;border-radius:4px;font-size:.8rem;font-weight:500;
   display:flex;align-items:center;gap:6px;flex-shrink:0;border:1px solid var(--border);
 }
@@ -101,17 +105,17 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;
 }
 .pipe-kpi{
-  background:var(--muted-bg);border:1px solid var(--border);border-radius:4px;
+  background:var(--page-warm);border:1px solid var(--border);border-radius:6px;
   padding:14px 16px;
 }
-.pipe-kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt-secondary);font-weight:400;margin-bottom:6px}
+.pipe-kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--stone);font-weight:400;margin-bottom:6px}
 .pipe-kpi-val{font-size:1.35rem;font-weight:500;color:var(--navy);line-height:1.1;font-variant-numeric:tabular-nums}
-.pipe-kpi-sub{font-size:.8rem;color:var(--txt-secondary);margin-top:6px;line-height:1.35}
+.pipe-kpi-sub{font-size:.8rem;color:var(--stone);margin-top:6px;line-height:1.35}
 .pipe-split{
   display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;
 }
 .pipe-panel{
-  background:var(--white);border:1px solid var(--border);border-radius:4px;
+  background:var(--white);border:1px solid var(--border);border-radius:6px;
   padding:18px 20px 20px;
 }
 .pipe-panel-h{font-size:.95rem;font-weight:500;color:var(--txt);margin-bottom:4px}
@@ -162,13 +166,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 }
 .pipe-fc-sage{background:#eef4ef;border-color:#c5d4c8}
 .pipe-fc-sage .pipe-fc-h{color:#2d4a38}
+.pipe-fc-m1{background:rgba(197,217,58,.12);border-color:rgba(197,217,58,.35)}
+.pipe-fc-m1 .pipe-fc-h{color:#4A5A1A}
 .pipe-fc-navy{background:#e9eef7;border-color:#c5cedd}
 .pipe-fc-navy .pipe-fc-h{color:#1B3A5C}
 .pipe-fc-amber{background:#fdf6ee;border-color:#edd4ad}
 .pipe-fc-amber .pipe-fc-h{color:#7a4a12}
 .pipe-fc-h{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:500;margin-bottom:10px;color:var(--txt-secondary)}
 .pipe-fc-count{font-size:1.75rem;font-weight:500;line-height:1;color:var(--txt)}
-.pipe-fc-val{font-size:1rem;font-weight:500;color:var(--sage);margin-top:4px}
+.pipe-fc-val{font-size:1rem;font-weight:500;color:var(--olive-text);margin-top:4px}
 .pipe-fc-fee{font-size:.82rem;font-weight:500;color:var(--txt-secondary);margin-top:6px}
 .pipe-fc-note{font-size:.68rem;color:var(--txt-secondary);margin-top:10px;line-height:1.35}
 
@@ -191,7 +197,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 }
 .dash-tab:last-child{border-right:none}
 .dash-tab:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5)}
-.dash-tab--active{background:var(--claret);color:#fff;font-weight:500}
+.dash-tab--active{background:var(--nuvu-green);color:var(--olive);font-weight:600}
 .tab-panel{display:none}
 .tab-panel.tab-panel--active{display:block}
 .lb-wrap{max-width:900px;margin:0 auto;padding:24px 20px 48px}
@@ -216,7 +222,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 }
 .lb-rank-num{font-size:1.2rem;font-weight:500;color:var(--navy);line-height:1;font-variant-numeric:tabular-nums}
 .lb-move{font-size:11px;margin-top:6px;font-weight:500;line-height:1.2}
-.lb-arr--up{color:var(--sage)}
+.lb-arr--up{color:var(--nuvu-green)}
 .lb-arr--down{color:var(--claret)}
 .lb-arr--flat{color:var(--txt-secondary)}
 .lb-arr-rest{color:var(--txt-secondary);font-weight:500}
@@ -234,7 +240,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   display:inline-block;margin-top:2px;padding:6px 10px;border-radius:4px;
   font-size:.85rem;font-weight:500;
 }
-.lb-pill--good{background:rgba(74,124,111,.12);color:var(--sage)}
+.lb-pill--good{background:rgba(197,217,58,.15);color:var(--olive-text)}
 .lb-pill--mid{background:var(--muted-bg);color:var(--txt)}
 .lb-pill--warn{background:rgba(150,45,62,.12);color:var(--claret)}
 .lb-badge-rec{
@@ -263,11 +269,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 }
 .section-banner.stalled-banner{border-left-color:var(--red)}
 .section-banner.risk-banner{border-left-color:var(--amber)}
-.section-banner.green-banner{border-left-color:var(--green)}
+.section-banner.green-banner{border-left-color:var(--nuvu-green)}
 .section-banner.blue-banner{border-left-color:var(--blue)}
 .section-banner.amber-banner{border-left-color:var(--amber)}
 .section-banner-left h2{font-size:1rem;font-weight:500;color:var(--txt);display:flex;align-items:center;gap:10px}
-.section-banner-left p{font-size:.85rem;color:var(--txt-secondary);margin-top:2px}
+.section-banner-left p{font-size:13px;color:var(--stone);margin-top:2px}
 
 /* Section avg progress bar */
 .section-avg{display:flex;align-items:center;gap:12px}
@@ -279,53 +285,87 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
 /* ═══ CARD GRID ═══════════════════════════════════════════ */
 .card-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
   margin-bottom:12px;
 }
 
-/* ═══ PROPERTY CARD — Direction C ═════════════════════════ */
-.prop-card{
-  background:var(--white);border-radius:4px;overflow:hidden;
+/* ═══ PROPERTY CARD — rich horizontal ═══════════════════════ */
+.rich-card{
+  display:flex;flex-direction:row;align-items:stretch;
+  background:var(--white);border-radius:6px;overflow:hidden;
   cursor:pointer;transition:var(--t);
-  border:1px solid var(--border);
-  border-left:4px solid var(--border);
+  border:1px solid var(--border);min-width:0;
 }
-.prop-card--stalled,.prop-card--at-risk{border-left-color:var(--claret)}
-.prop-card--on-track{border-left-color:var(--sage)}
-.prop-card--exchanged{border-left-color:var(--navy)}
-.prop-card:hover{background:rgba(27,58,92,.02)}
-
-.card-photo{
-  height:140px;position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  border-bottom:1px solid var(--border);
+.rich-card:hover{background:rgba(27,58,92,.02)}
+.rich-rail{flex:0 0 5px;align-self:stretch}
+.rich-col{display:flex;flex-direction:column;flex:1;min-width:0}
+.rich-card--attention .rich-rail{background:var(--claret)}
+.rich-card--on-track .rich-rail{background:var(--nuvu-green)}
+.rich-card--exchanged .rich-rail{background:var(--navy)}
+.rich-card--default .rich-rail{background:var(--border)}
+.rich-body{flex:1;min-width:0;padding:16px 18px;display:flex;flex-direction:column;gap:0}
+.rich-badge{
+  display:inline-block;font-size:10px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;padding:3px 8px;border-radius:3px;margin-bottom:10px;width:fit-content;max-width:100%;
 }
-.card-photo-bg{width:100%;height:100%;object-fit:cover}
-.pc-body{padding:14px}
-.pc-badge{
-  display:inline-block;font-size:10px;font-weight:500;letter-spacing:.03em;
-  text-transform:uppercase;padding:2px 8px;border-radius:3px;color:#fff;margin-bottom:8px;
+.rich-card--on-track .rich-badge{background:rgba(197,217,58,.15);color:var(--olive-text)}
+.rich-card--attention .rich-badge{background:rgba(150,45,62,.12);color:var(--claret)}
+.rich-card--exchanged .rich-badge{background:rgba(27,58,92,.12);color:var(--navy)}
+.rich-card--default .rich-badge{background:var(--track);color:var(--stone-dark)}
+.rich-na-strip{margin-bottom:10px}
+.rich-na-action{font-size:12px;color:var(--stone-dark);line-height:1.4;margin-bottom:8px}
+.rich-na-cta{display:inline-block;font-size:11px;font-weight:600;color:var(--navy);text-decoration:underline}
+.rich-row2{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.rich-addrblock{flex:1;min-width:0}
+.rich-addr{font-size:15px;font-weight:600;color:var(--txt);letter-spacing:-.02em;line-height:1.3}
+.rich-sub{font-size:12px;color:var(--stone);margin-top:4px;line-height:1.35}
+.rich-feecol{text-align:right;flex-shrink:0}
+.rich-fee{font-size:18px;font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.2}
+.rich-fee-lbl{font-size:10px;color:var(--stone);text-transform:uppercase;margin-top:4px;letter-spacing:.04em}
+.rich-prog{margin-bottom:12px}
+.rich-prog-track{height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.rich-prog-fill{height:100%;border-radius:3px;min-width:0;transition:width .35s ease}
+.rich-prog-fill--on-track{background:var(--nuvu-green)}
+.rich-prog-fill--attention,.rich-prog-fill--default{background:var(--claret)}
+.rich-prog-fill--exchanged{background:var(--navy)}
+.rich-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.rich-chip{
+  font-size:10.5px;font-weight:500;padding:3px 8px;border-radius:3px;white-space:nowrap;
 }
-.pc-badge--stalled,.pc-badge--at-risk{background:var(--claret)}
-.pc-badge--on-track{background:var(--sage)}
-.pc-badge--exchanged{background:var(--navy)}
-.pc-addr{font-size:14px;font-weight:500;color:var(--txt);letter-spacing:-.01em;line-height:1.35;margin-bottom:8px}
-.pc-fee{font-size:20px;font-weight:500;color:var(--navy);margin-bottom:12px;font-variant-numeric:tabular-nums}
-.pc-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.pc-pill{
-  background:var(--muted-bg);border-radius:4px;padding:6px 10px;
-  display:flex;flex-direction:column;gap:2px;min-width:0;
+.rich-chip--done{background:var(--navy);color:#fff}
+.rich-chip--pending{background:var(--chip-pend-bg);color:var(--chip-pend-txt)}
+.rich-card--on-track .rich-chip--current{background:var(--nuvu-green);color:var(--olive)}
+.rich-card--attention .rich-chip--current,.rich-card--default .rich-chip--current{background:var(--claret);color:#fff}
+.rich-card--exchanged .rich-chip--current{background:var(--navy);color:#fff}
+.rich-footer{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;
+  border-top:1px solid #F0EDE8;padding-top:10px;margin-top:8px;
 }
-.pc-pill-val{font-size:14px;font-weight:500;color:var(--txt);font-variant-numeric:tabular-nums}
-.pc-pill-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--txt-secondary);font-weight:400}
-.pc-checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
-.pc-checks li{font-size:13px;font-weight:400;padding-left:12px;position:relative}
-.pc-checks li::before{content:"";position:absolute;left:0;top:.55em;width:5px;height:5px;border-radius:50%;background:var(--border)}
-.pc-check-done{color:var(--sage)}
-.pc-check-done::before{background:var(--sage)}
-.pc-check-pend{color:var(--txt-secondary)}
-.na-block{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.rich-foot-left{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+.rich-meta{display:flex;flex-direction:column;gap:2px}
+.rich-meta-l{font-size:12px;color:var(--stone-dark)}
+.rich-meta-v{font-size:12px;font-weight:600;color:var(--txt)}
+.rich-meta-v--ok{color:var(--olive-text)}
+.rich-meta-v--warn{color:var(--claret)}
+.rich-meta-v--muted{color:var(--stone);font-weight:500}
+.rich-chain-pill{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:3px;
+  background:#F5F3EF;color:var(--stone-dark);
+}
+.rich-chain-pill svg{flex-shrink:0;opacity:.75}
+.rich-neg{display:flex;align-items:center;gap:8px}
+.rich-neg-av{
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.rich-neg-av--on-track,.rich-neg-av--exchanged{background:var(--navy)}
+.rich-neg-av--attention{background:var(--claret)}
+.rich-neg-av--default{background:var(--sage)}
+.rich-neg-nm{font-size:11px;color:var(--stone-dark);max-width:140px}
 .dash-section{margin-bottom:24px}
+.pc-badge--on-track{background:var(--nuvu-green);color:var(--olive-text)}
+.pc-badge--stalled,.pc-badge--at-risk{background:var(--claret);color:#fff}
+.pc-badge--exchanged{background:var(--navy);color:#fff}
 
 /* ═══ SHOW MORE ═══════════════════════════════════════════ */
 .show-more-btn{
@@ -387,7 +427,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .m-prog-fill{height:100%;border-radius:4px;transition:width .4s ease}
 .m-prog-fill.clr-stalled{background:var(--claret)}
 .m-prog-fill.clr-at-risk{background:var(--amber)}
-.m-prog-fill.clr-on-track{background:var(--sage)}
+.m-prog-fill.clr-on-track{background:var(--nuvu-green)}
 .m-prog-fill.clr-exchanged{background:var(--navy)}
 .m-prog-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--txt-secondary);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
 
@@ -403,7 +443,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
 /* next action */
 .m-next{background:var(--muted-bg);border:1px solid var(--border);border-radius:4px;padding:10px 14px;margin-bottom:10px}
-.m-next-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--sage);font-weight:500;margin-bottom:3px}
+.m-next-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--olive-text);font-weight:500;margin-bottom:3px}
 .m-next-txt{font-size:.82rem;color:var(--txt);line-height:1.45}
 
 /* action buttons */
@@ -411,7 +451,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .m-btn{flex:1;min-width:100px;padding:9px 12px;border-radius:4px;font-size:.78rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--t);border:none}
 .m-btn-call{background:var(--claret);color:#fff}
 .m-btn-call:hover{filter:brightness(.95)}
-.m-btn-done{background:var(--sage);color:#fff}
+.m-btn-done{background:var(--nuvu-green);color:var(--olive)}
 .m-btn-done:hover{filter:brightness(.95)}
 .m-btn-outline{background:var(--white);color:var(--txt);border:1px solid var(--border)}
 .m-btn-outline:hover{border-color:var(--navy);color:var(--navy)}
@@ -422,7 +462,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ms-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:.78rem}
 .ms-item:last-child{border-bottom:none}
 .ms-ic{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.6rem}
-.ms-ic.done{background:var(--sage);color:#fff}
+.ms-ic.done{background:var(--nuvu-green);color:var(--olive)}
 .ms-ic.pending{background:var(--muted-bg);border:2px solid var(--border);color:transparent}
 .ms-ic.na{background:var(--muted-bg);color:var(--txt-secondary);font-size:.55rem;font-weight:500}
 .ms-lb{color:var(--txt);flex:1}
@@ -447,7 +487,7 @@ a.portal-review-link:hover{color:var(--claret)}
 .ms-edit-form{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
 .ms-edit-form input[type=date]{font-size:.72rem;padding:2px 6px;border:1px solid var(--border);border-radius:4px;color:var(--txt)}
 .ms-edit-form button{padding:2px 8px;border-radius:4px;font-size:.65rem;font-weight:500;cursor:pointer;border:none}
-.ms-save-btn{background:var(--sage);color:#fff}
+.ms-save-btn{background:var(--nuvu-green);color:var(--olive)}
 .ms-cancel-btn{background:var(--muted-bg);color:var(--txt-secondary)}
 .ms-pending-lb{color:var(--txt-secondary)}
 
@@ -462,7 +502,7 @@ a.portal-review-link:hover{color:var(--claret)}
 .note-textarea{width:100%;min-height:60px;font-size:.82rem;font-family:inherit;line-height:1.5;border:1px solid var(--border);border-radius:4px;padding:8px 10px;resize:vertical;color:var(--txt)}
 .note-textarea:focus{outline:none;border-color:var(--navy)}
 .note-actions{display:flex;gap:6px;margin-top:6px}
-.note-save-btn{background:var(--sage);color:#fff;border:none;border-radius:4px;padding:4px 14px;font-size:.72rem;font-weight:600;cursor:pointer}
+.note-save-btn{background:var(--nuvu-green);color:var(--olive);border:none;border-radius:4px;padding:4px 14px;font-size:.72rem;font-weight:600;cursor:pointer}
 .note-cancel-btn{background:var(--muted-bg);color:var(--txt-secondary);border:none;border-radius:4px;padding:4px 14px;font-size:.72rem;cursor:pointer}
 
 /* activity notes */
@@ -526,7 +566,7 @@ a.portal-review-link:hover{color:var(--claret)}
 /* ── Search bar ─────────────────────────────────────────── */
 .search-wrap{
   position:sticky;top:40px;z-index:90;
-  background:var(--off-white);
+  background:var(--page-warm);
   padding:12px 0 16px;
   border-bottom:1px solid var(--border);
 }
@@ -576,7 +616,7 @@ a.portal-review-link:hover{color:var(--claret)}
   display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.5px;
   text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-top:4px;
 }
-.chain-link-status.chain-st-active{background:rgba(74,124,111,.12);color:var(--sage)}
+.chain-link-status.chain-st-active{background:rgba(197,217,58,.15);color:var(--olive-text)}
 .chain-link-status.chain-st-problem{background:rgba(150,45,62,.12);color:var(--claret)}
 .chain-link-status.chain-st-complete{background:rgba(27,58,92,.1);color:var(--navy)}
 .chain-link-status.chain-st-default{background:var(--muted-bg);color:var(--txt-secondary)}
@@ -606,10 +646,9 @@ a.portal-review-link:hover{color:var(--claret)}
   width:8px;height:8px;border-radius:50%;background:var(--claret);flex-shrink:0;
 }
 .na-count-badge,.sec-count-badge{
-  font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;
-  background:var(--muted-bg);color:var(--txt-secondary);
+  font-size:12px;font-weight:600;padding:2px 10px;border-radius:3px;
+  background:var(--navy);color:#fff;
 }
-.na-count-badge.na-count-badge--on{background:var(--claret);color:#fff}
 .section-collapse-hdr .hdr-chev{font-size:10px;color:var(--txt-secondary);flex-shrink:0;transition:transform .15s ease;display:inline-block}
 .section-collapse-hdr.collapsed .hdr-chev{transform:rotate(-90deg)}
 .section-collapse-body{overflow:hidden}
@@ -617,15 +656,7 @@ a.portal-review-link:hover{color:var(--claret)}
 .na-empty{padding:24px;text-align:center;color:var(--txt-secondary)}
 .card-grid-na{grid-template-columns:repeat(2,1fr)}
 .prop-card-na{min-height:auto}
-.prop-card-na .card-photo{height:160px}
-.na-badges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 8px}
-.na-badge{
-  font-size:10px;font-weight:500;padding:2px 8px;border-radius:3px;
-  text-transform:uppercase;letter-spacing:.03em;
-}
-.na-badge.amber{background:rgba(212,148,10,.15);color:var(--amber)}
-.na-badge.red{background:var(--claret);color:#fff}
-.na-overdue{font-size:1.25rem;font-weight:500;color:var(--claret);margin:4px 0}
+.na-overdue{font-size:14px;font-weight:600;color:var(--claret);margin:0 0 6px}
 .na-action{font-size:.85rem;color:var(--txt);line-height:1.4;margin-bottom:10px}
 .na-cta{
   display:inline-flex;align-items:center;justify-content:center;
@@ -646,170 +677,123 @@ a.portal-review-link:hover{color:var(--claret)}
 </head>
 <body>
 
-{# ═══ PROPERTY CARD MACRO ═══════════════════════════════ #}
-{% macro prop_card(p) %}
-<div class="prop-card prop-card--{{ p.status }}" id="card-{{ p.id }}">
-  <div class="card-photo">
-    {% if p.image_url %}<img class="card-photo-bg" src="{{ p.image_url|safe }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="card-photo-bg" style="background:var(--navy-md);display:none"></div>{% else %}<div class="card-photo-bg" style="background:var(--navy-md)"></div>{% endif %}
-  </div>
-  <div class="pc-body">
-    <span class="pc-badge pc-badge--{{ p.status }}">{{ p.status_label|upper }}</span>
-    <div class="pc-addr">{{ p.address }}, {{ p.location }}</div>
-    <div class="pc-fee">{% if p._pipe_fee %}&pound;{{ "{:,.0f}".format(p._pipe_fee) }}{% else %}&mdash;{% endif %}</div>
-    <div class="pc-pills">
-      <div class="pc-pill"><span class="pc-pill-val">{{ p.progress }}%</span><span class="pc-pill-lbl">Progress</span></div>
-      <div class="pc-pill"><span class="pc-pill-val">{{ p.duration_days }}</span><span class="pc-pill-lbl">Days elapsed</span></div>
-      <div class="pc-pill"><span class="pc-pill-val">{{ p.target_days }}</span><span class="pc-pill-lbl">Day target</span></div>
-    </div>
-    <ul class="pc-checks">
-      {% for c in p.card_checks %}
-      <li class="{{ 'pc-check-done' if c.done else 'pc-check-pend' }}">{{ c.label }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {# ── Chain toggle ─────────────────────────────────── #}
-  {% set cl = p.chain_links|default([]) %}
-  <button class="chain-toggle" data-chain-id="{{ p.id }}" onclick="event.stopPropagation();toggleChain('{{ p.id }}')">
-    <span class="chain-lbl">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-      Chain {% if cl|length > 0 %}({{ cl|length }} link{{ 's' if cl|length != 1 }}){% else %}(no links added){% endif %}
-    </span>
-    <span class="chain-chev" aria-hidden="true">&#9660;</span>
-  </button>
-  <div class="chain-panel" id="chainPanel-{{ p.id }}">
-    {% if cl|length > 0 %}
-    <div class="chain-inner">
-      <div class="chain-diagram">
-        {% set above = cl|selectattr('chain_position','equalto','above')|list %}
-        {% set below = cl|selectattr('chain_position','equalto','below')|list %}
-        {% if above|length > 0 %}
-        <div class="chain-pos-label">Above</div>
-        {% for link in above %}
-        <div class="chain-link-box">
-          <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
-          <div class="chain-link-detail">
-            {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
-            {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
-            {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
-          </div>
-          {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
+{# ═══ PROPERTY CARD MACROS ═══════════════════════════════ #}
+{% macro rich_prop_card(p, triggers=none) %}
+{% set cl = p.chain_links|default([]) %}
+{% set cid = ('na-' ~ p.id) if triggers else p.id %}
+<div class="rich-card prop-card{% if triggers %} prop-card-na{% endif %} rich-card--{{ p._rail }}" {% if triggers %}id="card-na-{{ p.id }}" data-prop-id="{{ p.id }}"{% else %}id="card-{{ p.id }}"{% endif %}>
+  <div class="rich-rail" aria-hidden="true"></div>
+  <div class="rich-col">
+    <div class="rich-body">
+      <div class="rich-badge">{{ p._card_badge_text }}</div>
+      {% if triggers and triggers|length > 0 %}
+      {% set primary = triggers[0] %}
+      <div class="rich-na-strip">
+        {% if primary.days_overdue > 0 %}<div class="na-overdue">{{ primary.days_overdue }} days overdue</div>{% elif primary.days_overdue == 0 %}<div class="na-overdue">Immediate</div>{% endif %}
+        {% if primary.suggested_action %}<p class="rich-na-action">{{ primary.suggested_action }}</p>{% endif %}
+        {% if primary.quick_action %}<a class="rich-na-cta" href="{{ primary.quick_action.href }}" {% if primary.quick_action.href == '#' %}onclick="event.stopPropagation();return false;"{% else %}onclick="event.stopPropagation();"{% endif %}>{{ primary.quick_action.label }}</a>{% endif %}
+      </div>
+      {% endif %}
+      <div class="rich-row2">
+        <div class="rich-addrblock">
+          <div class="rich-addr">{{ p.address }}{% if p.location %}, {{ p.location }}{% endif %}</div>
+          {% if p._card_subtitle %}<div class="rich-sub">{{ p._card_subtitle }}</div>{% endif %}
         </div>
-        {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
-        {% endfor %}
-        <div class="chain-connector"></div>
+        {% if p._pipe_fee %}
+        <div class="rich-feecol">
+          <div class="rich-fee">&pound;{{ "{:,.0f}".format(p._pipe_fee) }}</div>
+          <div class="rich-fee-lbl">Commission</div>
+        </div>
         {% endif %}
-        <div class="chain-link-box chain-anchor">
-          <div class="chain-link-addr">{{ p.address }}</div>
-          <div class="chain-link-detail" style="color:var(--navy);font-weight:600">Subject Property</div>
-        </div>
-        {% if below|length > 0 %}
-        <div class="chain-connector"></div>
-        <div class="chain-pos-label">Below</div>
-        {% for link in below %}
-        <div class="chain-link-box">
-          <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
-          <div class="chain-link-detail">
-            {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
-            {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
-            {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
-          </div>
-          {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
-        </div>
-        {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
+      </div>
+      <div class="rich-prog">
+        <div class="rich-prog-track"><div class="rich-prog-fill rich-prog-fill--{{ p._rail }}" style="width:{{ p._milestones_pct }}%"></div></div>
+      </div>
+      <div class="rich-chips">
+        {% for c in p._milestone_chips %}
+        <span class="rich-chip rich-chip--{{ c.state }}">{{ c.label }}</span>
         {% endfor %}
+      </div>
+      <div class="rich-footer">
+        <div class="rich-foot-left">
+          <div class="rich-meta"><span class="rich-meta-l">Days</span><span class="rich-meta-v">{{ p._bucket_days }}</span></div>
+          <div class="rich-meta">
+            <span class="rich-meta-l">Target</span>
+            {% if p._card_target_missing %}<span class="rich-meta-v rich-meta-v--muted">No target</span>
+            {% else %}<span class="rich-meta-v {{ 'rich-meta-v--warn' if p._card_target_warn else 'rich-meta-v--ok' }}">{{ p._card_target_days }} days</span>{% endif %}
+          </div>
+          <span class="rich-chain-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            {% if cl|length > 0 %}Chain ({{ cl|length }}){% else %}No chain{% endif %}
+          </span>
+        </div>
+        {% if p._card_neg_initials %}
+        <div class="rich-neg">
+          <span class="rich-neg-av rich-neg-av--{{ p._rail }}">{{ p._card_neg_initials }}</span>
+          {% if p._card_neg_name %}<span class="rich-neg-nm">{{ p._card_neg_name }}</span>{% endif %}
+        </div>
         {% endif %}
       </div>
     </div>
-    {% endif %}
+    <button type="button" class="chain-toggle" data-chain-id="{{ cid }}" onclick="event.stopPropagation();toggleChain('{{ cid }}')">
+      <span class="chain-lbl">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        Full chain {% if cl|length > 0 %}({{ cl|length }} link{{ 's' if cl|length != 1 }}){% else %}(no links){% endif %}
+      </span>
+      <span class="chain-chev" aria-hidden="true">&#9660;</span>
+    </button>
+    <div class="chain-panel" id="chainPanel-{{ cid }}">
+      {% if cl|length > 0 %}
+      <div class="chain-inner">
+        <div class="chain-diagram">
+          {% set above = cl|selectattr('chain_position','equalto','above')|list %}
+          {% set below = cl|selectattr('chain_position','equalto','below')|list %}
+          {% if above|length > 0 %}
+          <div class="chain-pos-label">Above</div>
+          {% for link in above %}
+          <div class="chain-link-box">
+            <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
+            <div class="chain-link-detail">
+              {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
+              {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
+              {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
+            </div>
+            {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
+          </div>
+          {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
+          {% endfor %}
+          <div class="chain-connector"></div>
+          {% endif %}
+          <div class="chain-link-box chain-anchor">
+            <div class="chain-link-addr">{{ p.address }}</div>
+            <div class="chain-link-detail" style="color:var(--navy);font-weight:600">Subject Property</div>
+          </div>
+          {% if below|length > 0 %}
+          <div class="chain-connector"></div>
+          <div class="chain-pos-label">Below</div>
+          {% for link in below %}
+          <div class="chain-link-box">
+            <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
+            <div class="chain-link-detail">
+              {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
+              {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
+              {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
+            </div>
+            {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
+          </div>
+          {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endmacro %}
 
-{% macro na_card(p, triggers) %}
-{% set primary = triggers[0] %}
-<div class="prop-card prop-card--{{ p.status }} prop-card-na" id="card-na-{{ p.id }}" data-prop-id="{{ p.id }}">
-  <div class="card-photo">
-    {% if p.image_url %}<img class="card-photo-bg" src="{{ p.image_url|safe }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="card-photo-bg" style="background:var(--navy-md);display:none"></div>{% else %}<div class="card-photo-bg" style="background:var(--navy-md)"></div>{% endif %}
-  </div>
-  <div class="pc-body">
-    <span class="pc-badge pc-badge--{{ p.status }}">{{ p.status_label|upper }}</span>
-    <div class="pc-addr">{{ p.address }}, {{ p.location }}</div>
-    <div class="pc-fee">{% if p._pipe_fee %}&pound;{{ "{:,.0f}".format(p._pipe_fee) }}{% else %}&mdash;{% endif %}</div>
-    <div class="na-badges">
-      {% for t in triggers %}
-      <span class="na-badge {{ t.severity }}">{{ t.trigger_name }} — {{ t.days_overdue }}d</span>
-      {% endfor %}
-    </div>
-    <div class="na-overdue">{% if primary.days_overdue > 0 %}{{ primary.days_overdue }} days overdue{% else %}Immediate{% endif %}</div>
-    <p class="na-action">{{ primary.suggested_action }}</p>
-    <a class="na-cta" href="{{ primary.quick_action.href }}" {% if primary.quick_action.href == '#' %}onclick="event.stopPropagation();return false;"{% else %}onclick="event.stopPropagation();"{% endif %}>{{ primary.quick_action.label }}</a>
-    <div class="pc-pills">
-      <div class="pc-pill"><span class="pc-pill-val">{{ p.progress }}%</span><span class="pc-pill-lbl">Progress</span></div>
-      <div class="pc-pill"><span class="pc-pill-val">{{ p.duration_days }}</span><span class="pc-pill-lbl">Days elapsed</span></div>
-      <div class="pc-pill"><span class="pc-pill-val">{{ p.target_days }}</span><span class="pc-pill-lbl">Day target</span></div>
-    </div>
-    <ul class="pc-checks">
-      {% for c in p.card_checks %}
-      <li class="{{ 'pc-check-done' if c.done else 'pc-check-pend' }}">{{ c.label }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% set cl = p.chain_links|default([]) %}
-  <button class="chain-toggle" data-chain-id="na-{{ p.id }}" onclick="event.stopPropagation();toggleChain('na-{{ p.id }}')">
-    <span class="chain-lbl">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-      Chain {% if cl|length > 0 %}({{ cl|length }} link{{ 's' if cl|length != 1 }}){% else %}(no links added){% endif %}
-    </span>
-    <span class="chain-chev" aria-hidden="true">&#9660;</span>
-  </button>
-  <div class="chain-panel" id="chainPanel-na-{{ p.id }}">
-    {% if cl|length > 0 %}
-    <div class="chain-inner">
-      <div class="chain-diagram">
-        {% set above = cl|selectattr('chain_position','equalto','above')|list %}
-        {% set below = cl|selectattr('chain_position','equalto','below')|list %}
-        {% if above|length > 0 %}
-        <div class="chain-pos-label">Above</div>
-        {% for link in above %}
-        <div class="chain-link-box">
-          <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
-          <div class="chain-link-detail">
-            {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
-            {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
-            {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
-          </div>
-          {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
-        </div>
-        {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
-        {% endfor %}
-        <div class="chain-connector"></div>
-        {% endif %}
-        <div class="chain-link-box chain-anchor">
-          <div class="chain-link-addr">{{ p.address }}</div>
-          <div class="chain-link-detail" style="color:var(--navy);font-weight:600">Subject Property</div>
-        </div>
-        {% if below|length > 0 %}
-        <div class="chain-connector"></div>
-        <div class="chain-pos-label">Below</div>
-        {% for link in below %}
-        <div class="chain-link-box">
-          <div class="chain-link-addr">{{ link.link_address or 'Unknown' }}</div>
-          <div class="chain-link-detail">
-            {% if link.estate_agent %}{{ link.estate_agent }}{% endif %}
-            {% if link.buyer_solicitor %} &bull; {{ link.buyer_solicitor }}{% endif %}
-            {% if link.seller_solicitor %} &bull; {{ link.seller_solicitor }}{% endif %}
-          </div>
-          {% if link.status %}<span class="chain-link-status chain-st-{{ link.status|lower|replace(' ','-') if link.status|lower in ['active','problem','complete'] else 'default' }}">{{ link.status }}</span>{% endif %}
-        </div>
-        {% if not loop.last %}<div class="chain-connector"></div>{% endif %}
-        {% endfor %}
-        {% endif %}
-      </div>
-    </div>
-    {% endif %}
-  </div>
-</div>
-{% endmacro %}
+{% macro prop_card(p) %}{{ rich_prop_card(p) }}{% endmacro %}
+{% macro na_card(p, triggers) %}{{ rich_prop_card(p, triggers) }}{% endmacro %}
 
 {% macro dash_leaderboard_panel(lb) %}
 <div id="tab-panel-{{ lb.tab_id }}" class="tab-panel">
@@ -909,9 +893,8 @@ a.portal-review-link:hover{color:var(--claret)}
   <div class="needs-attention-region" id="section-needs-attention">
     <button type="button" class="section-collapse-hdr" id="hdr-needs-attention" data-panel="panel-needs-attention">
       <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <span class="na-heading-dot" aria-hidden="true"></span>
         <h2>Needs attention</h2>
-        <span class="na-count-badge{% if nai|length > 0 %} na-count-badge--on{% endif %}">{{ nai|length }}</span>
+        <span class="na-count-badge">{{ nai|length }}</span>
       </span>
       <span class="hdr-chev" aria-hidden="true">&#9660;</span>
     </button>
@@ -1005,7 +988,7 @@ a.portal-review-link:hover{color:var(--claret)}
   <div class="pipe-inner">
     <div class="pipeline-header">
       <div>
-        <div class="pipeline-title">Pipeline Forecast</div>
+        <div class="pipeline-title">Pipeline forecast</div>
         <div class="pipeline-sub">{{ pipeline.subtitle }}</div>
       </div>
       <div class="ahead-badge{% if pipeline.badge_caution %} caution{% endif %}">{{ pipeline.badge_text }}</div>
@@ -1033,6 +1016,9 @@ a.portal-review-link:hover{color:var(--claret)}
           </div>
           {% endfor %}
         </div>
+        {% if pipeline.show_fee_chart_hint %}
+        <p class="pipe-hint">Milestone data will populate this chart as progression updates are recorded.</p>
+        {% endif %}
       </div>
       <div class="pipe-panel">
         <div class="pipe-panel-h">Sales progression funnel</div>
@@ -1046,10 +1032,13 @@ a.portal-review-link:hover{color:var(--claret)}
           </div>
           {% endfor %}
         </div>
+        {% if pipeline.show_funnel_hint %}
+        <p class="pipe-hint">Update milestones on each property to see progression here.</p>
+        {% endif %}
       </div>
     </div>
     <div class="pipe-forecast-row">
-      <div class="pipe-fc pipe-fc-sage">
+      <div class="pipe-fc pipe-fc-m1">
         <div class="pipe-fc-h">{{ pipeline.month_cards[0].title }}</div>
         <div class="pipe-fc-count">{{ pipeline.month_cards[0].count }} cases</div>
         <div class="pipe-fc-val">&pound;{{ "{:,.0f}".format(pipeline.month_cards[0].fee) }} pipeline fee</div>
@@ -2021,6 +2010,127 @@ def _field_populated(p, key):
     return True
 
 
+def _parse_iso_date(val):
+    if val is None:
+        return None
+    s = str(val).strip()
+    if not s or s in ("\u2014", "-"):
+        return None
+    if len(s) >= 10 and s[4] == "-" and s[7] == "-":
+        try:
+            return datetime.strptime(s[:10], "%Y-%m-%d").date()
+        except ValueError:
+            return None
+    return None
+
+
+_CARD_CHIP_DEFS = (
+    ("Welcome", ("welcome_emails_sent",)),
+    ("Forms", ("protocol_forms_returned", "seller_forms_returned")),
+    ("Searches", ("searches_ordered",)),
+    ("Survey", ("survey_instructed",)),
+    ("Enquiries", ("enquiries_raised",)),
+    ("Exchange", ("exchange_target",)),
+)
+
+
+def _enrich_property_card_display(p: dict, today: date, triggers: list | None):
+    """Attach display-only fields for rich dashboard cards (read-only merged data)."""
+    n_m = len(FORECAST_SCORE_WEIGHTS)
+    filled = sum(1 for k, _w in FORECAST_SCORE_WEIGHTS if _field_populated(p, k))
+    p["_milestones_filled"] = filled
+    p["_milestones_pct"] = int(round(100.0 * filled / n_m)) if n_m else 0
+
+    chips_raw = []
+    for label, keys in _CARD_CHIP_DEFS:
+        done = any(_field_populated(p, k) for k in keys)
+        chips_raw.append((label, done))
+    first_open = None
+    for i, (_lb, dn) in enumerate(chips_raw):
+        if not dn:
+            first_open = i
+            break
+    chips = []
+    for i, (label, dn) in enumerate(chips_raw):
+        if dn:
+            st = "done"
+        elif first_open is not None and i == first_open:
+            st = "current"
+        else:
+            st = "pending"
+        chips.append({"label": label, "state": st})
+    p["_milestone_chips"] = chips
+
+    if triggers:
+        p["_rail"] = "attention"
+        t0 = triggers[0] if triggers else None
+        p["_card_badge_text"] = (
+            (t0.get("trigger_name") or "").strip() if t0 else ""
+        ) or "Needs attention"
+    elif p.get("_is_exchanged") or p.get("status") == "exchanged":
+        p["_rail"] = "exchanged"
+        p["_card_badge_text"] = "Exchanged"
+    elif p.get("status") in ("stalled", "at-risk"):
+        p["_rail"] = "attention"
+        p["_card_badge_text"] = (
+            (p.get("alert") or "").strip()[:80]
+            if p.get("alert")
+            else (p.get("status_label") or "Needs attention").replace("_", " ")
+        )
+    elif p.get("status") == "on-track":
+        p["_rail"] = "on-track"
+        p["_card_badge_text"] = "On track"
+    else:
+        p["_rail"] = "default"
+        p["_card_badge_text"] = (p.get("status_label") or "Status").title()
+
+    sub_parts = []
+    pt = p.get("_property_type")
+    if pt and str(pt).strip() and str(pt).strip() != "\u2014":
+        sub_parts.append(str(pt).strip())
+    beds = p.get("_beds")
+    if beds is not None and str(beds).strip() != "":
+        try:
+            b = int(beds)
+            sub_parts.append(f"{b} bed{'s' if b != 1 else ''}")
+        except (TypeError, ValueError):
+            pass
+    od = _parse_iso_date(p.get("offer_date") or p.get("_date_agreed"))
+    if od:
+        day = str(od.day)
+        sub_parts.append(f"SSTC {day} {od.strftime('%b %Y')}")
+    if sub_parts:
+        p["_card_subtitle"] = " · ".join(sub_parts)
+    else:
+        p["_card_subtitle"] = ""
+
+    offer_d = _parse_iso_date(p.get("offer_date") or p.get("_date_agreed"))
+    comp_d = _parse_iso_date(p.get("completion_target"))
+    if offer_d and comp_d:
+        td = (comp_d - offer_d).days
+        p["_card_target_days"] = str(td)
+        p["_card_target_warn"] = td > 90
+        p["_card_target_missing"] = False
+    else:
+        p["_card_target_days"] = ""
+        p["_card_target_warn"] = False
+        p["_card_target_missing"] = True
+
+    initials = ""
+    nm = (p.get("_negotiator_name") or "").strip()
+    si = (p.get("_staff_initials") or "").strip()
+    if si and si != "\u2014":
+        initials = si.upper()[:4]
+    elif nm:
+        parts = nm.split()
+        if len(parts) >= 2:
+            initials = (parts[0][0] + parts[-1][0]).upper()
+        elif parts:
+            initials = parts[0][:2].upper()
+    p["_card_neg_initials"] = initials
+    p["_card_neg_name"] = nm if nm else ""
+
+
 def _pipeline_fee_gbp(p: dict) -> float:
     """Commission for pipeline £ totals: agreed_fee when set, else CRM fee (_fee)."""
     for key in ("agreed_fee", "_fee"):
@@ -2158,6 +2268,18 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         avg_days_active = 0
         on_track_pct = 0
 
+    total_pop = sum(
+        sum(1 for k, _w in FORECAST_SCORE_WEIGHTS if _field_populated(p, k))
+        for p in active
+    )
+    milestone_sparse = active_n > 0 and total_pop == 0
+
+    kpi_forecast_sub = (
+        "No milestones recorded yet"
+        if (n_30 == 0 and val_30 == 0 and milestone_sparse)
+        else f"{n_30} likely completion{'s' if n_30 != 1 else ''}"
+    )
+
     kpi_cards = [
         {
             "label": "Pipeline value",
@@ -2167,7 +2289,7 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         {
             "label": "30-day forecast",
             "value": _fmt_gbp_k(float(val_30)),
-            "sub": f"{n_30} likely completion{'s' if n_30 != 1 else ''}",
+            "sub": kpi_forecast_sub,
         },
         {
             "label": "Avg days active",
@@ -2209,45 +2331,50 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         _bucket_stats(band_rem),
     )
 
+    month_cards_empty = bh["count"] + bm["count"] + bl["count"] == 0
+    month_note_alt = "Properties will appear here as milestones are recorded."
     month_cards = [
         {
             "title": "Month 1 completion forecast",
             "count": bh["count"],
             "fee": bh["fee"],
-            "note": "Milestone score 70–100 (first fee column).",
+            "note": month_note_alt if month_cards_empty else "Milestone score 70–100 (first fee column).",
         },
         {
             "title": "Month 2 completion forecast",
             "count": bm["count"],
             "fee": bm["fee"],
-            "note": "Milestone score 45–69 (second fee column).",
+            "note": month_note_alt if month_cards_empty else "Milestone score 45–69 (second fee column).",
         },
         {
             "title": "Month 3 completion forecast",
             "count": bl["count"],
             "fee": bl["fee"],
             "note": (
-                "Milestone score 25–44 (third fee column). "
-                f"Remainder 0–24: {br['count']} case"
-                f"{'s' if br['count'] != 1 else ''}, £{br['fee']:,} pipeline fee — "
-                "fourth and fifth fee columns."
+                month_note_alt
+                if month_cards_empty
+                else (
+                    "Milestone score 25–44 (third fee column). "
+                    f"Remainder 0–24: {br['count']} case"
+                    f"{'s' if br['count'] != 1 else ''}, £{br['fee']:,} pipeline fee — "
+                    "fourth and fifth fee columns."
+                )
             ),
         },
     ]
 
     fee_chart_subtitle = (
-        f"Five months {fee_labels[0]}–{fee_labels[4]} {anchor.year} — "
-        "fees by weighted milestone score (section 2.5); first three columns navy, "
-        "remainder columns tinted."
+        f"{fee_labels[0]}–{fee_labels[4]} {anchor.year} — fees by milestone progress"
+    )
+
+    fee_primary_zero = active_n > 0 and sum(fee_totals[i] for i in range(3)) == 0
+
+    funnel_all_zero = active_n > 0 and all(
+        row["pct"] == 0 for row in funnel
     )
 
     subtitle = (
-        "Read-only view of live CRM plus progression milestones. Each case is scored "
-        "0–100 as the sum of brief weights for non-null fields (welcome 5, protocol/seller "
-        "forms 10 each, survey 10, searches ordered 10 / received 15, draft contract 10, "
-        "enquiries raised 15 / resolved 10, exchange 5). That score drives the fee columns "
-        "and completion forecast cards. Does not use completion_target for bucketing; does "
-        "not write to sales_pipeline or sales_progression."
+        "Projected completions and fee income based on milestone progress"
     )
 
     return {
@@ -2259,6 +2386,8 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         "month_cards": month_cards,
         "badge_text": badge_text,
         "badge_caution": badge_caution,
+        "show_fee_chart_hint": fee_primary_zero,
+        "show_funnel_hint": funnel_all_zero,
     }
 
 
@@ -2482,7 +2611,7 @@ def _build_live_dashboard_data():
             if border == "stalled-banner"
             else "#D4940A"
             if border == "amber-banner"
-            else "#4A7C6F"
+            else "#C5D93A"
         )
         return {
             "id": sid,
@@ -2544,6 +2673,16 @@ def _build_live_dashboard_data():
     pipeline = _build_pipeline_forecast(
         properties, today, needs_attention_count
     )
+
+    na_triggers_by_id = {}
+    for it in needs_attention_items:
+        pid = it["property"].get("id")
+        if pid is not None:
+            na_triggers_by_id[pid] = it["triggers"]
+    for p in properties:
+        _enrich_property_card_display(
+            p, today, na_triggers_by_id.get(p.get("id"))
+        )
 
     return properties, sections, stats, pipeline, needs_attention_items
 

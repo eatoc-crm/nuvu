@@ -582,6 +582,24 @@ a.portal-review-link:hover{color:var(--claret)}
 .note-edit-btn:hover{border-color:var(--navy);color:var(--navy)}
 .note-block-txt{font-size:.82rem;line-height:1.5;color:var(--txt);white-space:pre-wrap}
 .note-block-txt.empty{color:var(--txt-secondary)}
+.note-block-txt.nuvu-notes-card-host{min-height:0}
+.nuvu-notes-cards-stack{
+  display:flex;flex-direction:column;gap:8px;
+}
+.nuvu-note-card{
+  padding:12px 14px;border-bottom:1px dotted #E5E7EB;
+  border-radius:0;
+}
+.nuvu-note-card:last-child{border-bottom:none}
+.nuvu-note-card--with-body{background:#FEFCE8}
+.nuvu-note-card--header-only{background:#fff}
+.nuvu-note-card-hdr{
+  font-size:13px;font-weight:700;color:#1B3A5C;line-height:1.4;margin-bottom:0;
+}
+.nuvu-note-card--with-body .nuvu-note-card-hdr{margin-bottom:6px}
+.nuvu-note-card-body{
+  font-size:13px;font-weight:400;color:#333;line-height:1.45;white-space:pre-wrap;
+}
 .note-textarea{width:100%;min-height:60px;font-size:.82rem;font-family:inherit;line-height:1.5;border:1px solid var(--border);border-radius:4px;padding:8px 10px;resize:vertical;color:var(--txt)}
 .note-textarea:focus{outline:none;border-color:var(--navy)}
 .note-actions{display:flex;gap:6px;margin-top:6px}
@@ -1443,6 +1461,123 @@ a.portal-review-link:hover{color:var(--claret)}
     return "m-alert-green";
   }
 
+  function splitNotesByRuleLines(raw){
+    var s=(raw==null?"":String(raw)).replace(/^\uFEFF/,"").trim();
+    if(!s)return[];
+    var lines=s.split(/\r?\n/);
+    function isSepLine(line){
+      if(!line)return false;
+      var only=line.replace(/[\s\u2500]/g,"");
+      return only.length===0&&/[\u2500]{3,}/.test(line);
+    }
+    var ruleIdx=[];
+    for(var i=0;i<lines.length;i++){if(isSepLine(lines[i]))ruleIdx.push(i);}
+    if(!ruleIdx.length)return[s];
+    var parts=[];
+    var start=0;
+    for(var ri=0;ri<ruleIdx.length;ri++){
+      var sepAt=ruleIdx[ri];
+      var chunk=lines.slice(start,sepAt).join("\n").trim();
+      if(chunk)parts.push(chunk);
+      start=sepAt+1;
+    }
+    var tail=lines.slice(start).join("\n").trim();
+    if(tail)parts.push(tail);
+    return parts.filter(Boolean);
+  }
+
+  function isAltoImportBannerLine(line){
+    var t=(line||"").trim();
+    if(!t)return false;
+    if(!/Alto\s+Progression\s+Notes/i.test(t))return false;
+    if(!/\(\s*imported/i.test(t))return false;
+    return/[-=\u2013\u2014\u2500]{2,}/.test(t);
+  }
+
+  function stripAltoImportBanners(text){
+    var lines=(text||"").split(/\r?\n/);
+    var out=[];
+    for(var i=0;i<lines.length;i++){
+      if(isAltoImportBannerLine(lines[i]))continue;
+      out.push(lines[i]);
+    }
+    return out.join("\n").trim();
+  }
+
+  function parseNuvuNoteSegment(segment){
+    var s=stripAltoImportBanners((segment||"").replace(/^\uFEFF/,"").trim());
+    if(!s)return null;
+    var lines=s.split(/\r?\n/);
+    var line0=(lines[0]||"").trim();
+    var rest=lines.slice(1).join("\n").replace(/^\uFEFF/,"").trim();
+    var hdr=/^\[([^\]]+)\]\s*(.+?):\s*$/.exec(line0);
+    if(hdr){
+      return{date:(hdr[1]||"").trim(),author:(hdr[2]||"").trim(),body:rest};
+    }
+    var hdrLoose=/^\[([^\]]+)\]\s*(.+)$/.exec(line0);
+    if(hdrLoose){
+      return{
+        date:(hdrLoose[1]||"").trim(),
+        author:(hdrLoose[2]||"").trim(),
+        body:rest
+      };
+    }
+    return{date:"\u2014",author:"Note",body:s};
+  }
+
+  function renderNoteCards(notesString,mountEl){
+    if(!mountEl)return;
+    var trimmed=(notesString==null?"":String(notesString)).trim();
+    mountEl.className="note-block-txt nuvu-notes-card-host";
+    mountEl.innerHTML="";
+    if(!trimmed){
+      mountEl.classList.add("empty");
+      mountEl.textContent="No notes yet";
+      return;
+    }
+    mountEl.classList.remove("empty");
+    var segments=splitNotesByRuleLines(trimmed);
+    var items=[];
+    for(var si=0;si<segments.length;si++){
+      var meta=parseNuvuNoteSegment(segments[si]);
+      if(!meta)continue;
+      items.push(meta);
+    }
+    if(!items.length){
+      mountEl.classList.add("empty");
+      mountEl.textContent="No notes yet";
+      return;
+    }
+    items.reverse();
+    var stack=document.createElement("div");
+    stack.className="nuvu-notes-cards-stack";
+    for(var ii=0;ii<items.length;ii++){
+      (function(meta){
+        var bodyTxt=(meta.body!=null?String(meta.body):"").trim();
+        var hasBody=bodyTxt.length>0;
+        var art=document.createElement("article");
+        art.className="nuvu-note-card "+(hasBody?"nuvu-note-card--with-body":"nuvu-note-card--header-only");
+        var hdr=document.createElement("div");
+        hdr.className="nuvu-note-card-hdr";
+        var d=(meta.date||"").trim();
+        var a=(meta.author||"").trim();
+        if(d&&a)hdr.textContent=d+" - "+a;
+        else if(d)hdr.textContent=d;
+        else if(a)hdr.textContent=a;
+        else hdr.textContent="Note";
+        art.appendChild(hdr);
+        if(hasBody){
+          var bodyEl=document.createElement("div");
+          bodyEl.className="nuvu-note-card-body";
+          bodyEl.textContent=meta.body;
+          art.appendChild(bodyEl);
+        }
+        stack.appendChild(art);
+      })(items[ii]);
+    }
+    mountEl.appendChild(stack);
+  }
+
   /* ── open modal ───────────────────────────────────── */
   function openModal(id){
     var p=null;
@@ -1648,9 +1783,15 @@ a.portal-review-link:hover{color:var(--claret)}
       var n=noteFields[nf];
       var val=p[n.key]||"";
       var editBtn2=p._progression_id?'<button class="note-edit-btn" data-nkey="'+n.key+'" data-nidx="'+nf+'">Edit</button>':"";
+      var txtWrap;
+      if(n.key==="nuvu_notes"){
+        txtWrap='<div class="note-block-txt nuvu-notes-card-host" id="note-txt-'+nf+'"></div>';
+      }else{
+        txtWrap='<div class="note-block-txt'+(val?'':' empty')+'" id="note-txt-'+nf+'">'+(val||'No notes yet')+'</div>';
+      }
       ah+='<div class="note-block" id="note-blk-'+nf+'">'+
         '<div class="note-block-hdr"><span class="note-block-lbl">'+n.label+'</span>'+editBtn2+'</div>'+
-        '<div class="note-block-txt'+(val?'':' empty')+'" id="note-txt-'+nf+'">'+(val||'No notes yet')+'</div></div>';
+        txtWrap+'</div>';
     }
     if(p.activity&&p.activity.length){
       for(var a=0;a<p.activity.length;a++){
@@ -1658,6 +1799,8 @@ a.portal-review-link:hover{color:var(--claret)}
       }
     }
     document.getElementById("mActivityList").innerHTML=ah;
+    var nuvuHost=document.querySelector("#mActivityList .nuvu-notes-card-host");
+    if(nuvuHost){ renderNoteCards(p.nuvu_notes,nuvuHost); }
 
     /* note edit handlers */
     var noteBtns=document.querySelectorAll(".note-edit-btn");

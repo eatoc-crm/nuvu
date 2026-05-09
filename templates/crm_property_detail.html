@@ -388,6 +388,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
       {% set note_fields = [("notes","General notes"),("nuvu_notes","NUVU notes"),("buyer_solicitor_notes","Buyer solicitor notes"),("seller_solicitor_notes","Seller solicitor notes")] %}
       {% for key, label in note_fields %}
       {% if key == 'nuvu_notes' %}
+      {# NUVU notes card script expects IDs: d-nuvu-notes-raw-json, d-nuvu-notes-mount, d-nuvu-notes-fallback, d-nuvu-notes-sub, d-nuvu-toggle-all #}
       <div class="note-block note-block--nuvu" id="d-note-blk-{{ loop.index0 }}">
         <script type="application/json" id="d-nuvu-notes-raw-json">{{ (p.nuvu_notes or '')|tojson }}</script>
         <div class="note-block-hdr nuvu-notes-head">
@@ -457,12 +458,34 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
 
   function isSepLine(line) {
     var t = (line || "").replace(/\r/g, "").trim();
-    if (t.length < 3) return false;
+    if (t.length < 8) return false;
     for (var i = 0; i < t.length; i++) {
       var c = t.charCodeAt(i);
-      if (c !== 0x2500 && c !== 32 && c !== 9) return false;
+      if (
+        c !== 0x2500 &&
+        c !== 0x2014 &&
+        c !== 0x2013 &&
+        c !== 0x2012 &&
+        c !== 0x2010 &&
+        c !== 0x2212 &&
+        c !== 0x2D &&
+        c !== 0x3D &&
+        c !== 0x5F &&
+        c !== 32 &&
+        c !== 9
+      ) {
+        return false;
+      }
     }
     return true;
+  }
+
+  function rawHasNoteSeparators(text) {
+    var lines = (text || "").split(/\r?\n/);
+    for (var si = 0; si < lines.length; si++) {
+      if (isSepLine(lines[si])) return true;
+    }
+    return false;
   }
 
   function splitIntoChunks(text) {
@@ -483,11 +506,24 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     var t = (chunk || "").replace(/\r/g, "").trim();
     if (!t) return null;
     var lines = t.split("\n");
-    var m = lines[0].match(/^\[([^\]]+)\]\s*(.+):\s*$/);
-    if (!m) return null;
-    var body = lines.slice(1).join("\n").trim();
-    if (!body) return null;
-    return { bracket: m[1], author: m[2].trim(), body: body };
+    var head = lines[0];
+    var mDatedAuthor = head.match(/^\[([^\]]+)\]\s*(.+):\s*$/);
+    if (mDatedAuthor) {
+      var bodyA = lines.slice(1).join("\n").trim();
+      if (!bodyA) return null;
+      return { bracket: mDatedAuthor[1], author: mDatedAuthor[2].trim(), body: bodyA };
+    }
+    var mBracket = head.match(/^\[([^\]]+)\]\s*(.*)$/);
+    if (!mBracket) return null;
+    var bracket = mBracket[1];
+    var tail = (mBracket[2] || "").trim();
+    var bodyB = tail;
+    if (lines.length > 1) {
+      bodyB = (tail ? tail + "\n" : "") + lines.slice(1).join("\n");
+    }
+    bodyB = (bodyB || "").trim();
+    if (!bodyB) return null;
+    return { bracket: bracket, author: "NUVU", body: bodyB };
   }
 
   function displayDate(bracket) {
@@ -502,7 +538,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     return one.slice(0, 80) + "\u2026";
   }
 
-  var hasBoxSep = raw.indexOf("\u2500") !== -1;
+  var hasBoxSep = rawHasNoteSeparators(raw);
   if (!hasBoxSep) {
     mount.style.display = "none";
     fallback.style.display = "block";
@@ -521,7 +557,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
 
   if (subEl) {
     var n = notes.length;
-    subEl.textContent = n === 1 ? "1 note" : (n + " notes");
+    if (n) subEl.textContent = n === 1 ? "1 note" : (n + " notes");
+    else if (orphans.length) subEl.textContent = orphans.length === 1 ? "1 extra section" : (orphans.length + " extra sections");
+    else subEl.textContent = "";
   }
 
   if (notes.length === 0 && orphans.length === 0) {
@@ -605,6 +643,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     })(notes[j], j);
   }
 
+  mount.style.display = "";
   mount.appendChild(wrap);
   fallback.style.display = "none";
 

@@ -859,7 +859,7 @@ def _enrich_crm_detail_view(prop, today):
         cl["_last_reply_display"] = _format_detail_dt(
             cl.get("last_chain_solicitor_reply_at")
         )
-    pt = p.get("portal_ta6_ta10")
+    pt = prop.get("portal_ta6_ta10")
     if isinstance(pt, dict):
         if pt.get("link_sent_at"):
             pt["link_sent_at_display"] = _format_detail_dt(pt["link_sent_at"])

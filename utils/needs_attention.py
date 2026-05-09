@@ -160,7 +160,7 @@ def get_needs_attention(
             for item in chain_unresp.get(prog_sid, []):
                 firm = (item.get("firm") or "Chain solicitor").strip()
                 crm_id = str(p.get("id") or "").strip()
-                href = f"/crm/property/{crm_id}" if crm_id else "#"
+                href = f"/#property-{crm_id}" if crm_id else "#"
                 _append_trigger(
                     triggers,
                     trigger_id="chain_solicitor_unresponsive",
@@ -173,7 +173,7 @@ def get_needs_attention(
                     ),
                     quick_action={
                         "label": "Open property",
-                        "kind": "open_crm_property",
+                        "kind": "open_dashboard_property",
                         "href": href,
                     },
                 )

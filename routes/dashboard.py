@@ -2352,7 +2352,8 @@ a.portal-review-link:hover{color:var(--claret)}
   ];
   function syncDashTab(){
     var raw = (location.hash || "").replace(/^#/,"").toLowerCase() || "properties";
-    if (DASH_TABS.indexOf(raw) < 0) raw = "properties";
+    if (/^property-/.test(raw)) raw = "properties";
+    else if (DASH_TABS.indexOf(raw) < 0) raw = "properties";
     for (var ti = 0; ti < DASH_TABS.length; ti++) {
       var id = DASH_TABS[ti];
       var panel = document.getElementById("tab-panel-" + id);
@@ -2367,6 +2368,17 @@ a.portal-review-link:hover{color:var(--claret)}
       }
     }
   }
+  function openModalFromHashIfPresent(){
+    var rawFull = (location.hash || "").replace(/^#/,"");
+    var pm = /^property-(.+)$/i.exec(rawFull);
+    if (!pm) return;
+    var pid = decodeURIComponent(pm[1].trim());
+    if (pid) openModal(pid);
+  }
+  function onDashboardHashChange(){
+    syncDashTab();
+    openModalFromHashIfPresent();
+  }
   document.querySelectorAll(".dash-tab").forEach(function(b){
     b.addEventListener("click", function(ev){
       ev.preventDefault();
@@ -2376,8 +2388,8 @@ a.portal-review-link:hover{color:var(--claret)}
       else location.hash = "#" + id;
     });
   });
-  window.addEventListener("hashchange", syncDashTab);
-  syncDashTab();
+  window.addEventListener("hashchange", onDashboardHashChange);
+  onDashboardHashChange();
 
   /* ── Chase milestone confirmations ───────────────────── */
   function showDashToast(msg){

@@ -599,7 +599,7 @@ a.portal-review-link:hover{color:var(--claret)}
   padding:16px 4px 12px;
 }
 .section-collapse-hdr h2{
-  font-size:16px;font-weight:500;color:var(--txt);margin:0;
+  font-size:20px;font-weight:700;color:#1B3A5C;margin:0;
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
 }
 .na-heading-dot{

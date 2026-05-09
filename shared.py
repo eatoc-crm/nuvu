@@ -5,8 +5,11 @@ import resend
 # Centralised config used by multiple blueprints.
 resend.api_key = os.environ.get("RESEND_API_KEY", "")
 
-# Chase Engine (Phase A): set CHASE_ENGINE_ENABLED=true to send outbound chases.
+# Chase Engine (Phase A + C): set CHASE_ENGINE_ENABLED=true to send outbound chases.
 # Default false = cadence + inbound classification run, but only dry-run logs for sends.
+#
+# Track 6 — chain solicitor sequence: set CHAIN_CHASE_ENABLED=true on Railway to send
+# (default false = cadence evaluates chain_links but Resend sends are skipped).
 
 # Shared Supabase client (initialised inside db_supabase.py).
 from db_supabase import supabase as sb  # noqa: E402

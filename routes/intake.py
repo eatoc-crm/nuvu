@@ -224,6 +224,8 @@ def api_update():
     try:
         from routes.chase_engine import process_inbound_email
 
+        # Track 6 (chain solicitor): reinstate / no-contact keywords and solicitor
+        # reply matching run inside process_inbound_email → routes.chain_chase.
         process_inbound_email(str(email_id))
     except Exception:
         pass

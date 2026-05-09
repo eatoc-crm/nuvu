@@ -23,8 +23,10 @@ def start_chase_cadence_scheduler() -> None:
         while True:
             try:
                 from routes.chase_engine import run_cadence_check
+                from routes.chain_chase import run_chain_cadence_check
 
                 run_cadence_check()
+                run_chain_cadence_check()
             except Exception as e:
                 print(f"[chase_scheduler] run_cadence_check error: {e}")
             time.sleep(900)

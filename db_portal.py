@@ -640,6 +640,9 @@ def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
                 "progress_pct": None,
                 "phase": "not_started",
                 "link_sent": False,
+                "link_sent_at": None,
+                "submitted_at": None,
+                "session_status": None,
             }
         row = ta6_ta10_by_pipe.get(str(pipe_id))
         if not row:
@@ -649,9 +652,14 @@ def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
                 "progress_pct": None,
                 "phase": "not_started",
                 "link_sent": False,
+                "link_sent_at": None,
+                "submitted_at": None,
+                "session_status": None,
             }
         sid = str(row.get("id") or "")
         st = (row.get("status") or "draft").lower()
+        lsa = row.get("link_sent_at")
+        suba = row.get("submitted_at")
         if st == "submitted":
             return {
                 "status_line": "Submitted",
@@ -659,6 +667,9 @@ def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
                 "progress_pct": 100,
                 "phase": "submitted",
                 "link_sent": bool(row.get("link_sent_at")),
+                "link_sent_at": lsa,
+                "submitted_at": suba,
+                "session_status": st,
             }
         done = count_completed_form_responses(sid)
         tot = max(1, total_combo)
@@ -671,6 +682,9 @@ def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
                 "progress_pct": 100,
                 "phase": "ready_to_submit",
                 "link_sent": link_sent,
+                "link_sent_at": lsa,
+                "submitted_at": suba,
+                "session_status": st,
             }
         if pct is not None:
             return {
@@ -679,6 +693,9 @@ def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
                 "progress_pct": pct,
                 "phase": "in_progress",
                 "link_sent": link_sent,
+                "link_sent_at": lsa,
+                "submitted_at": suba,
+                "session_status": st,
             }
         return {
             "status_line": "In progress",
@@ -686,6 +703,9 @@ def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
             "progress_pct": pct,
             "phase": "in_progress",
             "link_sent": link_sent,
+            "link_sent_at": lsa,
+            "submitted_at": suba,
+            "session_status": st,
         }
 
     for p in properties:

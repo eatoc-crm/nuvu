@@ -24,15 +24,21 @@ ALLOWED_PATCH_FIELDS = {
     "welcome_emails_sent",
     "searches_ordered",
     "searches_received",
+    "search_fees_confirmed",
     "survey_instructed",
     "mortgage_offered",
     "draft_contract_sent",
+    "draft_contract_issued",
     "enquiries_raised",
     "enquiries_answered",
+    "exchange_target_date",
+    "report_on_title",
     "exchange_date",
     "completion_date",
     "protocol_forms_returned",
     "seller_forms_returned",
+    "buyer_solicitor_email",
+    "seller_solicitor_email",
     "notes",
     "nuvu_notes",
     "buyer_solicitor_notes",
@@ -83,6 +89,30 @@ def patch_progression(prog_id):
             ),
             409,
         )
+
+    try:
+        from routes.chain_chase import (
+            chain_inform_milestone_field,
+            check_reinstate_keywords_on_note_text,
+            notify_confirmed_chain_solicitors_milestone,
+        )
+
+        if "nuvu_notes" in updates:
+            check_reinstate_keywords_on_note_text(
+                prog_id, str(updates.get("nuvu_notes") or "")
+            )
+        for k, v in updates.items():
+            if v and chain_inform_milestone_field(k):
+                notify_confirmed_chain_solicitors_milestone(prog_id, k)
+    except Exception as ex:
+        print(f"[progression] chain chase hooks after PATCH failed: {ex}")
+
+    try:
+        from routes.chase_engine import on_sales_progression_patch
+
+        on_sales_progression_patch(prog_id, list(updates.keys()))
+    except Exception as ex:
+        print(f"[progression] chase engine Phase B hook after PATCH failed: {ex}")
 
     return jsonify({"ok": True, "updated": list(updates.keys())})
 

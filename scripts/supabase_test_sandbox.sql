@@ -187,7 +187,7 @@ VALUES
     (CURRENT_TIMESTAMP - interval '8 days'),
     (CURRENT_TIMESTAMP - interval '6 days'),
     (CURRENT_TIMESTAMP - interval '6 days'),
-    (CURRENT_TIMESTAMP - interval '2 days'),
+    (CURRENT_TIMESTAMP - interval '4 days'),
     NULL,
     NULL,
     NULL,

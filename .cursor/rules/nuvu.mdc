@@ -22,7 +22,7 @@ Before making any changes, read `ARCHITECTURE.md` in the project root. It contai
 ### Architecture
 
 - `app.py` is the Flask entry point. It registers Blueprints only. Do not add routes or logic here.
-- All routes live in `routes/` as Flask Blueprints: `auth.py`, `intake.py`, `progression.py`, `crm.py`, `dashboard.py`, `property_api.py`, `chase_engine.py`
+- All routes live in `routes/` as Flask Blueprints: `auth.py`, `intake.py`, `progression.py`, `crm.py`, `dashboard.py`, `property_api.py`, `chase_engine.py`, `chain_chase.py`
 - Shared config (Supabase client, Resend key, constants) lives in `shared.py`
 - Never import from `app.py` in route modules. Import from `shared.py` or sibling route modules.
 
@@ -31,6 +31,10 @@ Before making any changes, read `ARCHITECTURE.md` in the project root. It contai
 - NUVU never talks directly to Alto, Street, Reapit, or any CRM
 - All external data enters via `/api/intake` in a standardised format
 - EATOC-specific logic belongs in the EATOC codebase, not here
+
+### sales_progression milestones (Chase Phase B)
+
+Patchable / overlay columns used by Phase B include: `search_fees_confirmed`, `searches_ordered`, `searches_received`, `draft_contract_issued`, `seller_forms_returned`, `buyer_solicitor_email`, `seller_solicitor_email` (see `scripts/supabase_chase_phase_b_columns.sql`).
 
 ### Data Rules
 
@@ -69,10 +73,17 @@ Before making any changes, read `ARCHITECTURE.md` in the project root. It contai
 - Templates: `templates/`
 - Database helpers: `database.py`, `db_supabase.py`
 
+### sales_progression — Phase C milestones
+
+- `exchange_target_date` (DATE): NUVU-stated target exchange; optional migration `scripts/supabase_chase_phase_c_columns.sql`.
+- `report_on_title` (timestamptz): buyer’s solicitor confirmed report sent.
+- Phase C briefs may say “enquiries sent”; SSOT column name is **`enquiries_raised`** (already on the table).
+
 ## Environment Variables (Railway)
 
 - `WELCOME_ENGINE_ENABLED` — kill switch for welcome emails (must be `true` to send)
-- `CHASE_ENGINE_ENABLED` — kill switch for Phase A chase outbound sends (default false; cadence still runs, dry-run logs only)
+- `CHASE_ENGINE_ENABLED` — kill switch for chase engine outbound sends (Phases A + B + C; default false; cadence still runs, dry-run logs only)
+- `CHAIN_CHASE_ENABLED` — kill switch for Track 6 chain solicitor emails (default false; cadence still runs, dry-run logs only)
 - `CHASE_TEAM_EMAIL` — optional negotiator inbox for Day 4 chase flags and send-failure alerts
 - `CHASE_SCHEDULER_DISABLED` — set `true` to skip starting the 15-minute cadence thread
 - `NUVU_API_KEY` — authenticates inbound API calls from CRMs

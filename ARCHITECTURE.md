@@ -106,7 +106,8 @@ nuvu-live/
 │   ├── property_api.py       # Property detail API
 │   ├── crm.py                # CRM views, helpers, constants
 │   ├── progression.py        # Milestone updates + welcome engine
-│   ├── chase_engine.py       # Phase A chase cadence, inbound classification, confirmations API
+│   ├── chase_engine.py       # Phases A + B + C chase cadence, inbound classification, confirmations API
+│   ├── chain_chase.py        # Track 6 — chain solicitor outreach, reinstatement, inform/request
 │   └── intake.py             # Inbound CRM API
 ├── connectors/               # CRM connectors
 ├── templates/                # HTML templates
@@ -114,7 +115,9 @@ nuvu-live/
 │   ├── chase_templates.py    # Chase copy (from progression-engine-spec.md)
 │   └── chase_scheduler.py  # 15-minute cadence thread
 ├── scripts/
-│   └── supabase_chase_engine_tables.sql  # chase_messages, chase_confirmations, preferred_surveyors
+│   ├── supabase_chase_engine_tables.sql  # chase_messages, chase_confirmations, preferred_surveyors
+│   ├── supabase_chase_phase_b_columns.sql  # Phase B progression columns + chase_messages.chase_date + LA seed
+│   └── supabase_chain_chase_columns.sql  # chain_links Track 6 columns + chase_messages.chain_link_id
 ├── email_engine.py           # Email sending via Resend
 ├── email_parser.py           # Inbound email parsing
 ├── completion_engine.py      # Completion logic
@@ -125,12 +128,30 @@ nuvu-live/
 
 ---
 
-## Chase Engine (Phase A)
+## Chase Engine (Phases A, B, C)
 
 - **Kill switch:** `CHASE_ENGINE_ENABLED` — default false. When false, the 15-minute cadence still runs and logs what it would send; outbound Resend sends are skipped. Inbound classification still creates `chase_confirmations` rows for staff review.
 - **Schema:** Run `scripts/supabase_chase_engine_tables.sql` in Supabase. `chase_messages.property_id` and `chase_confirmations.property_id` reference **`sales_progression.id`** (same as `inbound_emails.property_id`).
+- **Phase B schema:** Run `scripts/supabase_chase_phase_b_columns.sql` — adds `search_fees_confirmed`, `searches_ordered`, `searches_received`, `draft_contract_issued`, `seller_forms_returned` (if missing), `buyer_solicitor_email`, `seller_solicitor_email`, optional `chase_messages.chase_date`, and seeds `local_authority_search_times` default row (`default`, 15 days) when that table exists.
+- **Phase B behaviour:** Stages 4–6 (buyer search-fee awareness; seller’s solicitor draft contract; buyer’s solicitor searches ordered / results). Day-0 sends fire on milestone confirm (`/api/chase/confirmations/.../confirm`) and when staff PATCHes the same columns via `/api/progression`. Cadence follow-ups run in the same 15-minute sweep as Phase A. Duplicate guard: `(property_id, chase_stage, chase_day)` on `chase_messages` with `chain_link_id` null for property-level chases.
 - **Negotiator flags:** Day 4 “flag to team” emails use `CHASE_TEAM_EMAIL` when set; otherwise the first address in `NUVU_ALLOWED_EMAILS`.
 - **Scheduler:** Set `CHASE_SCHEDULER_DISABLED=true` to prevent the background thread (e.g. local tests).
+
+## Chase Engine (Phase C — Stages 7 & 8)
+
+- **SSOT alignment:** `docs/progression-engine-spec.md` wins on naming. External Phase C briefs may say “enquiries sent”; in code and schema that milestone is **`enquiries_raised`** (already on `sales_progression`).
+- **New columns:** Run `scripts/supabase_chase_phase_c_columns.sql` — adds `exchange_target_date` (DATE) and `report_on_title` (timestamptz). PATCH overlay list in `db_supabase.py` includes both.
+- **Stage 7:** Fires only when **both** `searches_received` and `survey_instructed` are set. Sub-stage 7a chases the buyer’s solicitor until `enquiries_raised`; 7b chases the seller’s solicitor until `enquiries_answered`. Compound day-0: when staff confirms either `searches_received` or `survey_instructed` via `chase_confirmations`, the engine immediately sends 7a day 0 if the other milestone is already set (cadence also covers this).
+- **Report on title:** After `enquiries_answered`, a short cadence to the buyer’s solicitor until `report_on_title`.
+- **Stage 8 (exchange target):** Triggered when `enquiries_raised` is set; runs **in parallel** with 7b. NUVU **states** the target exchange date (does not ask solicitors for it). Target resolution: manual `exchange_target_date`, else `est_completion` / `completion_date` minus 14 calendar days if present on pipeline/progression, else `offer_accepted` + **50 Mon–Fri working days**. First resolved target is persisted when missing. Solicitor emails: `sales_pipeline.buyers_solicitor_email` / `vendors_solicitor_email` when present.
+- **After target date:** If the target date is in the past and the property is not exchanged, Stage 8 sends stop; Needs Attention surfaces **“Exchange target date passed — negotiator to review.”** No writes to `sales_pipeline` for exchanged status.
+
+## Chain chase (Track 6)
+
+- **Kill switch:** `CHAIN_CHASE_ENABLED` — default false. When false, the 15-minute cadence still evaluates chain links and logs dry-run sends (no Resend). Independent of `CHASE_ENGINE_ENABLED` for Track 6 outbound.
+- **Schema:** Run `scripts/supabase_chain_chase_columns.sql`. Adds per–chain-link timestamps and `solicitor_status` / `solicitor_email` on `chain_links`, plus nullable `chase_messages.chain_link_id` and partial unique indexes so multiple chain solicitors on one subject property do not collide on duplicate detection. Track 5’s boolean `solicitor_details_requested` (chain agent email) is unchanged; Track 6 cadence anchors use `chain_solicitor_intro_sent_at` / `chain_solicitor_first_email_at`.
+- **Triggers:** Phase 1 when `solicitor_email` (or an email embedded in buyer/seller solicitor text) is present and intro not yet sent; nudges Day 3 / 6; Day 9 negotiator flag in `nuvu_notes` + `solicitor_status = unresponsive`; 48h later a reinstate reminder note; keywords `reinstate` / `no contact` in NUVU Notes or inbound Ch3 body; replies from the solicitor email set `confirmed` and start inform + Week 4/8 request cadence. Milestone PATCH / chase confirmation fires **inform** emails to confirmed chain solicitors.
+- **Needs Attention:** `chain_solicitor_unresponsive` cards when any link on the subject property is unresponsive.
 
 ---
 

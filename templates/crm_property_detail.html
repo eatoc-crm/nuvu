@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ p.address }} — NUVU CRM</title>
+<link rel="icon" href="/static/logo.png">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1B3A5C;
+  --coral:#E85D3A;
+  --sage:#4A7C6F;
+  --off-white:#FAFAFA;
+  --white:#FFFFFF;
+  --border:#E5E7EB;
+  --txt:#1A1A1A;
+  --txt-secondary:#6B7280;
+  --amber:#D97706;
+  --amber-bg:#FFFBEB;
+  --blue:#2563EB;
+  --radius:4px;
+  --t:.2s ease;
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);color:var(--txt);min-height:100vh;line-height:1.45}
+
+.crm-d-toolbar{background:var(--navy);padding:14px 24px;display:flex;align-items:center}
+.crm-d-back{
+  color:var(--coral);font-size:.88rem;font-weight:600;text-decoration:none;
+  letter-spacing:-0.01em;transition:opacity var(--t);
+}
+.crm-d-back:hover{opacity:.85}
+
+.crm-d-wrap{max-width:960px;margin:0 auto;padding:20px 20px 48px}
+
+.crm-d-header{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px 22px;margin-bottom:18px;
+}
+.crm-d-header h1{
+  font-size:1.35rem;font-weight:700;color:var(--navy);letter-spacing:-0.02em;margin-bottom:8px;
+}
+.crm-d-meta{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-size:.85rem;color:var(--txt-secondary)}
+.crm-d-chip{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  padding:4px 10px;border-radius:var(--radius);color:#fff;
+}
+.chip-stalled{background:#B91C1C}
+.chip-at-risk{background:var(--amber)}
+.chip-on-track{background:var(--sage)}
+.chip-exchanged{background:var(--navy)}
+
+.crm-d-fee{font-weight:700;color:var(--navy)}
+.crm-d-loc{font-size:.82rem;color:var(--txt-secondary)}
+
+.crm-d-prog{margin-bottom:20px}
+.crm-d-prog-track{height:8px;background:#E8ECF1;border-radius:var(--radius);overflow:hidden}
+.crm-d-prog-fill{height:100%;border-radius:var(--radius)}
+.crm-d-prog-fill.clr-stalled{background:#DC2626}
+.crm-d-prog-fill.clr-at-risk{background:var(--amber)}
+.crm-d-prog-fill.clr-on-track{background:var(--sage)}
+.crm-d-prog-lbl{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--txt-secondary);margin-top:6px}
+
+.crm-d-alert,.crm-d-next{
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;font-size:.88rem;border:1px solid var(--border);
+}
+.crm-d-alert{border-left:4px solid var(--coral)}
+.crm-d-alert--risk{border-left-color:var(--amber)}
+.crm-d-alert--ok{border-left-color:var(--sage)}
+.crm-d-next{background:var(--white)}
+.crm-d-next-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--sage);margin-bottom:4px}
+
+.crm-d-sec{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:16px;
+}
+.crm-d-sec-h{
+  font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+  margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);color:var(--navy);
+}
+
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}
+.det-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--off-white);font-size:.86rem}
+.det-row:last-child{border-bottom:none}
+.det-l{color:var(--txt-secondary);font-size:11px;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.det-v{font-weight:600;text-align:right;color:var(--txt)}
+
+.party-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.party-card{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;background:var(--off-white)}
+.party-card h4{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--txt-secondary);margin-bottom:6px;font-weight:600}
+.party-card p{font-size:.84rem;margin:2px 0;word-break:break-word}
+
+.tl{position:relative;padding-left:22px}
+.tl::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--border)}
+.tl-row{position:relative;padding:10px 0 10px 8px;border-bottom:1px solid var(--off-white);display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.tl-row:last-child{border-bottom:none}
+.tl-dot{
+  position:absolute;left:-16px;top:14px;width:12px;height:12px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--border);background:var(--white);
+}
+.tl-dot--sage{background:var(--sage);border-color:var(--sage)}
+.tl-dot--grey{background:#E5E7EB;border-color:#CBD5E1}
+.tl-dot--coral{background:var(--coral);border-color:var(--coral)}
+.tl-lb{font-weight:600;font-size:.88rem;flex:1;min-width:140px}
+.tl-date{font-size:.82rem;color:var(--txt-secondary);white-space:nowrap}
+.ms-edit-btn,.note-edit-btn{
+  background:none;border:1px solid var(--border);border-radius:var(--radius);padding:3px 10px;font-size:11px;color:var(--txt-secondary);cursor:pointer;
+}
+.ms-edit-btn:hover,.note-edit-btn:hover{border-color:var(--coral);color:var(--coral)}
+
+.feed-row{
+  border-bottom:1px solid var(--off-white);padding:12px 0;font-size:.84rem;
+}
+.feed-row:last-child{border-bottom:none}
+.feed-meta{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:6px;color:var(--txt-secondary);font-size:.8rem}
+.badge{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  padding:3px 8px;border-radius:var(--radius);
+}
+.badge-buyer{background:#EFF6FF;color:#1D4ED8}
+.badge-seller{background:#FDF2F8;color:#9D174D}
+.badge-seller-sol{background:#F5F3FF;color:#5B21B6}
+.badge-buyer-sol{background:#ECFDF5;color:var(--sage)}
+.badge-chain{background:var(--navy);color:#fff}
+.badge-team{background:var(--border);color:var(--txt)}
+.badge-reply-yes{background:#ECFDF5;color:var(--sage)}
+.badge-reply-wait{background:#F3F4F6;color:var(--txt-secondary)}
+.badge-dry{background:#FEF3C7;color:#92400E}
+.badge-pend{border:1px solid #FCD34D;color:#92400E;background:var(--amber-bg)}
+.badge-conf{background:#ECFDF5;color:var(--sage)}
+.badge-dismiss{background:#F3F4F6;color:var(--txt-secondary)}
+.badge-ns{background:#F3F4F6;color:var(--txt-secondary)}
+.badge-cont{background:#EFF6FF;color:var(--blue)}
+.badge-confirmed{background:#ECFDF5;color:var(--sage)}
+.badge-unresp{background:#FEF2F2;color:var(--coral)}
+
+.cf-pending{border-left:4px solid var(--amber);padding-left:12px;margin-left:-4px}
+
+.note-block{background:var(--off-white);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px}
+.note-block-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.note-block-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--txt-secondary);font-weight:600}
+.note-block-txt{font-size:.84rem;line-height:1.5;white-space:pre-wrap}
+.note-block-txt.empty{color:var(--txt-secondary);font-style:italic}
+.note-textarea{width:100%;min-height:60px;font-size:.84rem;font-family:inherit;line-height:1.5;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;resize:vertical}
+.note-actions{display:flex;gap:8px;margin-top:8px}
+.note-save-btn{background:var(--navy);color:#fff;border:none;border-radius:var(--radius);padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer}
+.note-cancel-btn{background:var(--off-white);color:var(--txt-secondary);border:1px solid var(--border);border-radius:var(--radius);padding:6px 14px;font-size:.8rem;cursor:pointer}
+.ms-save-btn{background:var(--sage);color:#fff;border:none;border-radius:var(--radius);padding:4px 10px;font-size:11px;cursor:pointer}
+.ms-cancel-btn{background:var(--off-white);border:1px solid var(--border);border-radius:var(--radius);padding:4px 10px;font-size:11px;cursor:pointer}
+.ms-edit-form{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.ms-edit-form input[type=date]{font-size:.8rem;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius)}
+
+.crm-send-ta610{
+  font-size:.85rem;font-weight:600;padding:10px 16px;border-radius:var(--radius);border:1px solid var(--navy);
+  background:var(--white);color:var(--navy);cursor:pointer;margin-top:8px;
+}
+.crm-send-ta610:hover:not([disabled]){background:var(--navy);color:var(--white)}
+.crm-send-ta610[disabled]{cursor:default;border-color:#BBF7D0;background:#F0FDF4;color:var(--sage)}
+#crmToast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;
+  max-width:min(400px,calc(100% - 32px));background:var(--navy);color:#fff;
+  padding:12px 18px;border-radius:var(--radius);font-size:.85rem;display:none;box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+.muted{color:var(--txt-secondary);font-size:.82rem}
+.empty-sec{padding:12px 0;color:var(--txt-secondary);font-size:.86rem}
+
+@media(max-width:700px){
+  .det-grid{grid-template-columns:1fr}
+  .crm-d-wrap{padding:14px 14px 40px}
+}
+</style>
+</head>
+<body>
+
+<header class="crm-d-toolbar">
+  <a class="crm-d-back" href="/crm">&larr; Back to properties</a>
+</header>
+
+<div class="crm-d-wrap">
+
+  <div class="crm-d-header">
+    <h1>{{ p.address }}</h1>
+    <div class="crm-d-meta">
+      <span class="crm-d-chip chip-{{ p.status }}">{{ p.status_label }}</span>
+      {% if p.agreed_fee is not none %}
+      <span class="crm-d-fee">Agreed fee &pound;{{ "{:,.2f}".format(p.agreed_fee) }}</span>
+      {% elif p._fee %}
+      <span class="crm-d-fee">Fee &pound;{{ "{:,.2f}".format(p._fee) }}</span>
+      {% endif %}
+    </div>
+    {% if p.location or p._property_type %}
+    <p class="crm-d-loc" style="margin-top:8px">
+      {{ p.location or '' }}{% if p.location and p._property_type and p._property_type != '—' %}, {% endif %}
+      {% if p._property_type and p._property_type != '—' %}{{ p._property_type }}{% endif %}
+      {% if p._beds %} · {{ p._beds }} bed{% endif %}{% if p._baths %} · {{ p._baths }} bath{% endif %}
+    </p>
+    {% endif %}
+    {% if p.price %}
+    <p class="crm-d-fee" style="margin-top:6px;font-size:1.05rem">&pound;{{ "{:,.0f}".format(p.price) }}</p>
+    {% endif %}
+  </div>
+
+  <div class="crm-d-prog">
+    <div class="crm-d-prog-track"><div class="crm-d-prog-fill clr-{{ p.status }}" style="width:{{ p.progress }}%"></div></div>
+    <div class="crm-d-prog-lbl"><span>Offer accepted</span><span>{{ p.progress }}%</span><span>Completion</span></div>
+  </div>
+
+  {% if p.alert %}
+  <div class="crm-d-alert {% if p.status == 'stalled' %}{% elif p.status == 'at-risk' %}crm-d-alert--risk{% else %}crm-d-alert--ok{% endif %}">{{ p.alert }}</div>
+  {% endif %}
+
+  <div class="crm-d-next">
+    <div class="crm-d-next-lbl">Next action</div>
+    <div>{{ p.next_action }}</div>
+  </div>
+
+  <section class="crm-d-sec" aria-labelledby="ov-h">
+    <h2 class="crm-d-sec-h" id="ov-h">Property overview</h2>
+    <div class="det-grid">
+      <div class="det-row"><span class="det-l">Address</span><span class="det-v">{{ p.address }}</span></div>
+      <div class="det-row"><span class="det-l">Price</span><span class="det-v">{% if p.price %}&pound;{{ "{:,.0f}".format(p.price) }}{% else %}—{% endif %}</span></div>
+      <div class="det-row"><span class="det-l">Agreed fee</span><span class="det-v">{% if p.agreed_fee is not none %}&pound;{{ "{:,.2f}".format(p.agreed_fee) }}{% else %}—{% endif %}</span></div>
+      <div class="det-row"><span class="det-l">Status</span><span class="det-v">{{ p.status_label }}</span></div>
+      <div class="det-row"><span class="det-l">Date agreed</span><span class="det-v">{{ p._date_agreed or '—' }}</span></div>
+      <div class="det-row"><span class="det-l">Chain</span><span class="det-v">{{ p.chain_status|default('stable')|replace('_',' ')|title }}</span></div>
+      <div class="det-row"><span class="det-l">Negotiator</span><span class="det-v">{{ p._negotiator_name or '—' }}</span></div>
+      <div class="det-row"><span class="det-l">Branch</span><span class="det-v">{{ p.location or '—' }}</span></div>
+    </div>
+  </section>
+
+  <section class="crm-d-sec" aria-labelledby="parties-h">
+    <h2 class="crm-d-sec-h" id="parties-h">Parties</h2>
+    <div class="party-grid">
+      <div class="party-card"><h4>Buyer</h4><p>{{ p.buyer }}</p><p class="muted">{{ p.buyer_phone }}</p><p class="muted">{{ p._buyer_email }}</p></div>
+      <div class="party-card"><h4>Seller</h4><p>{{ p._vendor_name }}</p><p class="muted">{{ p._vendor_phone }}</p><p class="muted">{{ p._vendor_email }}</p></div>
+      <div class="party-card"><h4>Buyer&rsquo;s solicitor</h4><p>{{ p.buyer_solicitor }}</p><p class="muted">{{ p.buyer_sol_phone }}</p></div>
+      <div class="party-card"><h4>Seller&rsquo;s solicitor</h4><p>{{ p.seller_solicitor }}</p><p class="muted">{{ p.seller_sol_phone }}</p></div>
+      <div class="party-card"><h4>Mortgage broker</h4><p>{{ p._mortgage_broker }}</p></div>
+    </div>
+  </section>
+
+  <section class="crm-d-sec" aria-labelledby="ms-h">
+    <h2 class="crm-d-sec-h" id="ms-h">Milestone timeline</h2>
+    <div class="tl">
+      {% for ms in p._timeline_milestones %}
+      <div class="tl-row" id="dms-row-{{ loop.index0 }}">
+        <span class="tl-dot tl-dot--{{ ms.dot }}"></span>
+        <span class="tl-lb">{{ ms.label }}</span>
+        <span class="tl-date" data-raw="{{ ms.input_date }}">{{ ms.date_display }}</span>
+        {% if p._progression_id and ms.patchable %}<button type="button" class="ms-edit-btn" data-field="{{ ms.field }}" data-idx="{{ loop.index0 }}">Edit</button>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="crm-d-sec" aria-labelledby="chase-h">
+    <h2 class="crm-d-sec-h" id="chase-h">Chase engine log</h2>
+    {% set cms = p.chase_messages|default([]) %}
+    {% if cms|length == 0 %}
+    <p class="empty-sec">No chase activity yet.</p>
+    {% else %}
+    {% for cm in cms %}
+    <div class="feed-row">
+      <div><strong>{{ cm._stage_display }}</strong>{% if cm.dry_run %} <span class="badge badge-dry">Dry run</span>{% endif %}</div>
+      <div class="feed-meta">
+        <span>{{ cm._sent_display or '—' }}</span>
+        <span class="badge {% if cm.recipient_type == 'buyer' %}badge-buyer{% elif cm.recipient_type == 'seller' %}badge-seller{% elif cm.recipient_type == 'buyer_solicitor' %}badge-buyer-sol{% elif cm.recipient_type == 'seller_solicitor' %}badge-seller-sol{% elif cm.recipient_type == 'chain_solicitor' %}badge-chain{% else %}badge-team{% endif %}">{{ cm._recipient_label }}</span>
+        <span class="muted">{{ cm.recipient_email or '—' }}</span>
+        <span class="badge {% if cm.response_received %}badge-reply-yes{% else %}badge-reply-wait{% endif %}">{% if cm.response_received %}Reply received{% else %}Awaiting reply{% endif %}</span>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </section>
+
+  <section class="crm-d-sec" aria-labelledby="conf-h">
+    <h2 class="crm-d-sec-h" id="conf-h">Chase confirmations</h2>
+    {% set cfl = p.chase_confirmations_list|default([]) %}
+    {% if cfl|length == 0 %}
+    <p class="empty-sec">No confirmation suggestions for this property.</p>
+    {% else %}
+    {% for c in cfl %}
+    <div class="feed-row {% if (c.status or '')|lower == 'pending' %}cf-pending{% endif %}">
+      <div><strong>{{ c.suggested_milestone }}</strong>
+        <span class="badge {% if (c.status or '')|lower == 'pending' %}badge-pend{% elif (c.status or '')|lower == 'confirmed' %}badge-conf{% else %}badge-dismiss{% endif %}">{{ (c.status or '')|title }}</span>
+      </div>
+      {% if c.email_snippet %}<p class="muted" style="margin-top:6px">{{ c.email_snippet }}</p>{% endif %}
+      <div class="feed-meta">
+        <span>Created {{ c._created_display or '—' }}</span>
+        {% if c._actioned_display %}<span>Actioned {{ c._actioned_display }}</span>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </section>
+
+  <section class="crm-d-sec" aria-labelledby="chain-h">
+    <h2 class="crm-d-sec-h" id="chain-h">Chain solicitor status</h2>
+    {% set sols = p._chain_solicitor_links|default([]) %}
+    {% if (p.chain_links|default([]))|length == 0 %}
+    <p class="empty-sec">No chain links recorded.</p>
+    {% elif sols|length == 0 %}
+    <p class="empty-sec">No chain solicitor email on file yet.</p>
+    {% else %}
+    {% for cl in sols %}
+    <div class="feed-row">
+      <div><strong>{{ cl.link_address or 'Chain property' }}</strong></div>
+      <p class="muted" style="margin-top:4px">{{ cl.buyer_solicitor or '' }} {{ cl.seller_solicitor or '' }} {{ cl.solicitor_email or '' }}</p>
+      <div class="feed-meta">
+        <span class="badge {% if cl._status_class == 'confirmed' %}badge-confirmed{% elif cl._status_class == 'contacted' %}badge-cont{% elif cl._status_class == 'unresponsive' %}badge-unresp{% else %}badge-ns{% endif %}">{{ cl._status_class|replace('_',' ') }}</span>
+        {% if cl._phase1_display %}<span>Phase 1 {{ cl._phase1_display }}</span>{% endif %}
+        {% if cl._last_update_display %}<span>Last update {{ cl._last_update_display }}</span>{% endif %}
+        {% if cl._last_reply_display %}<span>Last reply {{ cl._last_reply_display }}</span>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+  </section>
+
+  {% if p._sales_pipeline_id %}
+  <section class="crm-d-sec" aria-labelledby="portal-h">
+    <h2 class="crm-d-sec-h" id="portal-h">Portal status (TA6 / TA10)</h2>
+    {% set pt = p.portal_ta6_ta10|default({}) %}
+    <p style="font-size:.88rem;margin-bottom:10px">{{ pt.status_line or '—' }}</p>
+    <div class="det-grid">
+      <div class="det-row"><span class="det-l">Link sent</span><span class="det-v">{% if pt.link_sent_at_display %}{{ pt.link_sent_at_display }}{% elif pt.link_sent %}Yes{% else %}No{% endif %}</span></div>
+      <div class="det-row"><span class="det-l">Progress</span><span class="det-v">{% if pt.progress_pct is not none %}{{ pt.progress_pct }}%{% else %}—{% endif %}</span></div>
+      <div class="det-row"><span class="det-l">Submitted</span><span class="det-v">{{ pt.submitted_at_display or '—' }}</span></div>
+      <div class="det-row"><span class="det-l">Session status</span><span class="det-v">{{ pt.session_status or pt.phase or '—' }}</span></div>
+    </div>
+    {% if (pt.phase or '') != 'submitted' %}
+    <button type="button" class="crm-send-ta610" id="crmSendTa610" data-pipe-id="{{ p._sales_pipeline_id }}"
+      {% if pt.link_sent %}disabled{% endif %}>
+      {% if pt.link_sent %}Link sent{% else %}Send TA6/TA10 link{% endif %}
+    </button>
+    {% else %}
+    <p class="muted" style="margin-top:8px">Seller has submitted — send link is not available.</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <section class="crm-d-sec" aria-labelledby="notes-h">
+    <h2 class="crm-d-sec-h" id="notes-h">Notes</h2>
+    <div id="d-notes-list">
+      {% set note_fields = [("notes","General notes"),("nuvu_notes","NUVU notes"),("buyer_solicitor_notes","Buyer solicitor notes"),("seller_solicitor_notes","Seller solicitor notes")] %}
+      {% for key, label in note_fields %}
+      <div class="note-block" id="d-note-blk-{{ loop.index0 }}">
+        <div class="note-block-hdr"><span class="note-block-lbl">{{ label }}</span>{% if p._progression_id %}<button type="button" class="note-edit-btn" data-nkey="{{ key }}" data-nidx="{{ loop.index0 }}">Edit</button>{% endif %}</div>
+        <div class="note-block-txt{{ ' empty' if not p[key] }}" id="d-note-txt-{{ loop.index0 }}">{{ p[key] or 'No notes yet' }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="crm-d-sec" aria-labelledby="inb-h">
+    <h2 class="crm-d-sec-h" id="inb-h">Inbound emails</h2>
+    {% set eml = p.inbound_emails_list|default([]) %}
+    {% if eml|length == 0 %}
+    <p class="empty-sec">No inbound emails recorded for this property.</p>
+    {% else %}
+    {% for e in eml %}
+    <div class="feed-row">
+      <div><strong>{{ e.subject or '(no subject)' }}</strong></div>
+      <div class="feed-meta">
+        <span>{{ e.sender_name or e.sender_email or 'Unknown sender' }}</span>
+        <span>{{ e._received_display or '—' }}</span>
+      </div>
+      {% if e.body_preview %}<p class="muted" style="margin-top:6px">{{ e.body_preview }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var progId = "{{ p._progression_id or '' }}";
+  if (!progId) return;
+
+  function patchField(field, value, onSuccess) {
+    var body = {}; body[field] = value;
+    fetch("/api/progression/" + encodeURIComponent(progId), {
+      method: "PATCH",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(body)
+    }).then(function(r){
+      return r.text().then(function(t){
+        var j = null; try { j = JSON.parse(t); } catch (e) {}
+        return { r: r, j: j, t: t };
+      });
+    }).then(function(x){
+      if (!x.r.ok) {
+        alert("Save failed: HTTP " + x.r.status + (x.j && x.j.error ? " — " + x.j.error : ""));
+        return;
+      }
+      if (x.j && x.j.ok) { if (onSuccess) onSuccess(); }
+      else { alert("Save failed: " + ((x.j && x.j.error) || x.t || "Unknown error")); }
+    }).catch(function(e){ alert("Network error: " + e.message); });
+  }
+
+  var msBtns = document.querySelectorAll(".ms-edit-btn");
+  for (var i = 0; i < msBtns.length; i++) {
+    (function(btn){
+      btn.onclick = function() {
+        var field = btn.getAttribute("data-field");
+        var idx = btn.getAttribute("data-idx");
+        var row = document.getElementById("dms-row-" + idx);
+        var label = row.querySelector(".tl-lb").textContent;
+        var dateEl = row.querySelector(".tl-date");
+        var curVal = dateEl ? (dateEl.getAttribute("data-raw") || "").trim() : "";
+        row.innerHTML = '<span class="tl-dot tl-dot--grey"></span><span class="tl-lb">' + label + '</span>' +
+          '<div class="ms-edit-form"><input type="date" id="dms-date-' + idx + '" value="' + curVal + '">' +
+          '<button type="button" class="ms-save-btn" id="dms-sv-' + idx + '">Save</button>' +
+          '<button type="button" class="ms-cancel-btn" id="dms-cn-' + idx + '">Cancel</button></div>';
+        document.getElementById("dms-sv-" + idx).onclick = function() {
+          var val = document.getElementById("dms-date-" + idx).value;
+          patchField(field, val, function(){ location.reload(); });
+        };
+        document.getElementById("dms-cn-" + idx).onclick = function() { location.reload(); };
+      };
+    })(msBtns[i]);
+  }
+
+  var noteBtns = document.querySelectorAll(".note-edit-btn");
+  for (var n = 0; n < noteBtns.length; n++) {
+    (function(btn){
+      btn.onclick = function() {
+        var nkey = btn.getAttribute("data-nkey");
+        var nidx = btn.getAttribute("data-nidx");
+        var blk = document.getElementById("d-note-blk-" + nidx);
+        var txtEl = document.getElementById("d-note-txt-" + nidx);
+        var curVal = txtEl.classList.contains("empty") ? "" : txtEl.textContent;
+        var label = blk.querySelector(".note-block-lbl").textContent;
+        blk.innerHTML = '<div class="note-block-hdr"><span class="note-block-lbl">' + label + '</span></div>' +
+          '<textarea class="note-textarea" id="d-note-ta-' + nidx + '">' + curVal + '</textarea>' +
+          '<div class="note-actions"><button type="button" class="note-save-btn" id="d-note-sv-' + nidx + '">Save</button>' +
+          '<button type="button" class="note-cancel-btn" id="d-note-cn-' + nidx + '">Cancel</button></div>';
+        document.getElementById("d-note-sv-" + nidx).onclick = function() {
+          var val = document.getElementById("d-note-ta-" + nidx).value;
+          patchField(nkey, val, function(){ location.reload(); });
+        };
+        document.getElementById("d-note-cn-" + nidx).onclick = function() { location.reload(); };
+      };
+    })(noteBtns[n]);
+  }
+})();
+
+(function(){
+  var b = document.getElementById("crmSendTa610");
+  var toast = document.getElementById("crmToast");
+  function show(msg){
+    if(toast){ toast.textContent = msg; toast.style.display = "block";
+      clearTimeout(window._crmToastT);
+      window._crmToastT = setTimeout(function(){ toast.style.display = "none"; }, 4200);
+    } else { alert(msg); }
+  }
+  if (!b || b.disabled) return;
+  b.addEventListener("click", function() {
+    var pid = b.getAttribute("data-pipe-id");
+    if (!pid) return;
+    fetch("/api/portal/send-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ property_id: pid, form_type: "ta6_ta10" })
+    }).then(function(r) { return r.json().then(function(j) { return { r: r, j: j }; }); })
+    .then(function(x) {
+      if (x.j && x.j.disabled) { show(x.j.error || "Portal dispatch is disabled."); return; }
+      if (!x.r.ok || !x.j || !x.j.success) { show((x.j && x.j.error) || ("HTTP " + x.r.status)); return; }
+      show(x.j.resent ? "Link resent to seller." : "Portal link sent to seller.");
+      location.reload();
+    }).catch(function(e) { show("Network error: " + e.message); });
+  });
+})();
+</script>
+<div id="crmToast" role="status" aria-live="polite"></div>
+
+</body>
+</html>

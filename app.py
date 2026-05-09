@@ -44,8 +44,10 @@ from routes.property_api import property_api_bp
 app.register_blueprint(property_api_bp)
 
 from routes.chase_engine import chase_engine_bp
+from routes.chain_chase import chain_chase_bp
 
 app.register_blueprint(chase_engine_bp)
+app.register_blueprint(chain_chase_bp)
 
 from routes.portal import portal_bp
 from routes.portal_forms import portal_forms_bp, portal_staff_api_bp

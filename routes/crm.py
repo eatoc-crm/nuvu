@@ -1,9 +1,9 @@
 import json
 import os
-from datetime import datetime
+from datetime import date, datetime
 
 import requests as http_requests
-from flask import Blueprint, jsonify, render_template_string, request
+from flask import Blueprint, jsonify, render_template, render_template_string, request
 
 crm_bp = Blueprint("crm", __name__)
 
@@ -189,6 +189,18 @@ def _milestones_from_record(r):
             "date": r.get("draft_contract_sent") or "",
         },
         {
+            "label": "Search fees paid (buyer)",
+            "field": "search_fees_confirmed",
+            "done": bool(r.get("search_fees_confirmed")),
+            "date": r.get("search_fees_confirmed") or "",
+        },
+        {
+            "label": "Draft contract issued",
+            "field": "draft_contract_issued",
+            "done": bool(r.get("draft_contract_issued")),
+            "date": r.get("draft_contract_issued") or "",
+        },
+        {
             "label": "Enquiries Raised",
             "field": "enquiries_raised",
             "done": bool(r.get("enquiries_raised")),
@@ -199,6 +211,18 @@ def _milestones_from_record(r):
             "field": "enquiries_answered",
             "done": bool(r.get("enquiries_answered")),
             "date": r.get("enquiries_answered") or "",
+        },
+        {
+            "label": "Report on title sent",
+            "field": "report_on_title",
+            "done": bool(r.get("report_on_title")),
+            "date": r.get("report_on_title") or "",
+        },
+        {
+            "label": "Target exchange date (NUVU)",
+            "field": "exchange_target_date",
+            "done": bool(r.get("exchange_target_date")),
+            "date": r.get("exchange_target_date") or "",
         },
         {
             "label": "Buyer protocol forms returned",
@@ -299,10 +323,14 @@ def _map_live_properties():
                 "memo_sent": r.get("memo_sent"),
                 "searches_ordered": r.get("searches_ordered"),
                 "searches_received": r.get("searches_received"),
+                "search_fees_confirmed": r.get("search_fees_confirmed"),
                 "survey_instructed": r.get("survey_instructed"),
                 "draft_contract_sent": r.get("draft_contract_sent"),
+                "draft_contract_issued": r.get("draft_contract_issued"),
                 "enquiries_raised": r.get("enquiries_raised"),
                 "enquiries_answered": r.get("enquiries_answered"),
+                "report_on_title": r.get("report_on_title"),
+                "exchange_target_date": r.get("exchange_target_date"),
                 "mortgage_offered": r.get("mortgage_offered"),
                 "exchange_target": r.get("exchange_date"),
                 "completion_target": r.get("completion_date"),
@@ -401,10 +429,14 @@ def _map_supabase_test_property(prog: dict, pipe: dict, idx: int) -> dict:
         "memo_sent": r.get("memo_sent"),
         "searches_ordered": r.get("searches_ordered"),
         "searches_received": r.get("searches_received"),
+        "search_fees_confirmed": r.get("search_fees_confirmed"),
         "survey_instructed": r.get("survey_instructed"),
         "draft_contract_sent": r.get("draft_contract_sent"),
+        "draft_contract_issued": r.get("draft_contract_issued"),
         "enquiries_raised": r.get("enquiries_raised"),
         "enquiries_answered": r.get("enquiries_answered"),
+        "report_on_title": r.get("report_on_title"),
+        "exchange_target_date": r.get("exchange_target_date"),
         "mortgage_offered": r.get("mortgage_offered"),
         "exchange_target": r.get("exchange_date"),
         "completion_target": r.get("completion_date"),
@@ -562,397 +594,277 @@ CRM_OVERRIDE_JS = r"""
 """
 
 
-DETAIL_HTML = r"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{{ p.address }} — NUVU</title>
-<link rel="icon" href="/static/logo.png">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --navy:#0f1b2d;--navy-lt:#162236;--navy-md:#1c2e4a;--navy-card:#182842;
-  --lime:#c4e233;--lime-dk:#a3bf1a;
-  --red:#e25555;--red-chip:#e84545;
-  --amber:#e88a3a;--amber-chip:#e8873a;
-  --green:#27ae60;--green-chip:#2fa868;
-  --blue:#3b82f6;
-  --white:#ffffff;--off-white:#f4f6f9;
-  --txt:#1e293b;--txt-mid:#475569;--txt-light:#94a3b8;
-  --card-shadow:0 2px 12px rgba(0,0,0,.08);
-  --t:.22s ease;
-}
-html{font-size:15px;scroll-behavior:smooth}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--off-white);color:var(--txt);min-height:100vh}
-
-/* back bar */
-.back-bar{background:var(--navy);padding:16px 32px;display:flex;align-items:center;gap:12px}
-.back-btn{
-  display:inline-flex;align-items:center;gap:8px;
-  color:var(--lime);font-size:.88rem;font-weight:700;text-decoration:none;
-  padding:8px 18px;border-radius:8px;border:1px solid rgba(196,226,51,.3);
-  transition:all var(--t);
-}
-.back-btn:hover{background:rgba(196,226,51,.12);border-color:var(--lime)}
-
-/* hero photo */
-.detail-hero{position:relative;width:100%;height:320px;overflow:hidden;background:var(--navy)}
-.detail-hero img{width:100%;height:100%;object-fit:cover}
-.detail-hero-overlay{
-  position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(transparent,rgba(15,27,45,.85));
-  padding:40px 32px 24px;
-}
-.detail-hero-overlay h1{font-size:1.6rem;font-weight:800;color:var(--white);margin-bottom:4px}
-.detail-hero-overlay .detail-loc{font-size:.88rem;color:rgba(255,255,255,.6)}
-.detail-hero-overlay .detail-price{font-size:1.4rem;font-weight:900;color:var(--lime);margin-top:8px}
-.detail-chip{
-  position:absolute;top:20px;right:24px;
-  padding:6px 16px;border-radius:6px;
-  font-size:.72rem;font-weight:800;letter-spacing:.8px;color:var(--white);
-}
-.chip-stalled{background:var(--red-chip)}
-.chip-at-risk{background:var(--amber-chip)}
-.chip-on-track{background:var(--green-chip)}
-
-/* content */
-.detail-content{max-width:900px;margin:0 auto;padding:32px}
-
-/* progress */
-.detail-prog{margin-bottom:28px}
-.detail-prog-bar{width:100%;height:10px;border-radius:5px;background:#e8ecf1;overflow:hidden}
-.detail-prog-fill{height:100%;border-radius:5px}
-.detail-prog-fill.clr-stalled{background:var(--red)}
-.detail-prog-fill.clr-at-risk{background:var(--amber)}
-.detail-prog-fill.clr-on-track{background:var(--green)}
-.detail-prog-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--txt-light);margin-top:6px}
-
-/* cards */
-.detail-card{
-  background:var(--white);border-radius:6px;border:2px solid #1B3A5C;
-  box-shadow:var(--card-shadow);padding:24px;margin-bottom:20px;
-}
-.detail-card h3{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-
-/* milestones */
-.ms-list{display:flex;flex-direction:column}
-.ms-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.85rem}
-.ms-item:last-child{border-bottom:none}
-.ms-ic{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.65rem}
-.ms-ic.done{background:var(--green);color:#fff}
-.ms-ic.pending{background:#f1f5f9;border:2px solid #cbd5e1;color:transparent}
-.ms-lb{color:var(--txt);flex:1}
-.ms-lb.done-lb{color:var(--txt-light);text-decoration:line-through}
-.ms-pending-lb{color:var(--txt-light);font-style:italic}
-.ms-date{margin-left:auto;font-size:.78rem;color:var(--txt-light);font-weight:600;white-space:nowrap}
-.ms-edit-btn{background:none;border:1px solid #d1d5db;border-radius:5px;padding:2px 8px;font-size:.65rem;color:var(--txt-mid);cursor:pointer;transition:all var(--t);flex-shrink:0}
-.ms-edit-btn:hover{border-color:var(--green);color:var(--green)}
-.ms-edit-form{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
-.ms-edit-form input[type=date]{font-size:.72rem;padding:2px 6px;border:1px solid #d1d5db;border-radius:5px;color:var(--txt)}
-.ms-edit-form button{padding:2px 8px;border-radius:5px;font-size:.65rem;font-weight:600;cursor:pointer;border:none}
-.ms-save-btn{background:var(--green);color:#fff}
-.ms-cancel-btn{background:#f1f5f9;color:var(--txt-mid)}
-.note-block{background:#f8fafc;border:1px solid #e8ecf1;border-radius:8px;padding:10px 14px;margin-bottom:8px}
-.note-block-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.note-block-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--txt-light);font-weight:600}
-.note-edit-btn{background:none;border:1px solid #d1d5db;border-radius:5px;padding:2px 10px;font-size:.65rem;color:var(--txt-mid);cursor:pointer;transition:all var(--t)}
-.note-edit-btn:hover{border-color:var(--green);color:var(--green)}
-.note-block-txt{font-size:.82rem;line-height:1.5;color:var(--txt);white-space:pre-wrap}
-.note-block-txt.empty{color:var(--txt-light);font-style:italic}
-.note-textarea{width:100%;min-height:60px;font-size:.82rem;font-family:inherit;line-height:1.5;border:1px solid #d1d5db;border-radius:6px;padding:8px 10px;resize:vertical;color:var(--txt)}
-.note-textarea:focus{outline:none;border-color:var(--green)}
-.note-actions{display:flex;gap:6px;margin-top:6px}
-.note-save-btn{background:var(--green);color:#fff;border:none;border-radius:5px;padding:4px 14px;font-size:.72rem;font-weight:600;cursor:pointer}
-.note-cancel-btn{background:#f1f5f9;color:var(--txt-mid);border:none;border-radius:5px;padding:4px 14px;font-size:.72rem;cursor:pointer}
-.crm-send-ta610{
-  font-size:.85rem;font-weight:600;padding:10px 16px;border-radius:6px;border:1px solid var(--navy);
-  background:var(--white);color:var(--navy);cursor:pointer;
-}
-.crm-send-ta610:hover:not([disabled]){background:var(--navy);color:var(--white)}
-.crm-send-ta610[disabled]{cursor:default;border-color:#c8e6c9;background:#f1f8f4;color:#2e7d32}
-#crmToast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;
-  max-width:min(400px,calc(100% - 32px));background:var(--navy-card);color:var(--white);
-  padding:12px 18px;border-radius:8px;font-size:.85rem;display:none;box-shadow:0 8px 24px rgba(0,0,0,.2);
+_RECIPIENT_LABELS = {
+    "buyer": "Buyer",
+    "seller": "Seller",
+    "buyer_solicitor": "Buyer Sol.",
+    "seller_solicitor": "Seller Sol.",
+    "negotiator": "Team",
+    "chain_solicitor": "Chain Sol.",
 }
 
-/* alert box */
-.alert-box{
-  padding:14px 18px;border-radius:10px;margin-bottom:20px;
-  font-size:.88rem;line-height:1.5;display:flex;gap:10px;align-items:flex-start;
+
+def _recipient_type_label(rt):
+    k = (rt or "").strip().lower()
+    return _RECIPIENT_LABELS.get(k, (rt or "Party").replace("_", " ").title())
+
+
+_CHASE_STAGE_LABELS = {
+    "buyer_protocol_forms": "Buyer protocol forms",
+    "seller_ta6_ta10": "Seller TA6 / TA10",
+    "survey_instruction": "Survey instruction",
+    "post_survey_followup": "Post-survey follow-up",
 }
-.alert-red{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
-.alert-amber{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
-.alert-green{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
 
-/* next action */
-.next-box{background:#f8fafc;border:1px solid #e8ecf1;border-radius:10px;padding:14px 18px;margin-bottom:20px}
-.next-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--green);font-weight:700;margin-bottom:4px}
-.next-txt{font-size:.88rem;color:var(--txt);line-height:1.5}
 
-/* detail grid */
-.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px}
-.d-r{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.85rem}
-.d-r:last-child{border-bottom:none}
-.d-l{color:var(--txt-light)}
-.d-v{font-weight:600;color:var(--txt);text-align:right}
+def _chase_stage_label(stage, day):
+    st = (stage or "").strip()
+    base = _CHASE_STAGE_LABELS.get(st, st.replace("_", " ").title())
+    try:
+        d = int(day)
+    except (TypeError, ValueError):
+        d = 0
+    return f"{base} — Day {d}"
 
-/* two col layout */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 
-@media(max-width:700px){
-  .detail-hero{height:220px}
-  .detail-content{padding:20px 16px}
-  .det-grid,.two-col{grid-template-columns:1fr}
-  .back-bar{padding:12px 16px}
-}
-</style>
-</head>
-<body>
+def _format_detail_dt(val):
+    if not val:
+        return ""
+    s = str(val).strip()
+    if not s:
+        return ""
+    from datetime import datetime
 
-<div class="back-bar">
-  <a class="back-btn" href="/crm">&larr; Back to Dashboard</a>
-</div>
+    try:
+        s2 = s.replace("Z", "+00:00") if s.endswith("Z") else s
+        if len(s2) >= 19 and "T" in s2[:19]:
+            dt = datetime.fromisoformat(s2)
+        elif len(s) >= 10 and s[4] == "-" and s[7] == "-":
+            dt = datetime.strptime(s[:10], "%Y-%m-%d")
+        else:
+            return s[:19]
+    except Exception:
+        return s[:19]
+    if getattr(dt, "hour", 0) or getattr(dt, "minute", 0) or getattr(dt, "second", 0):
+        return f"{dt.day} {dt.strftime('%B %Y')}, {dt.strftime('%H:%M')}"
+    return f"{dt.day} {dt.strftime('%B %Y')}"
 
-<div class="detail-hero">
-  {% if p.image_url %}
-  <img src="{{ p.image_url }}" alt="{{ p.address }}" style="background:{{ p.image_bg }}">
-  {% else %}
-  <div style="width:100%;height:100%;background:{{ p.image_bg }}"></div>
-  {% endif %}
-  <span class="detail-chip chip-{{ p.status }}">{{ p.status_label }}</span>
-  <div class="detail-hero-overlay">
-    <h1>{{ p.address }}</h1>
-    <div class="detail-loc">{{ p.location }}{% if p._property_type and p._property_type != '\u2014' %} &bull; {{ p._property_type }}{% endif %}{% if p._beds %} &bull; {{ p._beds }} bed{% endif %}{% if p._baths %} &bull; {{ p._baths }} bath{% endif %}</div>
-    {% if p.price %}<div class="detail-price">&pound;{{ "{:,.0f}".format(p.price) }}</div>{% endif %}
-  </div>
-</div>
 
-<div class="detail-content">
+def _format_detail_date_only(val):
+    if not val:
+        return ""
+    s = str(val).strip()
+    if not s:
+        return ""
+    from datetime import datetime
 
-  <!-- Progress bar -->
-  <div class="detail-prog">
-    <div class="detail-prog-bar"><div class="detail-prog-fill clr-{{ p.status }}" style="width:{{ p.progress }}%"></div></div>
-    <div class="detail-prog-labels"><span>Offer Accepted</span><span>{{ p.progress }}% complete</span><span>Completion</span></div>
-  </div>
+    try:
+        if len(s) >= 19 and "T" in s[:19]:
+            dt = datetime.strptime(s[:19], "%Y-%m-%dT%H:%M:%S")
+        elif len(s) >= 10:
+            dt = datetime.strptime(s[:10], "%Y-%m-%d")
+        else:
+            return s[:10]
+    except Exception:
+        return s[:10]
+    return f"{dt.day} {dt.strftime('%B %Y')}"
 
-  <!-- Alert -->
-  {% if p.alert %}
-  <div class="alert-box {% if p.status == 'stalled' %}alert-red{% elif p.status == 'at-risk' %}alert-amber{% else %}alert-green{% endif %}">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    <span>{{ p.alert }}</span>
-  </div>
-  {% endif %}
 
-  <!-- Next Action -->
-  <div class="next-box">
-    <div class="next-lbl">Next Action</div>
-    <div class="next-txt">{{ p.next_action }}</div>
-  </div>
+def _date_input_from_raw(val):
+    """YYYY-MM-DD for HTML date inputs."""
+    if not val:
+        return ""
+    s = str(val).strip()
+    if len(s) >= 10 and s[4] == "-" and s[7] == "-":
+        return s[:10]
+    return ""
 
-  {% if p._sales_pipeline_id %}
-  <div class="detail-card">
-    <h3>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
-      TA6 &amp; TA10 seller dispatch
-    </h3>
-    <p style="font-size:.82rem;color:var(--txt-mid);margin-bottom:12px;line-height:1.45">{{ (p.portal_ta6_ta10 or {}).get('status_line','—') }}</p>
-    {% if (p.portal_ta6_ta10 or {}).get('phase') == 'submitted' %}
-    <p style="font-size:.85rem;color:var(--txt-mid)">Seller has submitted these forms — the send link is no longer available.</p>
-    {% else %}
-    <button type="button" class="crm-send-ta610" id="crmSendTa610" data-pipe-id="{{ p._sales_pipeline_id }}"
-      {% if (p.portal_ta6_ta10 or {}).get('link_sent') %}disabled{% endif %}>
-      {% if (p.portal_ta6_ta10 or {}).get('link_sent') %}Link Sent ✓{% else %}Send TA6/TA10 Link{% endif %}
-    </button>
-    {% endif %}
-  </div>
-  {% endif %}
 
-  <div class="two-col">
-    <!-- Milestones -->
-    <div class="detail-card">
-      <h3>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        Milestones
-      </h3>
-      <div class="ms-list">
-        {% for ms in p.milestones %}
-        <div class="ms-item" id="dms-row-{{ loop.index0 }}">
-          <span class="ms-ic {{ 'done' if ms.done else 'pending' }}">{% if ms.done %}&#x2713;{% endif %}</span>
-          <span class="ms-lb {{ 'done-lb' if ms.done else 'ms-pending-lb' }}">{{ ms.label }}</span>
-          {% if ms.date %}<span class="ms-date">{{ ms.date }}</span>{% endif %}
-          {% if p._progression_id %}<button class="ms-edit-btn" data-field="{{ ms.field }}" data-idx="{{ loop.index0 }}">Edit</button>{% endif %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
+def _prog_value(prop, field):
+    alias = {
+        "offer_accepted": ("offer_date",),
+        "exchange_date": ("exchange_target",),
+        "completion_date": ("completion_target",),
+    }
+    for key in alias.get(field, (field,)):
+        v = prop.get(key)
+        if v:
+            return v
+    return prop.get(field)
 
-    <!-- Contacts & details -->
-    <div class="detail-card">
-      <h3>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Contacts &amp; Details
-      </h3>
-      <div class="det-grid">
-        <div class="d-r"><span class="d-l">Buyer</span><span class="d-v">{{ p.buyer }}</span></div>
-        <div class="d-r"><span class="d-l">Buyer Phone</span><span class="d-v">{{ p.buyer_phone }}</span></div>
-        <div class="d-r"><span class="d-l">Buyer Solicitor</span><span class="d-v">{{ p.buyer_solicitor }}</span></div>
-        <div class="d-r"><span class="d-l">Vendor</span><span class="d-v">{{ p._vendor_name }}</span></div>
-        <div class="d-r"><span class="d-l">Vendor Phone</span><span class="d-v">{{ p._vendor_phone }}</span></div>
-        <div class="d-r"><span class="d-l">Vendor Solicitor</span><span class="d-v">{{ p.seller_solicitor }}</span></div>
-        <div class="d-r"><span class="d-l">Mortgage Broker</span><span class="d-v">{{ p._mortgage_broker }}</span></div>
-        <div class="d-r"><span class="d-l">Surveyor</span><span class="d-v">{{ p._surveyor }}</span></div>
-        <div class="d-r"><span class="d-l">Sewage Type</span><span class="d-v">{{ p._sewage_type }}</span></div>
-        <div class="d-r"><span class="d-l">Staff</span><span class="d-v">{{ p._staff_initials }}</span></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Dates & timeline -->
-  <div class="detail-card">
-    <h3>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Timeline
-    </h3>
-    <div class="det-grid">
-      <div class="d-r"><span class="d-l">Offer Accepted</span><span class="d-v">{{ p.offer_date or '\u2014' }}</span></div>
-      <div class="d-r"><span class="d-l">Memo Sent</span><span class="d-v">{{ p.memo_sent or '\u2014' }}</span></div>
-      <div class="d-r"><span class="d-l">Searches Received</span><span class="d-v">{{ p.searches_received or '\u2014' }}</span></div>
-      <div class="d-r"><span class="d-l">Survey Instructed</span><span class="d-v">{{ p.survey_instructed or '\u2014' }}</span></div>
-      <div class="d-r"><span class="d-l">Draft Contract Sent</span><span class="d-v">{{ p.draft_contract_sent or '\u2014' }}</span></div>
-      <div class="d-r"><span class="d-l">Exchange Date</span><span class="d-v">{{ p.exchange_target or '\u2014' }}</span></div>
-      <div class="d-r"><span class="d-l">Completion Date</span><span class="d-v">{{ p.completion_target or '\u2014' }}</span></div>
-      <div class="d-r"><span class="d-l">Fee</span><span class="d-v">&pound;{{ "{:,.2f}".format(p._fee) if p._fee else '\u2014' }}</span></div>
-      <div class="d-r"><span class="d-l">Invoice Status</span><span class="d-v">{{ p._invoice_status }}</span></div>
-    </div>
-  </div>
+def _welcome_anchor_dt(prop):
+    from utils.needs_attention import parse_progression_timestamp
 
-  <!-- Notes -->
-  <div class="detail-card">
-    <h3>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--txt-mid)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Notes
-    </h3>
-    <div id="d-notes-list">
-      {% set note_fields = [("notes","General Notes"),("nuvu_notes","NUVU Notes"),("buyer_solicitor_notes","Buyer Solicitor Notes"),("seller_solicitor_notes","Seller Solicitor Notes")] %}
-      {% for key, label in note_fields %}
-      <div class="note-block" id="d-note-blk-{{ loop.index0 }}">
-        <div class="note-block-hdr"><span class="note-block-lbl">{{ label }}</span>{% if p._progression_id %}<button class="note-edit-btn" data-nkey="{{ key }}" data-nidx="{{ loop.index0 }}">Edit</button>{% endif %}</div>
-        <div class="note-block-txt{{ ' empty' if not p[key] }}" id="d-note-txt-{{ loop.index0 }}">{{ p[key] or 'No notes yet' }}</div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
+    return parse_progression_timestamp(
+        prop.get("welcome_emails_sent")
+    ) or parse_progression_timestamp(prop.get("memo_sent"))
 
-</div>
 
-<script>
-(function(){
-  var progId = "{{ p._progression_id or '' }}";
-  if (!progId) return;
+def _milestone_overdue(prop, field, today):
+    from utils.needs_attention import parse_progression_timestamp
 
-  function patchField(field, value, onSuccess) {
-    var body = {}; body[field] = value;
-    fetch("/api/progression/" + encodeURIComponent(progId), {
-      method: "PATCH",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(body)
-    }).then(function(r){
-      return r.text().then(function(t){
-        var j = null; try { j = JSON.parse(t); } catch (e) {}
-        return { r: r, j: j, t: t };
-      });
-    }).then(function(x){
-      if (!x.r.ok) {
-        alert("Save failed: HTTP " + x.r.status + (x.j && x.j.error ? " — " + x.j.error : ""));
-        return;
-      }
-      if (x.j && x.j.ok) { if (onSuccess) onSuccess(); }
-      else { alert("Save failed: " + ((x.j && x.j.error) || x.t || "Unknown error")); }
-    }).catch(function(e){ alert("Network error: " + e.message); });
-  }
+    if _prog_value(prop, field):
+        return False
+    w = _welcome_anchor_dt(prop)
+    if not w:
+        return False
+    wd = w.date() if hasattr(w, "date") else w
+    try:
+        days_w = (today - wd).days
+    except Exception:
+        return False
+    proto = parse_progression_timestamp(_prog_value(prop, "protocol_forms_returned"))
+    proto_d = proto.date() if proto and hasattr(proto, "date") else None
+    sfr = parse_progression_timestamp(_prog_value(prop, "seller_forms_returned"))
+    sfr_d = sfr.date() if sfr and hasattr(sfr, "date") else None
+    so = parse_progression_timestamp(_prog_value(prop, "searches_ordered"))
+    so_d = so.date() if so and hasattr(so, "date") else None
 
-  /* milestone edit */
-  var msBtns = document.querySelectorAll(".ms-edit-btn");
-  for (var i = 0; i < msBtns.length; i++) {
-    (function(btn){
-      btn.onclick = function() {
-        var field = btn.getAttribute("data-field");
-        var idx = btn.getAttribute("data-idx");
-        var row = document.getElementById("dms-row-" + idx);
-        var label = row.querySelector(".ms-lb").textContent;
-        var dateEl = row.querySelector(".ms-date");
-        var curVal = dateEl ? dateEl.textContent : "";
-        row.innerHTML = '<span class="ms-ic pending"></span><span class="ms-lb">' + label + '</span>' +
-          '<div class="ms-edit-form"><input type="date" id="dms-date-' + idx + '" value="' + curVal + '">' +
-          '<button class="ms-save-btn" id="dms-sv-' + idx + '">Save</button>' +
-          '<button class="ms-cancel-btn" id="dms-cn-' + idx + '">Cancel</button></div>';
-        document.getElementById("dms-sv-" + idx).onclick = function() {
-          var val = document.getElementById("dms-date-" + idx).value;
-          patchField(field, val, function(){ location.reload(); });
-        };
-        document.getElementById("dms-cn-" + idx).onclick = function() { location.reload(); };
-      };
-    })(msBtns[i]);
-  }
+    if field == "protocol_forms_returned":
+        return days_w >= 4
+    if field == "survey_instructed":
+        return days_w >= 4
+    if field == "searches_ordered":
+        if not proto_d:
+            return False
+        return (today - proto_d).days >= 3
+    if field == "draft_contract_sent":
+        if not sfr_d:
+            return False
+        return (today - sfr_d).days >= 4
+    if field == "searches_received":
+        if not so_d:
+            return False
+        return (today - so_d).days >= 21
+    if field == "enquiries_raised":
+        sr = parse_progression_timestamp(_prog_value(prop, "searches_received"))
+        si = parse_progression_timestamp(_prog_value(prop, "survey_instructed"))
+        if not (sr and si):
+            return False
+        ad = max(sr.date(), si.date())
+        return (today - ad).days >= 1
+    return False
 
-  /* note edit */
-  var noteBtns = document.querySelectorAll(".note-edit-btn");
-  for (var n = 0; n < noteBtns.length; n++) {
-    (function(btn){
-      btn.onclick = function() {
-        var nkey = btn.getAttribute("data-nkey");
-        var nidx = btn.getAttribute("data-nidx");
-        var blk = document.getElementById("d-note-blk-" + nidx);
-        var txtEl = document.getElementById("d-note-txt-" + nidx);
-        var curVal = txtEl.classList.contains("empty") ? "" : txtEl.textContent;
-        var label = blk.querySelector(".note-block-lbl").textContent;
-        blk.innerHTML = '<div class="note-block-hdr"><span class="note-block-lbl">' + label + '</span></div>' +
-          '<textarea class="note-textarea" id="d-note-ta-' + nidx + '">' + curVal + '</textarea>' +
-          '<div class="note-actions"><button class="note-save-btn" id="d-note-sv-' + nidx + '">Save</button>' +
-          '<button class="note-cancel-btn" id="d-note-cn-' + nidx + '">Cancel</button></div>';
-        document.getElementById("d-note-sv-" + nidx).onclick = function() {
-          var val = document.getElementById("d-note-ta-" + nidx).value;
-          patchField(nkey, val, function(){ location.reload(); });
-        };
-        document.getElementById("d-note-cn-" + nidx).onclick = function() { location.reload(); };
-      };
-    })(noteBtns[n]);
-  }
-})();
 
-(function(){
-  var b = document.getElementById("crmSendTa610");
-  var toast = document.getElementById("crmToast");
-  function show(msg){
-    if(toast){ toast.textContent = msg; toast.style.display = "block";
-      clearTimeout(window._crmToastT);
-      window._crmToastT = setTimeout(function(){ toast.style.display = "none"; }, 4200);
-    } else { alert(msg); }
-  }
-  if (!b || b.disabled) return;
-  b.addEventListener("click", function() {
-    var pid = b.getAttribute("data-pipe-id");
-    if (!pid) return;
-    fetch("/api/portal/send-link", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ property_id: pid, form_type: "ta6_ta10" })
-    }).then(function(r) { return r.json().then(function(j) { return { r: r, j: j }; }); })
-    .then(function(x) {
-      if (x.j && x.j.disabled) { show(x.j.error || "Portal dispatch is disabled."); return; }
-      if (!x.r.ok || !x.j || !x.j.success) { show((x.j && x.j.error) || ("HTTP " + x.r.status)); return; }
-      show(x.j.resent ? "Link resent to seller." : "Portal link sent to seller.");
-      location.reload();
-    }).catch(function(e) { show("Network error: " + e.message); });
-  });
-})();
-</script>
-<div id="crmToast" role="status" aria-live="polite"></div>
+_PATCHABLE_MILESTONE_FIELDS = frozenset(
+    {
+        "welcome_emails_sent",
+        "offer_accepted",
+        "memo_sent",
+        "protocol_forms_returned",
+        "survey_instructed",
+        "searches_ordered",
+        "searches_received",
+        "draft_contract_sent",
+        "seller_forms_returned",
+        "mortgage_offered",
+        "enquiries_raised",
+        "enquiries_answered",
+        "report_on_title",
+        "exchange_date",
+        "completion_date",
+    }
+)
 
-</body>
-</html>"""
+
+def build_detail_timeline_milestones(prop, today):
+    ordered = [
+        ("Welcome emails sent", "welcome_emails_sent"),
+        ("Offer accepted", "offer_accepted"),
+        ("Memorandum of sale sent", "memo_sent"),
+        ("Buyer protocol forms returned", "protocol_forms_returned"),
+        ("Survey instructed", "survey_instructed"),
+        ("Search fees / searches ordered", "searches_ordered"),
+        ("Searches received", "searches_received"),
+        ("Draft contract issued", "draft_contract_sent"),
+        ("Seller forms returned (TA6/TA10)", "seller_forms_returned"),
+        ("Mortgage offer received", "mortgage_offered"),
+        ("Enquiries raised", "enquiries_raised"),
+        ("Enquiries answered", "enquiries_answered"),
+        ("Report on title", "report_on_title"),
+        ("Exchange", "exchange_date"),
+        ("Completion", "completion_date"),
+    ]
+    out = []
+    for label, field in ordered:
+        raw = _prog_value(prop, field)
+        done = bool(raw)
+        disp = _format_detail_date_only(raw) if done else "Pending"
+        dot = "sage" if done else "grey"
+        if not done and _milestone_overdue(prop, field, today):
+            dot = "coral"
+        out.append(
+            {
+                "label": label,
+                "field": field,
+                "done": done,
+                "date_display": disp,
+                "input_date": _date_input_from_raw(raw) if done else "",
+                "dot": dot,
+                "patchable": field in _PATCHABLE_MILESTONE_FIELDS,
+            }
+        )
+    return out
+
+
+def _chain_solicitor_status_class(cl):
+    raw = (cl.get("solicitor_status") or "").strip().lower()
+    if raw in ("not_set", "contacted", "confirmed", "unresponsive"):
+        return raw
+    if cl.get("solicitor_acting_confirmed_at") or cl.get("solicitor_details_received"):
+        return "confirmed"
+    if (
+        cl.get("last_chain_inform_sent_at")
+        or cl.get("last_chain_request_sent_at")
+        or cl.get("chain_solicitor_intro_sent_at")
+        or cl.get("nuvu_introduced")
+    ):
+        return "contacted"
+    return "not_set"
+
+
+def _enrich_crm_detail_view(prop, today):
+    for cm in prop.get("chase_messages") or []:
+        cm["_sent_display"] = _format_detail_dt(cm.get("sent_at"))
+        cm["_stage_display"] = _chase_stage_label(
+            cm.get("chase_stage"), cm.get("chase_day")
+        )
+        cm["_recipient_label"] = _recipient_type_label(cm.get("recipient_type"))
+    for c in prop.get("chase_confirmations_list") or []:
+        c["_created_display"] = _format_detail_dt(c.get("created_at"))
+        c["_actioned_display"] = _format_detail_dt(c.get("actioned_at"))
+    for e in prop.get("inbound_emails_list") or []:
+        e["_received_display"] = _format_detail_dt(e.get("received_at"))
+    prop["_timeline_milestones"] = build_detail_timeline_milestones(prop, today)
+    sol_links = [
+        cl
+        for cl in (prop.get("chain_links") or [])
+        if (str(cl.get("solicitor_email") or "").strip())
+    ]
+    prop["_chain_solicitor_links"] = sol_links
+    for cl in sol_links:
+        cl["_status_class"] = _chain_solicitor_status_class(cl)
+        intro = cl.get("chain_solicitor_intro_sent_at") or cl.get("nuvu_introduced")
+        if intro is True:
+            cl["_phase1_display"] = "Yes"
+        elif intro:
+            cl["_phase1_display"] = _format_detail_dt(intro)
+        else:
+            cl["_phase1_display"] = ""
+        lu = cl.get("last_chain_inform_sent_at") or cl.get(
+            "last_chain_request_sent_at"
+        )
+        cl["_last_update_display"] = _format_detail_dt(lu) if lu else ""
+        cl["_last_reply_display"] = _format_detail_dt(
+            cl.get("last_chain_solicitor_reply_at")
+        )
+    pt = p.get("portal_ta6_ta10")
+    if isinstance(pt, dict):
+        if pt.get("link_sent_at"):
+            pt["link_sent_at_display"] = _format_detail_dt(pt["link_sent_at"])
+        if pt.get("submitted_at"):
+            pt["submitted_at_display"] = _format_detail_dt(pt["submitted_at"])
 
 
 @crm_bp.route("/crm")
@@ -1006,8 +918,16 @@ def crm_property_detail(prop_id):
     """Full-page detail view for a single CRM property."""
     from routes.dashboard import _build_live_dashboard_data
 
+    show_test = request.args.get("show_test", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
     try:
-        props, _, _, _, _, _ = _build_live_dashboard_data()
+        props, _, _, _, _, _ = _build_live_dashboard_data(
+            show_test_properties=show_test
+        )
     except Exception as e:
         return f"<h2>Error fetching live data</h2><pre>{e}</pre>", 500
 
@@ -1019,7 +939,8 @@ def crm_property_detail(prop_id):
     if not prop:
         return "<h2>Property not found</h2>", 404
 
-    return render_template_string(DETAIL_HTML, p=prop)
+    _enrich_crm_detail_view(prop, date.today())
+    return render_template("crm_property_detail.html", p=prop)
 
 
 @crm_bp.route("/api/crm/notes/<prop_id>", methods=["POST"])

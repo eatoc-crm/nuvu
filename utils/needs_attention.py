@@ -6,8 +6,10 @@ from datetime import date, datetime, timezone
 from typing import Any
 from urllib.parse import quote
 
-# Default search turnaround when no local authority row matches.
-DEFAULT_SEARCH_TURNAROUND_DAYS = 21
+from utils.working_days import add_working_days
+
+# Default search turnaround when no local authority row matches (Phase B seed = 15).
+DEFAULT_SEARCH_TURNAROUND_DAYS = 15
 
 
 def parse_progression_timestamp(val: Any) -> datetime | None:
@@ -132,6 +134,8 @@ def get_needs_attention(
     surveyor_hint: str | None = None,
     today: date | None = None,
     solicitor_non_response_ids: set[str] | None = None,
+    chain_unresponsive_by_progression_id: dict[str, list[dict[str, Any]]]
+    | None = None,
 ) -> list[dict]:
     """
     Each input property dict must include merged sales_progression milestone fields
@@ -145,12 +149,35 @@ def get_needs_attention(
         survey_note = f" Suggest: {surveyor_hint}."
 
     sol_na = solicitor_non_response_ids or set()
+    chain_unresp = chain_unresponsive_by_progression_id or {}
     results: list[dict] = []
 
     for p in properties:
         triggers: list[dict] = []
 
         prog_sid = str(p.get("_portal_progression_id") or "").strip()
+        if prog_sid:
+            for item in chain_unresp.get(prog_sid, []):
+                firm = (item.get("firm") or "Chain solicitor").strip()
+                crm_id = str(p.get("id") or "").strip()
+                href = f"/crm/property/{crm_id}" if crm_id else "#"
+                _append_trigger(
+                    triggers,
+                    trigger_id="chain_solicitor_unresponsive",
+                    trigger_name=f"Chain solicitor unresponsive — {firm}",
+                    days_overdue=0,
+                    severity="amber",
+                    suggested_action=(
+                        "Chain solicitor has not replied after three contact attempts — "
+                        "call and log outcome in NUVU Notes (reinstate / no contact)."
+                    ),
+                    quick_action={
+                        "label": "Open property",
+                        "kind": "open_crm_property",
+                        "href": href,
+                    },
+                )
+
         if prog_sid and prog_sid in sol_na:
             _append_trigger(
                 triggers,
@@ -247,25 +274,29 @@ def get_needs_attention(
                     ),
                 )
 
-        if buyer_proto and not _parse_ts(p.get("searches_ordered")):
+        search_fees_ok = _parse_ts(p.get("search_fees_confirmed"))
+        if buyer_proto and not search_fees_ok:
             d = _days_between(buyer_proto, day)
             if d is not None and d >= 3:
                 sev = "red" if d >= 6 else "amber"
                 _append_trigger(
                     triggers,
-                    trigger_id="search_fees",
-                    trigger_name="Search fees not paid",
+                    trigger_id="search_fees_chase",
+                    trigger_name="Search fees not confirmed",
                     days_overdue=d - 2,
                     severity=sev,
                     suggested_action=(
-                        "Ask buyer: did your solicitor request search fees?"
+                        "Stage 4: no confirmation of search fees — negotiator to follow up with buyer."
                     ),
                     quick_action=_build_quick_action(
                         "call_buyer", "Call buyer", p
                     ),
                 )
 
-        if seller_forms and not _parse_ts(p.get("draft_contract_sent")):
+        draft_done = _parse_ts(p.get("draft_contract_issued")) or _parse_ts(
+            p.get("draft_contract_sent")
+        )
+        if seller_forms and not draft_done:
             d = _days_between(seller_forms, day)
             if d is not None and d >= 4:
                 sev = "red" if d >= 7 else "amber"
@@ -275,7 +306,9 @@ def get_needs_attention(
                     trigger_name="Draft contract overdue",
                     days_overdue=d - 3,
                     severity=sev,
-                    suggested_action="Chase seller's solicitor for draft contract",
+                    suggested_action=(
+                        "Stage 5: draft contract not issued — escalate with seller’s solicitor."
+                    ),
                     quick_action=_build_quick_action(
                         "email_sol", "Email solicitor", p
                     ),
@@ -283,23 +316,47 @@ def get_needs_attention(
 
         so = _parse_ts(p.get("searches_ordered"))
         if so and not _parse_ts(p.get("searches_received")):
-            d = _days_between(so, day)
-            if d is not None:
-                threshold = _la_threshold_days(p, la_turnaround_by_norm_name)
-                overdue = d - threshold
-                if overdue >= 0:
-                    sev = "red" if overdue >= 4 else "amber"
+            threshold = _la_threshold_days(p, la_turnaround_by_norm_name)
+            due = add_working_days(so, threshold)
+            if due is not None and day > due:
+                overdue = (day - due).days
+                sev = "red" if overdue >= 4 else "amber"
+                _append_trigger(
+                    triggers,
+                    trigger_id="searches_overdue",
+                    trigger_name="Searches overdue",
+                    days_overdue=overdue,
+                    severity=sev,
+                    suggested_action=(
+                        "Stage 6: expected search turnaround passed — chase buyer’s solicitor."
+                    ),
+                    quick_action=_build_quick_action(
+                        "email_sol", "Email solicitor", p
+                    ),
+                )
+
+        etd = _parse_ts(p.get("exchange_target_date"))
+        if etd and not p.get("_is_exchanged"):
+            try:
+                etd_d = etd.date() if isinstance(etd, datetime) else etd
+                if etd_d < day:
+                    days_past = (day - etd_d).days
                     _append_trigger(
                         triggers,
-                        trigger_id="searches_overdue",
-                        trigger_name="Searches overdue",
-                        days_overdue=overdue,
-                        severity=sev,
-                        suggested_action="Chase buyer's solicitor for search results",
+                        trigger_id="exchange_target_passed",
+                        trigger_name="Exchange target date passed",
+                        days_overdue=days_past,
+                        severity="red",
+                        suggested_action=(
+                            "Exchange target date passed — negotiator to review. "
+                            "No further automated exchange chases are sent."
+                        ),
                         quick_action=_build_quick_action(
                             "email_sol", "Email solicitor", p
                         ),
                     )
+            except (TypeError, ValueError, AttributeError):
+                pass
 
         d_sr = _parse_ts(p.get("searches_received"))
         d_si = _parse_ts(p.get("survey_instructed"))
@@ -319,6 +376,24 @@ def get_needs_attention(
                     ),
                     quick_action=_build_quick_action(
                         "email_sol", "Email solicitor", p
+                    ),
+                )
+
+        ea_done = _parse_ts(p.get("enquiries_answered"))
+        if ea_done and not _parse_ts(p.get("report_on_title")):
+            d_rt = _days_between(ea_done, day)
+            if d_rt is not None and d_rt >= 8:
+                _append_trigger(
+                    triggers,
+                    trigger_id="report_on_title_overdue",
+                    trigger_name="Report on title not confirmed",
+                    days_overdue=d_rt - 5,
+                    severity="red",
+                    suggested_action=(
+                        "Report on title not confirmed after chase — negotiator to follow up."
+                    ),
+                    quick_action=_build_quick_action(
+                        "email_buyer_sol", "Email buyer's solicitor", p
                     ),
                 )
 

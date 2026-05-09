@@ -26,15 +26,21 @@ SALES_PROGRESSION_OVERLAY_COLS = (
     "welcome_emails_sent",
     "searches_ordered",
     "searches_received",
+    "search_fees_confirmed",
     "survey_instructed",
     "mortgage_offered",
     "draft_contract_sent",
+    "draft_contract_issued",
     "enquiries_raised",
     "enquiries_answered",
+    "exchange_target_date",
+    "report_on_title",
     "exchange_date",
     "completion_date",
     "protocol_forms_returned",
     "seller_forms_returned",
+    "buyer_solicitor_email",
+    "seller_solicitor_email",
     "notes",
     "nuvu_notes",
     "buyer_solicitor_notes",
@@ -360,3 +366,96 @@ def fetch_sales_progression_by_property_address(property_address: str):
         return rows[0] if rows else None
     except Exception:
         return None
+
+
+def _chunk_ids(ids: list[str], size: int = 80):
+    clean = [str(i).strip() for i in ids if str(i).strip()]
+    for i in range(0, len(clean), size):
+        yield clean[i : i + size]
+
+
+def fetch_chase_messages_by_property_ids(property_ids: list[str]) -> dict[str, list]:
+    """sales_progression.id -> chase_messages rows (newest sent_at first)."""
+    out: dict[str, list] = {}
+    if not property_ids:
+        return out
+    client = supabase_for_backend()
+    for chunk in _chunk_ids(property_ids):
+        try:
+            res = (
+                client.table("chase_messages")
+                .select("*")
+                .in_("property_id", chunk)
+                .order("sent_at", desc=True)
+                .limit(3000)
+                .execute()
+            )
+        except Exception:
+            continue
+        for row in res.data or []:
+            pid = str(row.get("property_id") or "")
+            if pid:
+                out.setdefault(pid, []).append(row)
+    for pid in out:
+        out[pid].sort(
+            key=lambda r: (r.get("sent_at") or r.get("created_at") or ""),
+            reverse=True,
+        )
+    return out
+
+
+def fetch_chase_confirmations_by_property_ids(property_ids: list[str]) -> dict[str, list]:
+    """sales_progression.id -> chase_confirmations rows (newest created_at first)."""
+    out: dict[str, list] = {}
+    if not property_ids:
+        return out
+    client = supabase_for_backend()
+    for chunk in _chunk_ids(property_ids):
+        try:
+            res = (
+                client.table("chase_confirmations")
+                .select("*")
+                .in_("property_id", chunk)
+                .order("created_at", desc=True)
+                .limit(3000)
+                .execute()
+            )
+        except Exception:
+            continue
+        for row in res.data or []:
+            pid = str(row.get("property_id") or "")
+            if pid:
+                out.setdefault(pid, []).append(row)
+    for pid in out:
+        out[pid].sort(
+            key=lambda r: r.get("created_at") or "",
+            reverse=True,
+        )
+    return out
+
+
+def fetch_inbound_emails_by_property_ids(property_ids: list[str]) -> dict[str, list]:
+    """sales_progression.id -> inbound_emails rows (newest received_at first)."""
+    out: dict[str, list] = {}
+    if not property_ids:
+        return out
+    client = supabase_for_backend()
+    for chunk in _chunk_ids(property_ids):
+        try:
+            res = (
+                client.table("inbound_emails")
+                .select(
+                    "id,sender_email,sender_name,subject,body_preview,received_at,property_id"
+                )
+                .in_("property_id", chunk)
+                .order("received_at", desc=True)
+                .limit(500)
+                .execute()
+            )
+        except Exception:
+            continue
+        for row in res.data or []:
+            pid = str(row.get("property_id") or "")
+            if pid:
+                out.setdefault(pid, []).append(row)
+    return out

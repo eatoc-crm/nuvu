@@ -5,6 +5,9 @@ from flask import Blueprint, render_template_string, request
 
 from db_supabase import (
     fetch_chain_links,
+    fetch_chase_confirmations_by_property_ids,
+    fetch_chase_messages_by_property_ids,
+    fetch_inbound_emails_by_property_ids,
     fetch_local_authority_search_times,
     fetch_preferred_surveyors,
     fetch_property_images,
@@ -1071,7 +1074,7 @@ a.portal-review-link:hover{color:var(--claret)}
         <div class="na-confirm-card" data-confirmation-id="{{ c.id }}">
           <span class="na-confirm-badge">Confirm milestone</span>
           <div class="na-confirm-addr">{{ c.property_address or 'Unknown address' }}</div>
-          <div class="na-confirm-meta">Suggested: <strong>{{ c.suggested_milestone }}</strong></div>
+          <div class="na-confirm-meta">Suggested: <strong>{{ c.suggested_milestone_label or c.suggested_milestone }}</strong></div>
           <div class="na-confirm-snippet">{{ c.email_snippet or '—' }}</div>
           <div class="na-confirm-actions">
             <button type="button" class="na-confirm-btn na-confirm-yes" data-chase-action="confirm" data-cid="{{ c.id }}">Confirm</button>
@@ -1414,8 +1417,12 @@ a.portal-review-link:hover{color:var(--claret)}
     else if(field==="survey_instructed")currentProp.survey_instructed=v;
     else if(field==="mortgage_offered")currentProp.mortgage_offered=v;
     else if(field==="draft_contract_sent")currentProp.draft_contract_sent=v;
+    else if(field==="search_fees_confirmed")currentProp.search_fees_confirmed=v;
+    else if(field==="draft_contract_issued")currentProp.draft_contract_issued=v;
     else if(field==="enquiries_raised")currentProp.enquiries_raised=v;
     else if(field==="enquiries_answered")currentProp.enquiries_answered=v;
+    else if(field==="report_on_title")currentProp.report_on_title=v;
+    else if(field==="exchange_target_date")currentProp.exchange_target_date=v;
     else if(field==="exchange_date")currentProp.exchange_target=v;
     else if(field==="completion_date")currentProp.completion_target=v;
     else if(field==="protocol_forms_returned")currentProp.protocol_forms_returned=v;
@@ -1689,9 +1696,12 @@ a.portal-review-link:hover{color:var(--claret)}
       ["Seller Solicitor",p.seller_solicitor],["Seller Sol. Phone",p.seller_sol_phone],
       ["Offer Accepted",fmt(p.offer_date)],["Memo Sent",fmt(p.memo_sent)],
       ["Searches Ordered",fmt(p.searches_ordered)],["Searches Received",fmt(p.searches_received)],
+      ["Search fees paid",fmt(p.search_fees_confirmed)],
       ["Enquiries Raised",fmt(p.enquiries_raised)],["Enquiries Answered",fmt(p.enquiries_answered)],
+      ["Report on Title",fmt(p.report_on_title)],["Target Exchange (NUVU)",fmt(p.exchange_target_date)],
       ["Mortgage Offered",fmt(p.mortgage_offered)],["Survey Instructed",fmt(p.survey_instructed)],
-      ["Draft Contract Sent",fmt(p.draft_contract_sent)],["Exchange Target",fmt(p.exchange_target)],
+      ["Draft Contract Sent",fmt(p.draft_contract_sent)],["Draft contract issued",fmt(p.draft_contract_issued)],
+      ["Exchange Target",fmt(p.exchange_target)],
       ["Completion Target",fmt(p.completion_target)],["Duration",p.duration_days+" of "+p.target_days+" days"]
     ];
     var dh="";
@@ -2247,9 +2257,13 @@ FORECAST_SCORE_WEIGHTS = (
     ("survey_instructed", 10),
     ("searches_ordered", 10),
     ("searches_received", 15),
+    ("search_fees_confirmed", 3),
     ("draft_contract_sent", 10),
+    ("draft_contract_issued", 3),
     ("enquiries_raised", 15),
     ("enquiries_answered", 10),  # brief: enquiries_resolved
+    ("report_on_title", 5),
+    ("exchange_target_date", 3),
     ("exchange_target", 5),  # brief: exchange_date
 )
 
@@ -2263,13 +2277,13 @@ FUNNEL_STEPS = (
     ),
     (
         "Searches",
-        ("searches_ordered", "searches_received"),
+        ("searches_ordered", "searches_received", "search_fees_confirmed"),
         "#3d6b66",
     ),
     ("Survey", ("survey_instructed",), "#4A7C6F"),
     (
         "Enquiries",
-        ("enquiries_raised", "enquiries_answered"),
+        ("enquiries_raised", "enquiries_answered", "report_on_title"),
         "#4A7C6F",
     ),
     ("Exchange", ("exchange_target",), "#C4704B"),
@@ -2773,6 +2787,7 @@ def _build_live_dashboard_data(show_test_properties=False):
     """
     from routes.crm import _map_live_properties, _map_supabase_test_property
     from utils.address import normalise_address
+    from routes.chain_chase import fetch_property_ids_chain_solicitor_unresponsive
     from routes.chase_engine import (
         fetch_pending_chase_confirmations,
         fetch_property_ids_solicitor_non_response,
@@ -2824,15 +2839,39 @@ def _build_live_dashboard_data(show_test_properties=False):
             _img_by_addr[addr] = url
 
     _chain_by_propid = {}
+    _chain_by_sales_prog_id: dict[str, list] = {}
     for cl in chain_rows:
         pid = cl.get("property_id")
         if pid:
+            spid = str(pid).strip()
             _chain_by_propid.setdefault(pid, []).append(cl)
+            _chain_by_sales_prog_id.setdefault(spid, []).append(cl)
     _pos_order = {"above": 0, "below": 1}
     for pid in _chain_by_propid:
         _chain_by_propid[pid].sort(
             key=lambda x: _pos_order.get(x.get("chain_position", ""), 2)
         )
+    for spid in _chain_by_sales_prog_id:
+        _chain_by_sales_prog_id[spid].sort(
+            key=lambda x: _pos_order.get(x.get("chain_position", ""), 2)
+        )
+
+    sp_ids = sorted(
+        {
+            str(p.get("_portal_progression_id") or p.get("_progression_id") or "").strip()
+            for p in properties
+            if str(p.get("_portal_progression_id") or p.get("_progression_id") or "").strip()
+        }
+    )
+    chase_msgs_by_sp = (
+        fetch_chase_messages_by_property_ids(sp_ids) if sp_ids else {}
+    )
+    chase_confs_by_sp = (
+        fetch_chase_confirmations_by_property_ids(sp_ids) if sp_ids else {}
+    )
+    inbound_by_sp = (
+        fetch_inbound_emails_by_property_ids(sp_ids) if sp_ids else {}
+    )
 
     today = date.today()
     _merge_sales_pipeline_for_dashboard(properties, pipe_rows, today)
@@ -2840,7 +2879,20 @@ def _build_live_dashboard_data(show_test_properties=False):
     for p in properties:
         addr_norm = _normalize_addr(p.get("address") or "")
         pid = _propid_by_addr.get(addr_norm)
-        p["chain_links"] = _chain_by_propid.get(pid or "", [])
+        sid = str(p.get("_portal_progression_id") or p.get("_progression_id") or "").strip()
+        by_img = list(_chain_by_propid.get(pid or "", []))
+        by_sp = list(_chain_by_sales_prog_id.get(sid, []))
+        merged_chain: dict[str, dict] = {}
+        for cl in by_img + by_sp:
+            ck = str(cl.get("id") or "").strip()
+            key = ck if ck else f"tmp-{id(cl)}"
+            merged_chain[key] = cl
+        clist = list(merged_chain.values())
+        clist.sort(key=lambda x: _pos_order.get(x.get("chain_position", ""), 2))
+        p["chain_links"] = clist
+        p["chase_messages"] = chase_msgs_by_sp.get(sid, [])
+        p["chase_confirmations_list"] = chase_confs_by_sp.get(sid, [])
+        p["inbound_emails_list"] = inbound_by_sp.get(sid, [])
         p.setdefault("activity", [])
         p["_pipe_fee"] = _pipeline_fee_gbp(p)
         if not (p.get("image_url") or "").strip():
@@ -2883,12 +2935,14 @@ def _build_live_dashboard_data(show_test_properties=False):
             if str(c.get("property_id") or "") not in test_prog_ids
         ]
     solicitor_na_ids = fetch_property_ids_solicitor_non_response()
+    chain_unresp_by_prog = fetch_property_ids_chain_solicitor_unresponsive()
     na_raw = get_needs_attention(
         na_candidates,
         la_by_norm,
         surveyor_hint=surveyor_hint,
         today=today,
         solicitor_non_response_ids=solicitor_na_ids,
+        chain_unresponsive_by_progression_id=chain_unresp_by_prog,
     )
     needs_attention_items = []
     for it in na_raw:

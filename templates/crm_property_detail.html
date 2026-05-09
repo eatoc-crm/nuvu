@@ -166,45 +166,25 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
 .empty-sec{padding:12px 0;color:var(--txt-secondary);font-size:.86rem}
 
 .note-block--nuvu{background:var(--off-white)}
-.nuvu-notes-head{align-items:flex-start;margin-bottom:10px}
-.nuvu-notes-head-left{min-width:0;flex:1}
-.nuvu-notes-head-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
-.nuvu-notes-sub{font-size:.82rem;color:var(--txt-secondary);margin-top:4px}
-.nuvu-notes-toggle-all{
-  background:none;border:none;padding:0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;
-  color:#1B3A5C;cursor:pointer;font-family:inherit;
-}
-.nuvu-notes-toggle-all:hover{opacity:.85}
-.nuvu-notes-cards{display:flex;flex-direction:column;font-family:system-ui,-apple-system,sans-serif}
-.nuvu-notes-orphan{
-  font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.45;margin-bottom:8px;
-  padding:12px 16px;background:#FFFFFF;border:1px solid #E5E7EB;border-radius:4px;
-}
 .d-note-raw-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:pre;border:0;opacity:0;pointer-events:none}
+.note-block-txt.nuvu-notes-card-host{min-height:0}
+.nuvu-notes-cards-stack{
+  display:flex;flex-direction:column;gap:8px;
+}
 .nuvu-note-card{
-  background:#FFFFFF;border:1px solid #E5E7EB;border-radius:4px;padding:12px 16px;margin-bottom:8px;
-  transition:border-color .2s ease;
+  padding:12px 14px;border-bottom:1px dotted #E5E7EB;
+  border-radius:0;
 }
-.nuvu-note-card:hover{border-color:#1B3A5C}
-.nuvu-note-header{
-  display:flex;justify-content:space-between;align-items:center;width:100%;
-  background:none;border:none;padding:0;cursor:pointer;text-align:left;font:inherit;
+.nuvu-note-card:last-child{border-bottom:none}
+.nuvu-note-card--with-body{background:#FEFCE8}
+.nuvu-note-card--header-only{background:#fff}
+.nuvu-note-card-hdr{
+  font-size:13px;font-weight:700;color:#1B3A5C;line-height:1.4;margin-bottom:0;
 }
-.nuvu-note-header-left{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 8px;min-width:0;flex:1}
-.nuvu-note-date{font-size:11px;text-transform:uppercase;letter-spacing:.02em;color:#6B7280}
-.nuvu-note-sep{font-size:11px;color:#9CA3AF;font-weight:400}
-.nuvu-note-author{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#1B3A5C}
-.nuvu-note-chev{flex-shrink:0;font-size:14px;line-height:1;color:#9CA3AF;margin-left:10px}
-.nuvu-note-preview{
-  display:block;font-size:13px;color:#374151;line-height:1.45;width:100%;max-width:100%;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:6px;
+.nuvu-note-card--with-body .nuvu-note-card-hdr{margin-bottom:6px}
+.nuvu-note-card-body{
+  font-size:13px;font-weight:400;color:#333;line-height:1.45;white-space:pre-wrap;
 }
-.nuvu-note-card.is-open .nuvu-note-preview{display:none}
-.nuvu-note-body{
-  display:none;font-size:13px;color:#374151;line-height:1.45;white-space:pre-wrap;word-break:break-word;
-  margin-top:8px;
-}
-.nuvu-note-card.is-open .nuvu-note-body{display:block}
 
 @media(max-width:700px){
   .det-grid{grid-template-columns:1fr}
@@ -387,23 +367,15 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
       {% set note_fields = [("notes","General notes"),("nuvu_notes","NUVU notes"),("buyer_solicitor_notes","Buyer solicitor notes"),("seller_solicitor_notes","Seller solicitor notes")] %}
       {% for key, label in note_fields %}
       {% if key == 'nuvu_notes' %}
-      {# NUVU notes card script expects IDs: d-nuvu-notes-raw-json, d-nuvu-notes-mount, d-nuvu-notes-fallback, d-nuvu-notes-sub, d-nuvu-toggle-all #}
+      {# NUVU notes: same renderNoteCards as dashboard modal — IDs d-nuvu-notes-raw-json, d-nuvu-notes-mount #}
       <div class="note-block note-block--nuvu" id="d-note-blk-{{ loop.index0 }}">
         <script type="application/json" id="d-nuvu-notes-raw-json">{{ (p.nuvu_notes or '')|tojson }}</script>
-        <div class="note-block-hdr nuvu-notes-head">
-          <div class="nuvu-notes-head-left">
-            <span class="note-block-lbl">{{ label }}</span>
-            <div class="nuvu-notes-sub" id="d-nuvu-notes-sub" aria-live="polite"></div>
-          </div>
-          <div class="nuvu-notes-head-right">
-            <button type="button" class="nuvu-notes-toggle-all" id="d-nuvu-toggle-all" hidden>Expand all</button>
-            {% if p._progression_id %}<button type="button" class="note-edit-btn" data-nkey="{{ key }}" data-nidx="{{ loop.index0 }}">Edit</button>{% endif %}
-          </div>
+        <div class="note-block-hdr">
+          <span class="note-block-lbl">{{ label }}</span>
+          {% if p._progression_id %}<button type="button" class="note-edit-btn" data-nkey="{{ key }}" data-nidx="{{ loop.index0 }}">Edit</button>{% endif %}
         </div>
         <textarea id="d-note-txt-{{ loop.index0 }}" class="d-note-raw-hidden{% if not p.nuvu_notes %} empty{% endif %}" aria-hidden="true" tabindex="-1" readonly></textarea>
-        <!-- NUVU notes: collapsible .nuvu-note-card articles are inserted into #d-nuvu-notes-mount by the script below (not server-rendered). -->
         <div id="d-nuvu-notes-mount"></div>
-        <div class="note-block-txt{{ ' empty' if not p.nuvu_notes }}" id="d-nuvu-notes-fallback" style="display:none">{{ p.nuvu_notes or 'No notes yet' }}</div>
       </div>
       {% else %}
       <div class="note-block" id="d-note-blk-{{ loop.index0 }}">
@@ -440,12 +412,126 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
 (function(){
   var jsonEl = document.getElementById("d-nuvu-notes-raw-json");
   var mount = document.getElementById("d-nuvu-notes-mount");
-  var fallback = document.getElementById("d-nuvu-notes-fallback");
-  var subEl = document.getElementById("d-nuvu-notes-sub");
-  var toggleAllBtn = document.getElementById("d-nuvu-toggle-all");
-  var blk = jsonEl.parentElement;
+  var blk = jsonEl ? jsonEl.parentElement : null;
   var txRaw = blk ? blk.querySelector("textarea.d-note-raw-hidden") : null;
-  if (!jsonEl || !mount || !fallback || !blk) return;
+  if (!jsonEl || !mount || !blk) return;
+
+  function splitNotesByRuleLines(raw){
+    var s=(raw==null?"":String(raw)).replace(/^\uFEFF/,"").trim();
+    if(!s)return[];
+    var lines=s.split(/\r?\n/);
+    function isSepLine(line){
+      if(!line)return false;
+      var only=line.replace(/[\s\u2500]/g,"");
+      return only.length===0&&/[\u2500]{3,}/.test(line);
+    }
+    var ruleIdx=[];
+    for(var i=0;i<lines.length;i++){if(isSepLine(lines[i]))ruleIdx.push(i);}
+    if(!ruleIdx.length)return[s];
+    var parts=[];
+    var start=0;
+    for(var ri=0;ri<ruleIdx.length;ri++){
+      var sepAt=ruleIdx[ri];
+      var chunk=lines.slice(start,sepAt).join("\n").trim();
+      if(chunk)parts.push(chunk);
+      start=sepAt+1;
+    }
+    var tail=lines.slice(start).join("\n").trim();
+    if(tail)parts.push(tail);
+    return parts.filter(Boolean);
+  }
+
+  function isAltoImportBannerLine(line){
+    var t=(line||"").trim();
+    if(!t)return false;
+    if(!/Alto\s+Progression\s+Notes/i.test(t))return false;
+    if(!/\(\s*imported/i.test(t))return false;
+    return/[-=\u2013\u2014\u2500]{2,}/.test(t);
+  }
+
+  function stripAltoImportBanners(text){
+    var lines=(text||"").split(/\r?\n/);
+    var out=[];
+    for(var i=0;i<lines.length;i++){
+      if(isAltoImportBannerLine(lines[i]))continue;
+      out.push(lines[i]);
+    }
+    return out.join("\n").trim();
+  }
+
+  function parseNuvuNoteSegment(segment){
+    var s=stripAltoImportBanners((segment||"").replace(/^\uFEFF/,"").trim());
+    if(!s)return null;
+    var lines=s.split(/\r?\n/);
+    var line0=(lines[0]||"").trim();
+    var rest=lines.slice(1).join("\n").replace(/^\uFEFF/,"").trim();
+    var hdr=/^\[([^\]]+)\]\s*(.+?):\s*$/.exec(line0);
+    if(hdr){
+      return{date:(hdr[1]||"").trim(),author:(hdr[2]||"").trim(),body:rest};
+    }
+    var hdrLoose=/^\[([^\]]+)\]\s*(.+)$/.exec(line0);
+    if(hdrLoose){
+      return{
+        date:(hdrLoose[1]||"").trim(),
+        author:(hdrLoose[2]||"").trim(),
+        body:rest
+      };
+    }
+    return{date:"\u2014",author:"Note",body:s};
+  }
+
+  function renderNoteCards(notesString,mountEl){
+    if(!mountEl)return;
+    var trimmed=(notesString==null?"":String(notesString)).trim();
+    mountEl.className="note-block-txt nuvu-notes-card-host";
+    mountEl.innerHTML="";
+    if(!trimmed){
+      mountEl.classList.add("empty");
+      mountEl.textContent="No notes yet";
+      return;
+    }
+    mountEl.classList.remove("empty");
+    var segments=splitNotesByRuleLines(trimmed);
+    var items=[];
+    for(var si=0;si<segments.length;si++){
+      var meta=parseNuvuNoteSegment(segments[si]);
+      if(!meta)continue;
+      items.push(meta);
+    }
+    if(!items.length){
+      mountEl.classList.add("empty");
+      mountEl.textContent="No notes yet";
+      return;
+    }
+    items.reverse();
+    var stack=document.createElement("div");
+    stack.className="nuvu-notes-cards-stack";
+    for(var ii=0;ii<items.length;ii++){
+      (function(meta){
+        var bodyTxt=(meta.body!=null?String(meta.body):"").trim();
+        var hasBody=bodyTxt.length>0;
+        var art=document.createElement("article");
+        art.className="nuvu-note-card "+(hasBody?"nuvu-note-card--with-body":"nuvu-note-card--header-only");
+        var hdr=document.createElement("div");
+        hdr.className="nuvu-note-card-hdr";
+        var d=(meta.date||"").trim();
+        var a=(meta.author||"").trim();
+        if(d&&a)hdr.textContent=d+" - "+a;
+        else if(d)hdr.textContent=d;
+        else if(a)hdr.textContent=a;
+        else hdr.textContent="Note";
+        art.appendChild(hdr);
+        if(hasBody){
+          var bodyEl=document.createElement("div");
+          bodyEl.className="nuvu-note-card-body";
+          bodyEl.textContent=meta.body;
+          art.appendChild(bodyEl);
+        }
+        stack.appendChild(art);
+      })(items[ii]);
+    }
+    mountEl.appendChild(stack);
+  }
 
   var raw = "";
   try { raw = JSON.parse(jsonEl.textContent || "\"\""); } catch (e1) { raw = ""; }
@@ -455,243 +541,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     if (!raw.trim()) txRaw.classList.add("empty");
     else txRaw.classList.remove("empty");
   }
-
-  function isSepLine(line) {
-    var t = (line || "").replace(/\r/g, "").trim();
-    if (t.length < 8) return false;
-    for (var i = 0; i < t.length; i++) {
-      var c = t.charCodeAt(i);
-      if (
-        c !== 0x2500 &&
-        c !== 0x2014 &&
-        c !== 0x2013 &&
-        c !== 0x2012 &&
-        c !== 0x2010 &&
-        c !== 0x2212 &&
-        c !== 0x2D &&
-        c !== 0x3D &&
-        c !== 0x5F &&
-        c !== 32 &&
-        c !== 9
-      ) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function rawHasNoteSeparators(text) {
-    var lines = (text || "").split(/\r?\n/);
-    for (var si = 0; si < lines.length; si++) {
-      if (isSepLine(lines[si])) return true;
-    }
-    return false;
-  }
-
-  function splitIntoChunks(text) {
-    var lines = (text || "").split(/\r?\n/);
-    var chunks = [];
-    var buf = [];
-    for (var i = 0; i < lines.length; i++) {
-      if (isSepLine(lines[i])) {
-        if (buf.length) chunks.push(buf.join("\n"));
-        buf = [];
-      } else buf.push(lines[i]);
-    }
-    if (buf.length) chunks.push(buf.join("\n"));
-    return chunks;
-  }
-
-  /** Prefer box-drawn separators; otherwise split before each line that starts a new [bracket] note. */
-  function splitIntoNoteChunks(text) {
-    var t = (text || "").replace(/\r/g, "");
-    if (!t.trim()) return [];
-    if (rawHasNoteSeparators(t)) {
-      return splitIntoChunks(t).map(function(c){ return c.trim(); }).filter(Boolean);
-    }
-    var parts = t.split(/\n(?=\[[^\]]+\])/);
-    var out = [];
-    for (var pi = 0; pi < parts.length; pi++) {
-      var p = parts[pi].trim();
-      if (p) out.push(p);
-    }
-    return out.length ? out : [t.trim()];
-  }
-
-  function stripSeparatorLinesFromText(text) {
-    var lines = (text || "").split(/\r?\n/);
-    var kept = [];
-    for (var li = 0; li < lines.length; li++) {
-      if (!isSepLine(lines[li])) kept.push(lines[li]);
-    }
-    return kept.join("\n").trim();
-  }
-
-  function parseNoteChunk(chunk) {
-    var t = (chunk || "").replace(/\r/g, "").trim();
-    if (!t) return null;
-    var lines = t.split("\n");
-    var head = lines[0];
-    var mDatedAuthor = head.match(/^\[([^\]]+)\]\s*(.+?):\s*(.*)$/);
-    if (mDatedAuthor) {
-      var authorPart = mDatedAuthor[2].trim();
-      var sameLine = (mDatedAuthor[3] || "").trim();
-      var restLines = lines.slice(1).join("\n").trim();
-      var bodyA = (sameLine ? sameLine + (restLines ? "\n" + restLines : "") : restLines).trim();
-      if (!bodyA) return null;
-      return { bracket: mDatedAuthor[1], author: authorPart, body: bodyA };
-    }
-    var mBracket = head.match(/^\[([^\]]+)\]\s*(.*)$/);
-    if (!mBracket) return null;
-    var bracket = mBracket[1];
-    var tail = (mBracket[2] || "").trim();
-    var bodyB = tail;
-    if (lines.length > 1) {
-      bodyB = (tail ? tail + "\n" : "") + lines.slice(1).join("\n");
-    }
-    bodyB = (bodyB || "").trim();
-    if (!bodyB) return null;
-    return { bracket: bracket, author: "NUVU", body: bodyB };
-  }
-
-  function displayDate(bracket) {
-    var mm = bracket.match(/^\w+\s+(\d{1,2}\s+\w+\s+\d{4})/);
-    if (mm) return mm[1];
-    return bracket;
-  }
-
-  function previewText(body) {
-    var one = (body || "").replace(/\s+/g, " ").trim();
-    if (one.length <= 80) return one;
-    return one.slice(0, 80) + "\u2026";
-  }
-
-  var chunks = splitIntoNoteChunks(raw);
-  var notes = [];
-  var orphans = [];
-  for (var c = 0; c < chunks.length; c++) {
-    var parsed = parseNoteChunk(chunks[c]);
-    if (parsed && parsed.body && String(parsed.body).trim()) {
-      notes.push(parsed);
-    } else {
-      var cleaned = stripSeparatorLinesFromText(chunks[c]);
-      if (cleaned) orphans.push(cleaned);
-    }
-  }
-
-  if (subEl) {
-    var n = notes.length;
-    if (n) subEl.textContent = n === 1 ? "1 note" : (n + " notes");
-    else if (orphans.length) subEl.textContent = orphans.length === 1 ? "1 extra section" : (orphans.length + " extra sections");
-    else subEl.textContent = "";
-  }
-
-  if (notes.length === 0 && orphans.length === 0) {
-    mount.style.display = "none";
-    fallback.style.display = "block";
-    if (subEl) subEl.textContent = "";
-    return;
-  }
-
-  var wrap = document.createElement("div");
-  wrap.className = "nuvu-notes-cards";
-  if (orphans.length) {
-    var oi = 0;
-    for (; oi < orphans.length; oi++) {
-      var pre = document.createElement("div");
-      pre.className = "nuvu-notes-orphan";
-      pre.textContent = orphans[oi];
-      wrap.appendChild(pre);
-    }
-  }
-
-  var cards = [];
-  function syncToggleAllLabel() {
-    if (!toggleAllBtn || !cards.length) return;
-    var openCount = 0;
-    for (var i = 0; i < cards.length; i++) {
-      if (cards[i].classList.contains("is-open")) openCount++;
-    }
-    toggleAllBtn.textContent = openCount === cards.length ? "Collapse all" : "Expand all";
-  }
-
-  function setCardOpen(card, open) {
-    var hdr = card.querySelector(".nuvu-note-header");
-    var ch = card.querySelector(".nuvu-note-chev");
-    if (open) {
-      card.classList.add("is-open");
-      if (hdr) hdr.setAttribute("aria-expanded", "true");
-      if (ch) ch.textContent = "\u25B2";
-    } else {
-      card.classList.remove("is-open");
-      if (hdr) hdr.setAttribute("aria-expanded", "false");
-      if (ch) ch.textContent = "\u25BC";
-    }
-  }
-
-  for (var j = 0; j < notes.length; j++) {
-    (function(note){
-      var card = document.createElement("article");
-      card.className = "nuvu-note-card";
-      var hdr = document.createElement("button");
-      hdr.type = "button";
-      hdr.className = "nuvu-note-header";
-      hdr.setAttribute("aria-expanded", "false");
-      var left = document.createElement("div");
-      left.className = "nuvu-note-header-left";
-      var dEl = document.createElement("span");
-      dEl.className = "nuvu-note-date";
-      dEl.textContent = displayDate(note.bracket);
-      var sep = document.createElement("span");
-      sep.className = "nuvu-note-sep";
-      sep.textContent = "\u00B7";
-      sep.setAttribute("aria-hidden", "true");
-      var aEl = document.createElement("span");
-      aEl.className = "nuvu-note-author";
-      aEl.textContent = note.author;
-      left.appendChild(dEl);
-      left.appendChild(sep);
-      left.appendChild(aEl);
-      var chev = document.createElement("span");
-      chev.className = "nuvu-note-chev";
-      chev.setAttribute("aria-hidden", "true");
-      chev.textContent = "\u25BC";
-      hdr.appendChild(left);
-      hdr.appendChild(chev);
-      var prv = document.createElement("div");
-      prv.className = "nuvu-note-preview";
-      prv.textContent = previewText(note.body);
-      var bodyEl = document.createElement("div");
-      bodyEl.className = "nuvu-note-body";
-      bodyEl.textContent = note.body;
-      hdr.addEventListener("click", function(ev){
-        ev.preventDefault();
-        var open = !card.classList.contains("is-open");
-        setCardOpen(card, open);
-        syncToggleAllLabel();
-      });
-      card.appendChild(hdr);
-      card.appendChild(prv);
-      card.appendChild(bodyEl);
-      wrap.appendChild(card);
-      cards.push(card);
-    })(notes[j]);
-  }
-
-  mount.style.display = "";
-  mount.appendChild(wrap);
-  fallback.style.display = "none";
-
-  if (toggleAllBtn && cards.length > 0) {
-    toggleAllBtn.hidden = false;
-    toggleAllBtn.addEventListener("click", function(){
-      var expand = toggleAllBtn.textContent === "Expand all";
-      for (var k = 0; k < cards.length; k++) {
-        setCardOpen(cards[k], expand);
-      }
-      toggleAllBtn.textContent = expand ? "Collapse all" : "Expand all";
-    });
-  }
+  renderNoteCards(raw, mount);
 })();
 
 (function(){

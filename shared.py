@@ -11,6 +11,11 @@ resend.api_key = os.environ.get("RESEND_API_KEY", "")
 # Track 6 — chain solicitor sequence: set CHAIN_CHASE_ENABLED=true on Railway to send
 # (default false = cadence evaluates chain_links but Resend sends are skipped).
 
+
+def chain_chase_sending_enabled() -> bool:
+    """Kill switch for Track 6 chain solicitor Resend sends (default off)."""
+    return os.environ.get("CHAIN_CHASE_ENABLED", "false").lower() == "true"
+
 # Shared Supabase client (initialised inside db_supabase.py).
 from db_supabase import supabase as sb  # noqa: E402
 

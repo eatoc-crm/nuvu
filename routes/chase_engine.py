@@ -503,11 +503,26 @@ def _phase_b_try_immediate_after_confirm(
             )
 
 
+_PATCH_TRIGGERS_PHASE_C_IMMEDIATE: frozenset[str] = frozenset(
+    {
+        "searches_received",
+        "survey_instructed",
+        "enquiries_raised",
+        "enquiries_answered",
+    }
+)
+
+
 def on_sales_progression_patch(prog_id: str, updated_field_keys: list[str]) -> None:
-    """Call from routes/progression after a successful PATCH (event-driven Phase B Day 0)."""
+    """Call from routes/progression after a successful PATCH (event-driven Phase B/C Day 0)."""
     client = supabase_for_backend()
     for k in updated_field_keys:
         _phase_b_try_immediate_after_confirm(client, prog_id, k)
+    if _PATCH_TRIGGERS_PHASE_C_IMMEDIATE.intersection(updated_field_keys):
+        try:
+            _phase_c_try_immediate_after_confirm(client, prog_id, "")
+        except Exception as ex:
+            print(f"[chase_engine] phase_c immediate chases after PATCH: {ex}")
 
 
 def _run_phase_b_cadence(
@@ -698,7 +713,7 @@ def _run_phase_b_cadence(
 def _phase_c_try_immediate_after_confirm(
     client, pid: str, confirmed_milestone: str
 ) -> None:
-    """When staff confirms an inbound suggestion: compound Stage 7a + parallel 7b/8 day-0."""
+    """After confirm or PATCH: Stage 7a (both searches_received + survey_instructed), 7b/8 on enquiries_raised, report on title Day 0 when enquiries_answered set."""
     try:
         r = (
             client.table("sales_progression")
@@ -783,6 +798,22 @@ def _phase_c_try_immediate_after_confirm(
                         html_body=html_b,
                         dry_run_label=label,
                     )
+
+    ea_done = _parse_ts_value(prog.get("enquiries_answered"))
+    rt_done = _parse_ts_value(prog.get("report_on_title"))
+    if ea_done and not rt_done:
+        if not _already_sent(client, pid, "report_on_title", 0):
+            subj, html_b = render_report_on_title_chase(0, base_ctx)
+            send_chase_message(
+                property_id=pid,
+                chase_stage="report_on_title",
+                chase_day=0,
+                recipient_type="buyer_solicitor",
+                recipient_email=buyer_em,
+                subject=subj,
+                html_body=html_b,
+                dry_run_label="phase_c_report_d0",
+            )
 
 
 def _buyer_survey_type(prog: dict, pipe: dict | None) -> str:

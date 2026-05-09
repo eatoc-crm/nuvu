@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import re
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
@@ -10,6 +9,7 @@ from typing import Any
 from flask import Blueprint
 
 from db_supabase import supabase_for_backend
+from shared import chain_chase_sending_enabled
 from routes.chase_engine import send_chase_message
 from utils.chase_templates import (
     chain_solicitor_flag_note_text,
@@ -51,10 +51,6 @@ _MILESTONE_LABELS: dict[str, str] = {
     "exchange_date": "Exchange date agreed",
     "completion_date": "Completion date locked",
 }
-
-
-def chain_chase_sending_enabled() -> bool:
-    return os.environ.get("CHAIN_CHASE_ENABLED", "false").lower() == "true"
 
 
 def chain_inform_milestone_field(key: str) -> bool:

@@ -24,6 +24,7 @@ SALES_PROGRESSION_OVERLAY_COLS = (
     "offer_accepted",
     "memo_sent",
     "welcome_emails_sent",
+    "protocol_forms_sent",
     "searches_ordered",
     "searches_received",
     "search_fees_confirmed",

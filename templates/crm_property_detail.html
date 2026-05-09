@@ -171,41 +171,40 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
 .nuvu-notes-head-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .nuvu-notes-sub{font-size:.82rem;color:var(--txt-secondary);margin-top:4px}
 .nuvu-notes-toggle-all{
-  background:none;border:none;padding:0;font-size:.82rem;color:var(--txt-secondary);
-  cursor:pointer;text-decoration:underline;font-family:inherit;
+  background:none;border:none;padding:0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;
+  color:#1B3A5C;cursor:pointer;font-family:inherit;
 }
-.nuvu-notes-toggle-all:hover{color:var(--navy)}
-.nuvu-notes-cards{display:flex;flex-direction:column;gap:8px;font-family:system-ui,-apple-system,sans-serif}
+.nuvu-notes-toggle-all:hover{opacity:.85}
+.nuvu-notes-cards{display:flex;flex-direction:column;font-family:system-ui,-apple-system,sans-serif}
 .nuvu-notes-orphan{
-  font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.45;margin-bottom:10px;
-  padding:10px 12px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.45;margin-bottom:8px;
+  padding:12px 16px;background:#FFFFFF;border:1px solid #E5E7EB;border-radius:4px;
 }
 .d-note-raw-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:pre;border:0;opacity:0;pointer-events:none}
 .nuvu-note-card{
-  background:#FFFFFF;border:1px solid #E5E7EB;border-radius:4px;transition:border-color .2s ease;
+  background:#FFFFFF;border:1px solid #E5E7EB;border-radius:4px;padding:12px 16px;margin-bottom:8px;
+  transition:border-color .2s ease;
 }
 .nuvu-note-card:hover{border-color:#1B3A5C}
-.nuvu-note-toggle{
-  display:flex;flex-direction:column;align-items:stretch;gap:6px;width:100%;
-  padding:10px 12px;background:none;border:none;cursor:pointer;text-align:left;font:inherit;
+.nuvu-note-header{
+  display:flex;justify-content:space-between;align-items:center;width:100%;
+  background:none;border:none;padding:0;cursor:pointer;text-align:left;font:inherit;
 }
-.nuvu-note-toggle-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;width:100%}
-.nuvu-note-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 8px;min-width:0;flex:1}
-.nuvu-note-date{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#6B7280}
+.nuvu-note-header-left{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 8px;min-width:0;flex:1}
+.nuvu-note-date{font-size:11px;text-transform:uppercase;letter-spacing:.02em;color:#6B7280}
 .nuvu-note-sep{font-size:11px;color:#9CA3AF;font-weight:400}
-.nuvu-note-author{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:#1B3A5C}
-.nuvu-note-chev{flex-shrink:0;font-size:12px;line-height:1;color:#9CA3AF;padding-top:2px}
+.nuvu-note-author{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#1B3A5C}
+.nuvu-note-chev{flex-shrink:0;font-size:14px;line-height:1;color:#9CA3AF;margin-left:10px}
 .nuvu-note-preview{
-  display:block;font-size:13px;color:#374151;line-height:1.4;width:100%;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;
+  display:block;font-size:13px;color:#374151;line-height:1.45;width:100%;max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:6px;
 }
 .nuvu-note-card.is-open .nuvu-note-preview{display:none}
-.nuvu-note-body-wrap{overflow:hidden;transition:max-height .4s ease}
-.nuvu-note-card:not(.is-open) .nuvu-note-body-wrap{max-height:0!important}
-.nuvu-note-card.is-open .nuvu-note-body-wrap{max-height:4800px}
 .nuvu-note-body{
-  padding:0 12px 12px;font-size:13px;color:#374151;line-height:1.45;white-space:pre-wrap;word-break:break-word;
+  display:none;font-size:13px;color:#374151;line-height:1.45;white-space:pre-wrap;word-break:break-word;
+  margin-top:8px;
 }
+.nuvu-note-card.is-open .nuvu-note-body{display:block}
 
 @media(max-width:700px){
   .det-grid{grid-template-columns:1fr}
@@ -502,16 +501,44 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     return chunks;
   }
 
+  /** Prefer box-drawn separators; otherwise split before each line that starts a new [bracket] note. */
+  function splitIntoNoteChunks(text) {
+    var t = (text || "").replace(/\r/g, "");
+    if (!t.trim()) return [];
+    if (rawHasNoteSeparators(t)) {
+      return splitIntoChunks(t).map(function(c){ return c.trim(); }).filter(Boolean);
+    }
+    var parts = t.split(/\n(?=\[[^\]]+\])/);
+    var out = [];
+    for (var pi = 0; pi < parts.length; pi++) {
+      var p = parts[pi].trim();
+      if (p) out.push(p);
+    }
+    return out.length ? out : [t.trim()];
+  }
+
+  function stripSeparatorLinesFromText(text) {
+    var lines = (text || "").split(/\r?\n/);
+    var kept = [];
+    for (var li = 0; li < lines.length; li++) {
+      if (!isSepLine(lines[li])) kept.push(lines[li]);
+    }
+    return kept.join("\n").trim();
+  }
+
   function parseNoteChunk(chunk) {
     var t = (chunk || "").replace(/\r/g, "").trim();
     if (!t) return null;
     var lines = t.split("\n");
     var head = lines[0];
-    var mDatedAuthor = head.match(/^\[([^\]]+)\]\s*(.+):\s*$/);
+    var mDatedAuthor = head.match(/^\[([^\]]+)\]\s*(.+?):\s*(.*)$/);
     if (mDatedAuthor) {
-      var bodyA = lines.slice(1).join("\n").trim();
+      var authorPart = mDatedAuthor[2].trim();
+      var sameLine = (mDatedAuthor[3] || "").trim();
+      var restLines = lines.slice(1).join("\n").trim();
+      var bodyA = (sameLine ? sameLine + (restLines ? "\n" + restLines : "") : restLines).trim();
       if (!bodyA) return null;
-      return { bracket: mDatedAuthor[1], author: mDatedAuthor[2].trim(), body: bodyA };
+      return { bracket: mDatedAuthor[1], author: authorPart, body: bodyA };
     }
     var mBracket = head.match(/^\[([^\]]+)\]\s*(.*)$/);
     if (!mBracket) return null;
@@ -538,21 +565,17 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     return one.slice(0, 80) + "\u2026";
   }
 
-  var hasBoxSep = rawHasNoteSeparators(raw);
-  if (!hasBoxSep) {
-    mount.style.display = "none";
-    fallback.style.display = "block";
-    if (subEl) subEl.textContent = "";
-    return;
-  }
-
-  var chunks = splitIntoChunks(raw);
+  var chunks = splitIntoNoteChunks(raw);
   var notes = [];
   var orphans = [];
   for (var c = 0; c < chunks.length; c++) {
     var parsed = parseNoteChunk(chunks[c]);
-    if (parsed) notes.push(parsed);
-    else if (chunks[c].trim()) orphans.push(chunks[c].trim());
+    if (parsed && parsed.body && String(parsed.body).trim()) {
+      notes.push(parsed);
+    } else {
+      var cleaned = stripSeparatorLinesFromText(chunks[c]);
+      if (cleaned) orphans.push(cleaned);
+    }
   }
 
   if (subEl) {
@@ -565,17 +588,20 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
   if (notes.length === 0 && orphans.length === 0) {
     mount.style.display = "none";
     fallback.style.display = "block";
-    if (subEl) subEl.textContent = "0 notes";
+    if (subEl) subEl.textContent = "";
     return;
   }
 
   var wrap = document.createElement("div");
   wrap.className = "nuvu-notes-cards";
   if (orphans.length) {
-    var pre = document.createElement("div");
-    pre.className = "nuvu-notes-orphan";
-    pre.textContent = orphans.join("\n\n");
-    wrap.appendChild(pre);
+    var oi = 0;
+    for (; oi < orphans.length; oi++) {
+      var pre = document.createElement("div");
+      pre.className = "nuvu-notes-orphan";
+      pre.textContent = orphans[oi];
+      wrap.appendChild(pre);
+    }
   }
 
   var cards = [];
@@ -588,59 +614,67 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     toggleAllBtn.textContent = openCount === cards.length ? "Collapse all" : "Expand all";
   }
 
+  function setCardOpen(card, open) {
+    var hdr = card.querySelector(".nuvu-note-header");
+    var ch = card.querySelector(".nuvu-note-chev");
+    if (open) {
+      card.classList.add("is-open");
+      if (hdr) hdr.setAttribute("aria-expanded", "true");
+      if (ch) ch.textContent = "\u25B2";
+    } else {
+      card.classList.remove("is-open");
+      if (hdr) hdr.setAttribute("aria-expanded", "false");
+      if (ch) ch.textContent = "\u25BC";
+    }
+  }
+
   for (var j = 0; j < notes.length; j++) {
-    (function(note, idx){
+    (function(note){
       var card = document.createElement("article");
       card.className = "nuvu-note-card";
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "nuvu-note-toggle";
-      btn.setAttribute("aria-expanded", "false");
-      var meta = document.createElement("div");
-      meta.className = "nuvu-note-meta";
+      var hdr = document.createElement("button");
+      hdr.type = "button";
+      hdr.className = "nuvu-note-header";
+      hdr.setAttribute("aria-expanded", "false");
+      var left = document.createElement("div");
+      left.className = "nuvu-note-header-left";
       var dEl = document.createElement("span");
       dEl.className = "nuvu-note-date";
       dEl.textContent = displayDate(note.bracket);
       var sep = document.createElement("span");
       sep.className = "nuvu-note-sep";
       sep.textContent = "\u00B7";
+      sep.setAttribute("aria-hidden", "true");
       var aEl = document.createElement("span");
       aEl.className = "nuvu-note-author";
       aEl.textContent = note.author;
-      meta.appendChild(dEl);
-      meta.appendChild(sep);
-      meta.appendChild(aEl);
+      left.appendChild(dEl);
+      left.appendChild(sep);
+      left.appendChild(aEl);
       var chev = document.createElement("span");
       chev.className = "nuvu-note-chev";
       chev.setAttribute("aria-hidden", "true");
       chev.textContent = "\u25BC";
-      var topRow = document.createElement("div");
-      topRow.className = "nuvu-note-toggle-top";
-      topRow.appendChild(meta);
-      topRow.appendChild(chev);
-      var prv = document.createElement("span");
+      hdr.appendChild(left);
+      hdr.appendChild(chev);
+      var prv = document.createElement("div");
       prv.className = "nuvu-note-preview";
       prv.textContent = previewText(note.body);
-      btn.appendChild(topRow);
-      btn.appendChild(prv);
-      var bodyWrap = document.createElement("div");
-      bodyWrap.className = "nuvu-note-body-wrap";
       var bodyEl = document.createElement("div");
       bodyEl.className = "nuvu-note-body";
       bodyEl.textContent = note.body;
-      bodyWrap.appendChild(bodyEl);
-      btn.addEventListener("click", function(ev){
+      hdr.addEventListener("click", function(ev){
         ev.preventDefault();
-        var open = card.classList.toggle("is-open");
-        btn.setAttribute("aria-expanded", open ? "true" : "false");
-        chev.textContent = open ? "\u25B2" : "\u25BC";
+        var open = !card.classList.contains("is-open");
+        setCardOpen(card, open);
         syncToggleAllLabel();
       });
-      card.appendChild(btn);
-      card.appendChild(bodyWrap);
+      card.appendChild(hdr);
+      card.appendChild(prv);
+      card.appendChild(bodyEl);
       wrap.appendChild(card);
       cards.push(card);
-    })(notes[j], j);
+    })(notes[j]);
   }
 
   mount.style.display = "";
@@ -652,18 +686,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     toggleAllBtn.addEventListener("click", function(){
       var expand = toggleAllBtn.textContent === "Expand all";
       for (var k = 0; k < cards.length; k++) {
-        var card = cards[k];
-        var b = card.querySelector(".nuvu-note-toggle");
-        var ch = card.querySelector(".nuvu-note-chev");
-        if (expand) {
-          card.classList.add("is-open");
-          if (b) b.setAttribute("aria-expanded", "true");
-          if (ch) ch.textContent = "\u25B2";
-        } else {
-          card.classList.remove("is-open");
-          if (b) b.setAttribute("aria-expanded", "false");
-          if (ch) ch.textContent = "\u25BC";
-        }
+        setCardOpen(cards[k], expand);
       }
       toggleAllBtn.textContent = expand ? "Collapse all" : "Expand all";
     });

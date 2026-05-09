@@ -131,6 +131,7 @@ def get_needs_attention(
     *,
     surveyor_hint: str | None = None,
     today: date | None = None,
+    solicitor_non_response_ids: set[str] | None = None,
 ) -> list[dict]:
     """
     Each input property dict must include merged sales_progression milestone fields
@@ -143,10 +144,27 @@ def get_needs_attention(
     if surveyor_hint:
         survey_note = f" Suggest: {surveyor_hint}."
 
+    sol_na = solicitor_non_response_ids or set()
     results: list[dict] = []
 
     for p in properties:
         triggers: list[dict] = []
+
+        prog_sid = str(p.get("_portal_progression_id") or "").strip()
+        if prog_sid and prog_sid in sol_na:
+            _append_trigger(
+                triggers,
+                trigger_id="solicitor_non_response",
+                trigger_name="Solicitor non-response",
+                days_overdue=1,
+                severity="amber",
+                suggested_action=(
+                    "Chase message to a solicitor with no reply within 24 hours — follow up."
+                ),
+                quick_action=_build_quick_action(
+                    "email_sol", "Email solicitor", p
+                ),
+            )
 
         chain = (p.get("chain_status") or "stable").strip().lower()
         if chain in ("at_risk", "broken"):
@@ -181,7 +199,7 @@ def get_needs_attention(
                 _append_trigger(
                     triggers,
                     trigger_id="buyer_protocol",
-                    trigger_name="Buyer protocol forms overdue",
+                    trigger_name="Buyer forms overdue",
                     days_overdue=d - 3,
                     severity=sev,
                     suggested_action=(
@@ -199,7 +217,7 @@ def get_needs_attention(
                 _append_trigger(
                     triggers,
                     trigger_id="seller_ta",
-                    trigger_name="Seller TA6/TA10 overdue",
+                    trigger_name="Seller forms overdue",
                     days_overdue=d - 3,
                     severity=sev,
                     suggested_action=(

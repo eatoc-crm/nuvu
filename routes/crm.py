@@ -351,6 +351,102 @@ def _map_live_properties():
     return mapped, None
 
 
+def _sandbox_duration_days(created_val):
+    if not created_val:
+        return 0
+    s = str(created_val)
+    try:
+        if len(s) >= 19 and "T" in s[:19]:
+            d = datetime.strptime(s[:19], "%Y-%m-%dT%H:%M:%S")
+        elif len(s) >= 10:
+            d = datetime.strptime(s[:10], "%Y-%m-%d")
+        else:
+            return 0
+        return max(0, (datetime.utcnow() - d).days)
+    except Exception:
+        return 0
+
+
+def _map_supabase_test_property(prog: dict, pipe: dict, idx: int) -> dict:
+    """Dashboard row from Supabase-only sandbox (sales_progression + sales_pipeline)."""
+    r = prog
+    rid = str(r.get("id") or "")
+    raw_status = (r.get("status") or "active").lower()
+    if raw_status not in STATUS_MAP:
+        raw_status = "active"
+    status = STATUS_MAP.get(raw_status, "on-track")
+    progress = _progress_from_record(r)
+    created_src = pipe.get("created_at") or r.get("created_at")
+    neg = ((pipe.get("negotiator") or r.get("negotiator_name") or "")).strip()
+    return {
+        "id": rid,
+        "address": (r.get("property_address") or "Unknown").strip(),
+        "location": "Testington",
+        "price": r.get("sale_price") or pipe.get("current_price") or 0,
+        "status": status,
+        "status_label": STATUS_LABELS.get(status, "ON TRACK"),
+        "progress": progress,
+        "duration_days": _sandbox_duration_days(created_src),
+        "target_days": 60,
+        "days_since_update": 0,
+        "card_checks": _card_checks_from_record(r),
+        "milestones": _milestones_from_record(r),
+        "buyer": r.get("buyer_name") or "\u2014",
+        "buyer_phone": r.get("buyer_phone") or "\u2014",
+        "buyer_solicitor": (pipe.get("buyers_solicitor") or r.get("buyer_solicitor") or "\u2014"),
+        "buyer_sol_phone": "\u2014",
+        "seller_solicitor": (pipe.get("vendors_solicitor") or r.get("vendor_solicitor") or "\u2014"),
+        "seller_sol_phone": "\u2014",
+        "offer_date": r.get("offer_accepted"),
+        "memo_sent": r.get("memo_sent"),
+        "searches_ordered": r.get("searches_ordered"),
+        "searches_received": r.get("searches_received"),
+        "survey_instructed": r.get("survey_instructed"),
+        "draft_contract_sent": r.get("draft_contract_sent"),
+        "enquiries_raised": r.get("enquiries_raised"),
+        "enquiries_answered": r.get("enquiries_answered"),
+        "mortgage_offered": r.get("mortgage_offered"),
+        "exchange_target": r.get("exchange_date"),
+        "completion_target": r.get("completion_date"),
+        "protocol_forms_returned": r.get("protocol_forms_returned"),
+        "seller_forms_returned": r.get("seller_forms_returned"),
+        "welcome_emails_sent": r.get("welcome_emails_sent"),
+        "chain": "\u2014",
+        "alert": r.get("notes") if raw_status == "problem" else None,
+        "next_action": r.get("notes") or "\u2014",
+        "notes": r.get("notes") or "",
+        "nuvu_notes": r.get("nuvu_notes") or "",
+        "buyer_solicitor_notes": r.get("buyer_solicitor_notes") or "",
+        "seller_solicitor_notes": r.get("seller_solicitor_notes") or "",
+        "image_bg": FALLBACK_GRADIENTS[idx % len(FALLBACK_GRADIENTS)],
+        "image_url": r.get("image_url") or "",
+        "_progression_id": rid,
+        "_portal_progression_id": rid,
+        "_eatoc_property_id": "",
+        "_raw_status": raw_status,
+        "_eatoc_created_at": created_src,
+        "_sewage_type": r.get("sewage_type") or "\u2014",
+        "_mortgage_broker": r.get("mortgage_broker") or "\u2014",
+        "_surveyor": r.get("surveyor") or "\u2014",
+        "_buyer_email": r.get("buyer_email") or "\u2014",
+        "_vendor_name": r.get("vendor_name") or "\u2014",
+        "_vendor_phone": r.get("vendor_phone") or "\u2014",
+        "_vendor_email": r.get("vendor_email") or "\u2014",
+        "_nuvu_notes": r.get("nuvu_notes") or "\u2014",
+        "_staff_initials": r.get("staff_initials") or "\u2014",
+        "_negotiator_name": neg,
+        "agreed_fee": pipe.get("agreed_fee") or r.get("agreed_fee"),
+        "_fee": pipe.get("fee") or r.get("fee"),
+        "_invoice_status": r.get("invoice_status") or "\u2014",
+        "_beds": r.get("beds"),
+        "_baths": r.get("baths"),
+        "_property_type": r.get("property_type") or "Sandbox",
+        "_date_agreed": _iso_date_prefix(r.get("offer_accepted"))
+        or _iso_date_prefix(created_src),
+        "_is_test": True,
+    }
+
+
 def _crm_stats(props):
     """Compute live stats from mapped properties."""
     total = len(props)
@@ -868,22 +964,39 @@ def crm_dashboard():
         _build_live_dashboard_data,
     )
 
+    show_test = request.args.get("show_test", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
     try:
-        props, sections, stats, pipeline, needs_attention_items = (
-            _build_live_dashboard_data()
-        )
+        (
+            props,
+            sections,
+            stats,
+            pipeline,
+            needs_attention_items,
+            chase_confirmation_items,
+        ) = _build_live_dashboard_data(show_test_properties=show_test)
     except Exception as e:
         return f"<h2>Error fetching live data</h2><pre>{e}</pre>", 500
 
+    props_json = (
+        props if show_test else [p for p in props if not p.get("_is_test")]
+    )
     html = render_template_string(
         DASHBOARD_HTML + CRM_OVERRIDE_JS,
         sections=sections,
         needs_attention_items=needs_attention_items,
+        chase_confirmation_items=chase_confirmation_items,
         stats=stats,
         pipeline=pipeline,
-        properties_json=json.dumps(props, default=str),
+        properties_json=json.dumps(props_json, default=str),
         detail_base_url="/crm/property",
         leaderboard_tabs=LEADERBOARD_TABS,
+        show_test_properties=show_test,
+        test_props_toggle_base="/crm",
     )
     return html
 
@@ -894,7 +1007,7 @@ def crm_property_detail(prop_id):
     from routes.dashboard import _build_live_dashboard_data
 
     try:
-        props, _, _, _, _ = _build_live_dashboard_data()
+        props, _, _, _, _, _ = _build_live_dashboard_data()
     except Exception as e:
         return f"<h2>Error fetching live data</h2><pre>{e}</pre>", 500
 

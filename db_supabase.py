@@ -202,6 +202,52 @@ def fetch_sales_pipeline():
     )
 
 
+def fetch_sandbox_test_pipeline_pairs():
+    """Rows where sales_pipeline.is_test: each (sales_progression dict, sales_pipeline dict).
+
+    Used to append dashboard cards for addresses not present on the EATOC feed.
+    Returns [] if is_test column is missing or query fails.
+    """
+    try:
+        client = supabase_for_backend()
+        pipes = (
+            client.table("sales_pipeline")
+            .select("*")
+            .eq("is_test", True)
+            .execute()
+            .data
+        ) or []
+    except Exception:
+        return []
+    if not pipes:
+        return []
+    addrs = [p.get("property_address") for p in pipes if p.get("property_address")]
+    if not addrs:
+        return []
+    try:
+        progs = (
+            client.table("sales_progression")
+            .select("*")
+            .in_("property_address", addrs)
+            .execute()
+            .data
+        ) or []
+    except Exception:
+        return []
+    by_addr = {}
+    for row in progs:
+        a = (row.get("property_address") or "").strip()
+        if a:
+            by_addr[a] = row
+    out = []
+    for pipe in pipes:
+        a = (pipe.get("property_address") or "").strip()
+        prog = by_addr.get(a)
+        if prog:
+            out.append((prog, pipe))
+    return out
+
+
 def fetch_local_authority_search_times():
     """Rows for local_authority_search_times (empty list if table missing)."""
     try:

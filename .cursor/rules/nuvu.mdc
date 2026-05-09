@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Read First
 
-Before making any changes, read `ARCHITECTURE.md` in the project root. It contains the full philosophy, progression model, file structure, and hard rules.
+Before making any changes, read `ARCHITECTURE.md` in the project root. It contains the full philosophy, progression model, file structure, and hard rules. For chase cadences, chain rules, Needs Attention triggers, and milestone column mapping, read `docs/progression-engine-spec.md` (single source of truth; it overrides conflicting briefs).
 
 ## Project Context
 
@@ -22,7 +22,7 @@ Before making any changes, read `ARCHITECTURE.md` in the project root. It contai
 ### Architecture
 
 - `app.py` is the Flask entry point. It registers Blueprints only. Do not add routes or logic here.
-- All routes live in `routes/` as Flask Blueprints: `auth.py`, `intake.py`, `progression.py`, `crm.py`, `dashboard.py`, `property_api.py`
+- All routes live in `routes/` as Flask Blueprints: `auth.py`, `intake.py`, `progression.py`, `crm.py`, `dashboard.py`, `property_api.py`, `chase_engine.py`
 - Shared config (Supabase client, Resend key, constants) lives in `shared.py`
 - Never import from `app.py` in route modules. Import from `shared.py` or sibling route modules.
 
@@ -72,6 +72,9 @@ Before making any changes, read `ARCHITECTURE.md` in the project root. It contai
 ## Environment Variables (Railway)
 
 - `WELCOME_ENGINE_ENABLED` — kill switch for welcome emails (must be `true` to send)
+- `CHASE_ENGINE_ENABLED` — kill switch for Phase A chase outbound sends (default false; cadence still runs, dry-run logs only)
+- `CHASE_TEAM_EMAIL` — optional negotiator inbox for Day 4 chase flags and send-failure alerts
+- `CHASE_SCHEDULER_DISABLED` — set `true` to skip starting the 15-minute cadence thread
 - `NUVU_API_KEY` — authenticates inbound API calls from CRMs
 - `SUPABASE_URL` / `SUPABASE_ANON_KEY` — database connection (see `db_supabase.py`)
 - `RESEND_API_KEY` — email sending

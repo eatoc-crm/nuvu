@@ -10,7 +10,7 @@ def api_property(prop_id):
     from routes.dashboard import _build_live_dashboard_data
 
     try:
-        properties, _, _, _, _ = _build_live_dashboard_data()
+        properties, _, _, _, _, _ = _build_live_dashboard_data()
         props_by_id = {p["id"]: p for p in properties}
         prop = props_by_id.get(prop_id)
         if not prop:

@@ -43,12 +43,22 @@ from routes.property_api import property_api_bp
 
 app.register_blueprint(property_api_bp)
 
+from routes.chase_engine import chase_engine_bp
+
+app.register_blueprint(chase_engine_bp)
+
 from routes.portal import portal_bp
 from routes.portal_forms import portal_forms_bp, portal_staff_api_bp
 
 app.register_blueprint(portal_bp)
 app.register_blueprint(portal_forms_bp)
 app.register_blueprint(portal_staff_api_bp)
+
+# Chase Engine cadence (15m). Under Flask debug reloader, only the child process starts the thread.
+if (not app.debug) or (os.environ.get("WERKZEUG_RUN_MAIN") == "true"):
+    from utils.chase_scheduler import start_chase_cadence_scheduler
+
+    start_chase_cadence_scheduler()
 
 if __name__ == "__main__":
     _port = int(os.environ.get("PORT", "5000"))

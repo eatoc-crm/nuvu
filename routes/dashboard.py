@@ -1,7 +1,7 @@
 import json
 from datetime import date, datetime
 
-from flask import Blueprint, render_template_string
+from flask import Blueprint, render_template_string, request
 
 from db_supabase import (
     fetch_chain_links,
@@ -9,6 +9,7 @@ from db_supabase import (
     fetch_preferred_surveyors,
     fetch_property_images,
     fetch_sales_pipeline,
+    fetch_sandbox_test_pipeline_pairs,
 )
 
 dashboard_bp = Blueprint("dashboard", __name__)
@@ -560,6 +561,7 @@ button.portal-send-ta610-btn[disabled]{cursor:default;border-color:#c8e6c9;backg
   padding:12px 18px;border-radius:8px;font-size:.85rem;font-weight:500;
   box-shadow:0 8px 28px rgba(0,0,0,.25);display:none;line-height:1.4;text-align:center;
 }
+.dash-toast.dash-toast--visible{display:block}
 a.portal-review-link{display:inline-block;font-size:.75rem;font-weight:700;color:var(--navy);text-decoration:underline}
 a.portal-review-link:hover{color:var(--claret)}
 .ms-edit-form{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
@@ -734,6 +736,25 @@ a.portal-review-link:hover{color:var(--claret)}
 .section-collapse-body{overflow:hidden}
 .section-collapse-body:not(.open){display:none}
 .na-empty{padding:24px;text-align:center;color:var(--txt-secondary)}
+.na-confirm-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:640px){.na-confirm-grid{grid-template-columns:1fr}}
+.na-confirm-card{
+  border:2px solid #D4940A;border-radius:6px;padding:14px 16px 16px;
+  background:linear-gradient(180deg,#fffdf8 0%,#fff 100%);
+}
+.na-confirm-badge{
+  display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;padding:3px 10px;border-radius:3px;background:#D4940A;color:#fff;margin-bottom:8px;
+}
+.na-confirm-addr{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px;line-height:1.3}
+.na-confirm-meta{font-size:12px;color:var(--txt-secondary);margin-bottom:8px}
+.na-confirm-snippet{font-size:13px;color:var(--txt);line-height:1.45;margin-bottom:12px;max-height:4.2em;overflow:hidden}
+.na-confirm-actions{display:flex;flex-wrap:wrap;gap:8px}
+.na-confirm-btn{
+  font-size:12px;font-weight:600;padding:8px 14px;border-radius:4px;border:none;cursor:pointer;font-family:inherit;
+}
+.na-confirm-yes{background:var(--navy);color:#fff}
+.na-confirm-no{background:var(--muted-bg);color:var(--txt);border:1px solid var(--border)}
 .card-grid-na{grid-template-columns:1fr 1fr}
 .prop-card-na{min-height:auto}
 .na-overdue{font-size:14px;font-weight:600;color:var(--claret);margin:0 0 6px}
@@ -752,6 +773,16 @@ a.portal-review-link:hover{color:var(--claret)}
 .m-pipe-row select:focus,.m-pipe-row input:focus{outline:none;border-color:var(--navy)}
 .m-pipe-save{background:var(--navy);color:#fff;border:none;border-radius:4px;padding:8px 14px;font-size:.78rem;font-weight:500;cursor:pointer;margin-top:4px;transition:var(--t)}
 .m-pipe-save:hover{filter:brightness(1.05)}
+.dash-test-toggle{
+  font-size:13px;margin-top:14px;text-align:center;color:var(--stone-dark);
+}
+.dash-test-toggle a{color:var(--navy);font-weight:600;text-decoration:underline}
+.dash-test-toggle a:hover{color:var(--navy-md)}
+.prop-test-badge{
+  display:inline-block;font-size:9px;font-weight:700;letter-spacing:.08em;
+  padding:3px 8px;border-radius:3px;background:var(--amber);color:#4a3200;
+  margin-left:8px;vertical-align:middle;text-transform:uppercase;
+}
 @media(max-width:640px){.card-grid-na{grid-template-columns:1fr}}
 </style>
 </head>
@@ -773,8 +804,8 @@ a.portal-review-link:hover{color:var(--claret)}
     {% endif %}
   </div>
   <div class="rich-col">
-    <div class="rich-body">
-      <div class="rich-badge">{{ p._card_badge_text }}</div>
+      <div class="rich-body">
+      <div class="rich-badge">{{ p._card_badge_text }}{% if p.get('_is_test') %}<span class="prop-test-badge" aria-label="Test sandbox property">TEST</span>{% endif %}</div>
       {% if triggers and triggers|length > 0 %}
       {% set primary = triggers[0] %}
       <div class="rich-na-strip">
@@ -1009,22 +1040,47 @@ a.portal-review-link:hover{color:var(--claret)}
     <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input class="search-input" id="searchInput" type="text" placeholder="Search by address, buyer or solicitor..." autocomplete="off">
   </div>
+  <div class="dash-test-toggle">
+    {% set test_base = test_props_toggle_base|default('/') %}
+    {% if show_test_properties %}
+    <a href="{{ test_base }}">Hide test properties</a>
+    {% else %}
+    <a href="{{ test_base }}?show_test=1">Show test properties</a>
+    {% endif %}
+  </div>
 </div>
 
 <!-- ═══ MAIN CONTENT — NEEDS ATTENTION + TIME BUCKETS ═════ -->
 <div class="content">
 <div class="search-no-match" id="searchNoMatch">No properties found</div>
 {% set nai = needs_attention_items|default([]) %}
+{% set citems = chase_confirmation_items|default([]) %}
 
   <div class="needs-attention-region" id="section-needs-attention">
     <button type="button" class="section-collapse-hdr" id="hdr-needs-attention" data-panel="panel-needs-attention">
       <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <h2>Needs attention</h2>
-        <span class="na-count-badge">{{ nai|length }}</span>
+        <span class="na-count-badge">{{ nai|length + citems|length }}</span>
       </span>
       <span class="hdr-chev" aria-hidden="true">&#9660;</span>
     </button>
     <div class="section-collapse-body open" id="panel-needs-attention">
+      {% if citems|length > 0 %}
+      <div class="na-confirm-grid" id="naConfirmGrid">
+        {% for c in citems %}
+        <div class="na-confirm-card" data-confirmation-id="{{ c.id }}">
+          <span class="na-confirm-badge">Confirm milestone</span>
+          <div class="na-confirm-addr">{{ c.property_address or 'Unknown address' }}</div>
+          <div class="na-confirm-meta">Suggested: <strong>{{ c.suggested_milestone }}</strong></div>
+          <div class="na-confirm-snippet">{{ c.email_snippet or '—' }}</div>
+          <div class="na-confirm-actions">
+            <button type="button" class="na-confirm-btn na-confirm-yes" data-chase-action="confirm" data-cid="{{ c.id }}">Confirm</button>
+            <button type="button" class="na-confirm-btn na-confirm-no" data-chase-action="dismiss" data-cid="{{ c.id }}">Dismiss</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
       <div class="card-grid card-grid-na">
         {% for item in nai[:4] %}
         {{ na_card(item.property, item.triggers) }}
@@ -1043,7 +1099,7 @@ a.portal-review-link:hover{color:var(--claret)}
         </div>
       </div>
       {% endif %}
-      {% if nai|length == 0 %}
+      {% if nai|length == 0 and citems|length == 0 %}
       <p class="na-empty">No properties need attention right now.</p>
       {% endif %}
     </div>
@@ -1857,6 +1913,49 @@ a.portal-review-link:hover{color:var(--claret)}
   window.addEventListener("hashchange", syncDashTab);
   syncDashTab();
 
+  /* ── Chase milestone confirmations ───────────────────── */
+  function showDashToast(msg){
+    var el=document.getElementById("dashToast");
+    if(!el){ alert(msg); return; }
+    el.textContent=msg;
+    el.classList.add("dash-toast--visible");
+    clearTimeout(window._dashToastT);
+    window._dashToastT=setTimeout(function(){ el.classList.remove("dash-toast--visible"); }, 3800);
+  }
+  document.addEventListener("click", function(ev){
+    var btn = ev.target.closest("[data-chase-action]");
+    if (!btn) return;
+    var act = btn.getAttribute("data-chase-action");
+    var cid = btn.getAttribute("data-cid");
+    if (!cid || (act !== "confirm" && act !== "dismiss")) return;
+    ev.preventDefault();
+    btn.disabled = true;
+    var url = act === "confirm"
+      ? "/api/chase/confirmations/" + encodeURIComponent(cid) + "/confirm"
+      : "/api/chase/confirmations/" + encodeURIComponent(cid) + "/dismiss";
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+      credentials: "same-origin"
+    }).then(function(r){
+      return r.json().then(function(j){ return { r: r, j: j }; });
+    }).then(function(x){
+      if (!x.r.ok) {
+        showDashToast((x.j && x.j.error) ? x.j.error : ("HTTP " + x.r.status));
+        btn.disabled = false;
+        return;
+      }
+      showDashToast(act === "confirm" ? "Milestone updated." : "Dismissed.");
+      var card = btn.closest(".na-confirm-card");
+      if (card) card.style.opacity = "0.5";
+      setTimeout(function(){ location.reload(); }, 600);
+    }).catch(function(e){
+      showDashToast("Network error: " + e.message);
+      btn.disabled = false;
+    });
+  });
+
 })();
 </script>
 <div id="dashToast" class="dash-toast" role="status" aria-live="polite"></div>
@@ -2666,19 +2765,38 @@ def _merge_sales_pipeline_for_dashboard(properties, pipe_rows, today):
         p["_bucket_days"] = bdays
 
 
-def _build_live_dashboard_data():
+def _build_live_dashboard_data(show_test_properties=False):
     """EATOC list + Supabase progression, pipeline, images, needs-attention engine.
 
     Pipeline Forecast aggregates read-only fields only; it never mutates
     sales_pipeline or sales_progression (see ARCHITECTURE.md).
     """
-    from routes.crm import _map_live_properties
+    from routes.crm import _map_live_properties, _map_supabase_test_property
     from utils.address import normalise_address
+    from routes.chase_engine import (
+        fetch_pending_chase_confirmations,
+        fetch_property_ids_solicitor_non_response,
+    )
     from utils.needs_attention import get_needs_attention
+
+    def _agg_visible(p):
+        return show_test_properties or not p.get("_is_test")
 
     properties, err = _map_live_properties()
     if err:
         raise RuntimeError(err) from None
+
+    eatoc_addr_keys = {
+        normalise_address(p.get("address") or "") for p in properties
+    }
+    eatoc_addr_keys.discard("")
+    for i, (prog, pipe) in enumerate(fetch_sandbox_test_pipeline_pairs()):
+        nk = normalise_address((prog.get("property_address") or ""))
+        if not nk or nk in eatoc_addr_keys:
+            continue
+        properties.append(
+            _map_supabase_test_property(prog, pipe, len(properties) + i)
+        )
 
     img_rows = fetch_property_images()
     chain_rows = fetch_chain_links()
@@ -2753,12 +2871,24 @@ def _build_live_dashboard_data():
         fm = (r0.get("surveyor_firm") or "").strip()
         surveyor_hint = f"{nm} ({fm})" if nm and fm else (nm or fm or None)
 
-    na_candidates = [p for p in properties if not p.get("_is_exchanged")]
+    na_candidates = [
+        p for p in properties if not p.get("_is_exchanged") and _agg_visible(p)
+    ]
+    chase_confirmation_items = fetch_pending_chase_confirmations()
+    test_prog_ids = {str(p["id"]) for p in properties if p.get("_is_test")}
+    if not show_test_properties and test_prog_ids:
+        chase_confirmation_items = [
+            c
+            for c in chase_confirmation_items
+            if str(c.get("property_id") or "") not in test_prog_ids
+        ]
+    solicitor_na_ids = fetch_property_ids_solicitor_non_response()
     na_raw = get_needs_attention(
         na_candidates,
         la_by_norm,
         surveyor_hint=surveyor_hint,
         today=today,
+        solicitor_non_response_ids=solicitor_na_ids,
     )
     needs_attention_items = []
     for it in na_raw:
@@ -2773,7 +2903,7 @@ def _build_live_dashboard_data():
 
     b0, b1, b2 = [], [], []
     for p in properties:
-        if p.get("_is_exchanged"):
+        if p.get("_is_exchanged") or not _agg_visible(p):
             continue
         d = int(p.get("_bucket_days") or 0)
         if d <= 30:
@@ -2835,10 +2965,16 @@ def _build_live_dashboard_data():
         ),
     ]
 
-    exchanged_count = sum(1 for p in properties if p.get("_is_exchanged"))
-    active_props = [p for p in properties if not p.get("_is_exchanged")]
+    exchanged_count = sum(
+        1 for p in properties if p.get("_is_exchanged") and _agg_visible(p)
+    )
+    active_props = [
+        p for p in properties if not p.get("_is_exchanged") and _agg_visible(p)
+    ]
     active_count = len(active_props)
-    needs_attention_count = len(needs_attention_items)
+    needs_attention_count = len(needs_attention_items) + len(
+        chase_confirmation_items
+    )
     on_track_count = max(0, active_count - needs_attention_count)
     pipeline_value = sum(float(p.get("_pipe_fee") or 0.0) for p in active_props)
 
@@ -2851,8 +2987,9 @@ def _build_live_dashboard_data():
         "needs_header_severity": "red" if any_red_na else ("amber" if na_raw else "none"),
     }
 
+    props_for_forecast = [p for p in properties if _agg_visible(p)]
     pipeline = _build_pipeline_forecast(
-        properties, today, needs_attention_count
+        props_for_forecast, today, needs_attention_count
     )
 
     na_triggers_by_id = {}
@@ -2865,26 +3002,45 @@ def _build_live_dashboard_data():
             p, today, na_triggers_by_id.get(p.get("id"))
         )
 
-    return properties, sections, stats, pipeline, needs_attention_items
+    return properties, sections, stats, pipeline, needs_attention_items, chase_confirmation_items
 
 
 @dashboard_bp.route("/")
 def dashboard():
+    show_test = request.args.get("show_test", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
     try:
-        properties, sections, stats, pipeline, needs_attention_items = (
-            _build_live_dashboard_data()
-        )
+        (
+            properties,
+            sections,
+            stats,
+            pipeline,
+            needs_attention_items,
+            chase_confirmation_items,
+        ) = _build_live_dashboard_data(show_test_properties=show_test)
     except Exception as e:
         # Fallback: show error
         return f"<h2>Error loading live data</h2><pre>{e}</pre>", 500
 
+    props_json = (
+        properties
+        if show_test
+        else [p for p in properties if not p.get("_is_test")]
+    )
     return render_template_string(
         DASHBOARD_HTML,
         sections=sections,
         needs_attention_items=needs_attention_items,
+        chase_confirmation_items=chase_confirmation_items,
         stats=stats,
         pipeline=pipeline,
-        properties_json=json.dumps(properties, default=str),
+        properties_json=json.dumps(props_json, default=str),
         leaderboard_tabs=LEADERBOARD_TABS,
+        show_test_properties=show_test,
+        test_props_toggle_base="/",
     )
 

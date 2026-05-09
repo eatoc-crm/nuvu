@@ -221,6 +221,12 @@ def api_update():
         return jsonify({"error": "insert returned no row"}), 500
 
     email_id = rows[0].get("id")
+    try:
+        from routes.chase_engine import process_inbound_email
+
+        process_inbound_email(str(email_id))
+    except Exception:
+        pass
     return jsonify({"status": "received", "email_id": str(email_id)}), 200
 
 

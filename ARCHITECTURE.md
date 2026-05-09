@@ -8,6 +8,8 @@ NUVU (branded "NewView") is a UK residential sales progression platform. It exis
 
 **Target:** 70–75% autonomous operation. AI handles structured communication and monitoring. Humans handle relationships, judgement calls, and seller advice.
 
+**Progression engine (authoritative):** Chase cadences, chain rules, Needs Attention triggers, and Supabase milestone mapping are defined in [`docs/progression-engine-spec.md`](docs/progression-engine-spec.md). When a brief or implementation disagrees with that file, the spec wins.
+
 ---
 
 ## CRM-Agnostic Design
@@ -94,6 +96,8 @@ AI parses and categorises all inbound but does **NOT** auto-update milestones. E
 
 ```
 nuvu-live/
+├── docs/
+│   └── progression-engine-spec.md  # SSOT: cadences, Needs Attention, milestones
 ├── app.py                    # Flask init + blueprint registration
 ├── shared.py                 # Supabase client, Resend config, shared constants
 ├── routes/
@@ -102,9 +106,15 @@ nuvu-live/
 │   ├── property_api.py       # Property detail API
 │   ├── crm.py                # CRM views, helpers, constants
 │   ├── progression.py        # Milestone updates + welcome engine
+│   ├── chase_engine.py       # Phase A chase cadence, inbound classification, confirmations API
 │   └── intake.py             # Inbound CRM API
 ├── connectors/               # CRM connectors
 ├── templates/                # HTML templates
+├── utils/
+│   ├── chase_templates.py    # Chase copy (from progression-engine-spec.md)
+│   └── chase_scheduler.py  # 15-minute cadence thread
+├── scripts/
+│   └── supabase_chase_engine_tables.sql  # chase_messages, chase_confirmations, preferred_surveyors
 ├── email_engine.py           # Email sending via Resend
 ├── email_parser.py           # Inbound email parsing
 ├── completion_engine.py      # Completion logic
@@ -112,6 +122,15 @@ nuvu-live/
 ├── database.py               # Database helpers
 └── db_supabase.py            # Supabase config
 ```
+
+---
+
+## Chase Engine (Phase A)
+
+- **Kill switch:** `CHASE_ENGINE_ENABLED` — default false. When false, the 15-minute cadence still runs and logs what it would send; outbound Resend sends are skipped. Inbound classification still creates `chase_confirmations` rows for staff review.
+- **Schema:** Run `scripts/supabase_chase_engine_tables.sql` in Supabase. `chase_messages.property_id` and `chase_confirmations.property_id` reference **`sales_progression.id`** (same as `inbound_emails.property_id`).
+- **Negotiator flags:** Day 4 “flag to team” emails use `CHASE_TEAM_EMAIL` when set; otherwise the first address in `NUVU_ALLOWED_EMAILS`.
+- **Scheduler:** Set `CHASE_SCHEDULER_DISABLED=true` to prevent the background thread (e.g. local tests).
 
 ---
 

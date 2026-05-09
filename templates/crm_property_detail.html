@@ -165,6 +165,48 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
 .muted{color:var(--txt-secondary);font-size:.82rem}
 .empty-sec{padding:12px 0;color:var(--txt-secondary);font-size:.86rem}
 
+.note-block--nuvu{background:var(--off-white)}
+.nuvu-notes-head{align-items:flex-start;margin-bottom:10px}
+.nuvu-notes-head-left{min-width:0;flex:1}
+.nuvu-notes-head-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.nuvu-notes-sub{font-size:.82rem;color:var(--txt-secondary);margin-top:4px}
+.nuvu-notes-toggle-all{
+  background:none;border:none;padding:0;font-size:.82rem;color:var(--txt-secondary);
+  cursor:pointer;text-decoration:underline;font-family:inherit;
+}
+.nuvu-notes-toggle-all:hover{color:var(--navy)}
+.nuvu-notes-cards{display:flex;flex-direction:column;gap:8px;font-family:system-ui,-apple-system,sans-serif}
+.nuvu-notes-orphan{
+  font-size:13px;color:#374151;white-space:pre-wrap;line-height:1.45;margin-bottom:10px;
+  padding:10px 12px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+}
+.d-note-raw-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:pre;border:0;opacity:0;pointer-events:none}
+.nuvu-note-card{
+  background:#FFFFFF;border:1px solid #E5E7EB;border-radius:4px;transition:border-color .2s ease;
+}
+.nuvu-note-card:hover{border-color:#1B3A5C}
+.nuvu-note-toggle{
+  display:flex;flex-direction:column;align-items:stretch;gap:6px;width:100%;
+  padding:10px 12px;background:none;border:none;cursor:pointer;text-align:left;font:inherit;
+}
+.nuvu-note-toggle-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;width:100%}
+.nuvu-note-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 8px;min-width:0;flex:1}
+.nuvu-note-date{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#6B7280}
+.nuvu-note-sep{font-size:11px;color:#9CA3AF;font-weight:400}
+.nuvu-note-author{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:#1B3A5C}
+.nuvu-note-chev{flex-shrink:0;font-size:12px;line-height:1;color:#9CA3AF;padding-top:2px}
+.nuvu-note-preview{
+  display:block;font-size:13px;color:#374151;line-height:1.4;width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;
+}
+.nuvu-note-card.is-open .nuvu-note-preview{display:none}
+.nuvu-note-body-wrap{overflow:hidden;transition:max-height .4s ease}
+.nuvu-note-card:not(.is-open) .nuvu-note-body-wrap{max-height:0!important}
+.nuvu-note-card.is-open .nuvu-note-body-wrap{max-height:4800px}
+.nuvu-note-body{
+  padding:0 12px 12px;font-size:13px;color:#374151;line-height:1.45;white-space:pre-wrap;word-break:break-word;
+}
+
 @media(max-width:700px){
   .det-grid{grid-template-columns:1fr}
   .crm-d-wrap{padding:14px 14px 40px}
@@ -345,10 +387,29 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
     <div id="d-notes-list">
       {% set note_fields = [("notes","General notes"),("nuvu_notes","NUVU notes"),("buyer_solicitor_notes","Buyer solicitor notes"),("seller_solicitor_notes","Seller solicitor notes")] %}
       {% for key, label in note_fields %}
+      {% if key == 'nuvu_notes' %}
+      <div class="note-block note-block--nuvu" id="d-note-blk-{{ loop.index0 }}">
+        <script type="application/json" id="d-nuvu-notes-raw-json">{{ (p.nuvu_notes or '')|tojson }}</script>
+        <div class="note-block-hdr nuvu-notes-head">
+          <div class="nuvu-notes-head-left">
+            <span class="note-block-lbl">{{ label }}</span>
+            <div class="nuvu-notes-sub" id="d-nuvu-notes-sub" aria-live="polite"></div>
+          </div>
+          <div class="nuvu-notes-head-right">
+            <button type="button" class="nuvu-notes-toggle-all" id="d-nuvu-toggle-all" hidden>Expand all</button>
+            {% if p._progression_id %}<button type="button" class="note-edit-btn" data-nkey="{{ key }}" data-nidx="{{ loop.index0 }}">Edit</button>{% endif %}
+          </div>
+        </div>
+        <textarea id="d-note-txt-{{ loop.index0 }}" class="d-note-raw-hidden{% if not p.nuvu_notes %} empty{% endif %}" aria-hidden="true" tabindex="-1" readonly></textarea>
+        <div id="d-nuvu-notes-mount"></div>
+        <div class="note-block-txt{{ ' empty' if not p.nuvu_notes }}" id="d-nuvu-notes-fallback" style="display:none">{{ p.nuvu_notes or 'No notes yet' }}</div>
+      </div>
+      {% else %}
       <div class="note-block" id="d-note-blk-{{ loop.index0 }}">
         <div class="note-block-hdr"><span class="note-block-lbl">{{ label }}</span>{% if p._progression_id %}<button type="button" class="note-edit-btn" data-nkey="{{ key }}" data-nidx="{{ loop.index0 }}">Edit</button>{% endif %}</div>
         <div class="note-block-txt{{ ' empty' if not p[key] }}" id="d-note-txt-{{ loop.index0 }}">{{ p[key] or 'No notes yet' }}</div>
       </div>
+      {% endif %}
       {% endfor %}
     </div>
   </section>
@@ -376,8 +437,211 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
 
 <script>
 (function(){
+  var jsonEl = document.getElementById("d-nuvu-notes-raw-json");
+  var mount = document.getElementById("d-nuvu-notes-mount");
+  var fallback = document.getElementById("d-nuvu-notes-fallback");
+  var subEl = document.getElementById("d-nuvu-notes-sub");
+  var toggleAllBtn = document.getElementById("d-nuvu-toggle-all");
+  var blk = jsonEl.parentElement;
+  var txRaw = blk ? blk.querySelector("textarea.d-note-raw-hidden") : null;
+  if (!jsonEl || !mount || !fallback || !blk) return;
+
+  var raw = "";
+  try { raw = JSON.parse(jsonEl.textContent || "\"\""); } catch (e1) { raw = ""; }
+  if (typeof raw !== "string") raw = String(raw || "");
+  if (txRaw) {
+    txRaw.value = raw;
+    if (!raw.trim()) txRaw.classList.add("empty");
+    else txRaw.classList.remove("empty");
+  }
+
+  function isSepLine(line) {
+    var t = (line || "").replace(/\r/g, "").trim();
+    if (t.length < 3) return false;
+    for (var i = 0; i < t.length; i++) {
+      var c = t.charCodeAt(i);
+      if (c !== 0x2500 && c !== 32 && c !== 9) return false;
+    }
+    return true;
+  }
+
+  function splitIntoChunks(text) {
+    var lines = (text || "").split(/\r?\n/);
+    var chunks = [];
+    var buf = [];
+    for (var i = 0; i < lines.length; i++) {
+      if (isSepLine(lines[i])) {
+        if (buf.length) chunks.push(buf.join("\n"));
+        buf = [];
+      } else buf.push(lines[i]);
+    }
+    if (buf.length) chunks.push(buf.join("\n"));
+    return chunks;
+  }
+
+  function parseNoteChunk(chunk) {
+    var t = (chunk || "").replace(/\r/g, "").trim();
+    if (!t) return null;
+    var lines = t.split("\n");
+    var m = lines[0].match(/^\[([^\]]+)\]\s*(.+):\s*$/);
+    if (!m) return null;
+    var body = lines.slice(1).join("\n").trim();
+    if (!body) return null;
+    return { bracket: m[1], author: m[2].trim(), body: body };
+  }
+
+  function displayDate(bracket) {
+    var mm = bracket.match(/^\w+\s+(\d{1,2}\s+\w+\s+\d{4})/);
+    if (mm) return mm[1];
+    return bracket;
+  }
+
+  function previewText(body) {
+    var one = (body || "").replace(/\s+/g, " ").trim();
+    if (one.length <= 80) return one;
+    return one.slice(0, 80) + "\u2026";
+  }
+
+  var hasBoxSep = raw.indexOf("\u2500") !== -1;
+  if (!hasBoxSep) {
+    mount.style.display = "none";
+    fallback.style.display = "block";
+    if (subEl) subEl.textContent = "";
+    return;
+  }
+
+  var chunks = splitIntoChunks(raw);
+  var notes = [];
+  var orphans = [];
+  for (var c = 0; c < chunks.length; c++) {
+    var parsed = parseNoteChunk(chunks[c]);
+    if (parsed) notes.push(parsed);
+    else if (chunks[c].trim()) orphans.push(chunks[c].trim());
+  }
+
+  if (subEl) {
+    var n = notes.length;
+    subEl.textContent = n === 1 ? "1 note" : (n + " notes");
+  }
+
+  if (notes.length === 0 && orphans.length === 0) {
+    mount.style.display = "none";
+    fallback.style.display = "block";
+    if (subEl) subEl.textContent = "0 notes";
+    return;
+  }
+
+  var wrap = document.createElement("div");
+  wrap.className = "nuvu-notes-cards";
+  if (orphans.length) {
+    var pre = document.createElement("div");
+    pre.className = "nuvu-notes-orphan";
+    pre.textContent = orphans.join("\n\n");
+    wrap.appendChild(pre);
+  }
+
+  var cards = [];
+  function syncToggleAllLabel() {
+    if (!toggleAllBtn || !cards.length) return;
+    var openCount = 0;
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].classList.contains("is-open")) openCount++;
+    }
+    toggleAllBtn.textContent = openCount === cards.length ? "Collapse all" : "Expand all";
+  }
+
+  for (var j = 0; j < notes.length; j++) {
+    (function(note, idx){
+      var card = document.createElement("article");
+      card.className = "nuvu-note-card";
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "nuvu-note-toggle";
+      btn.setAttribute("aria-expanded", "false");
+      var meta = document.createElement("div");
+      meta.className = "nuvu-note-meta";
+      var dEl = document.createElement("span");
+      dEl.className = "nuvu-note-date";
+      dEl.textContent = displayDate(note.bracket);
+      var sep = document.createElement("span");
+      sep.className = "nuvu-note-sep";
+      sep.textContent = "\u00B7";
+      var aEl = document.createElement("span");
+      aEl.className = "nuvu-note-author";
+      aEl.textContent = note.author;
+      meta.appendChild(dEl);
+      meta.appendChild(sep);
+      meta.appendChild(aEl);
+      var chev = document.createElement("span");
+      chev.className = "nuvu-note-chev";
+      chev.setAttribute("aria-hidden", "true");
+      chev.textContent = "\u25BC";
+      var topRow = document.createElement("div");
+      topRow.className = "nuvu-note-toggle-top";
+      topRow.appendChild(meta);
+      topRow.appendChild(chev);
+      var prv = document.createElement("span");
+      prv.className = "nuvu-note-preview";
+      prv.textContent = previewText(note.body);
+      btn.appendChild(topRow);
+      btn.appendChild(prv);
+      var bodyWrap = document.createElement("div");
+      bodyWrap.className = "nuvu-note-body-wrap";
+      var bodyEl = document.createElement("div");
+      bodyEl.className = "nuvu-note-body";
+      bodyEl.textContent = note.body;
+      bodyWrap.appendChild(bodyEl);
+      btn.addEventListener("click", function(ev){
+        ev.preventDefault();
+        var open = card.classList.toggle("is-open");
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        chev.textContent = open ? "\u25B2" : "\u25BC";
+        syncToggleAllLabel();
+      });
+      card.appendChild(btn);
+      card.appendChild(bodyWrap);
+      wrap.appendChild(card);
+      cards.push(card);
+    })(notes[j], j);
+  }
+
+  mount.appendChild(wrap);
+  fallback.style.display = "none";
+
+  if (toggleAllBtn && cards.length > 0) {
+    toggleAllBtn.hidden = false;
+    toggleAllBtn.addEventListener("click", function(){
+      var expand = toggleAllBtn.textContent === "Expand all";
+      for (var k = 0; k < cards.length; k++) {
+        var card = cards[k];
+        var b = card.querySelector(".nuvu-note-toggle");
+        var ch = card.querySelector(".nuvu-note-chev");
+        if (expand) {
+          card.classList.add("is-open");
+          if (b) b.setAttribute("aria-expanded", "true");
+          if (ch) ch.textContent = "\u25B2";
+        } else {
+          card.classList.remove("is-open");
+          if (b) b.setAttribute("aria-expanded", "false");
+          if (ch) ch.textContent = "\u25BC";
+        }
+      }
+      toggleAllBtn.textContent = expand ? "Collapse all" : "Expand all";
+    });
+  }
+})();
+
+(function(){
   var progId = "{{ p._progression_id or '' }}";
   if (!progId) return;
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
 
   function patchField(field, value, onSuccess) {
     var body = {}; body[field] = value;
@@ -431,10 +695,22 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--off-white);
         var nidx = btn.getAttribute("data-nidx");
         var blk = document.getElementById("d-note-blk-" + nidx);
         var txtEl = document.getElementById("d-note-txt-" + nidx);
-        var curVal = txtEl.classList.contains("empty") ? "" : txtEl.textContent;
+        var curVal = "";
+        if (txtEl) {
+          if (txtEl.classList.contains("empty")) curVal = "";
+          else if (txtEl.tagName === "TEXTAREA" || txtEl.tagName === "INPUT") curVal = txtEl.value;
+          else curVal = txtEl.textContent;
+        }
+        if (nkey === "nuvu_notes") {
+          var je = document.getElementById("d-nuvu-notes-raw-json");
+          if (je) {
+            try { curVal = JSON.parse(je.textContent || "\"\""); } catch (e2) { curVal = curVal || ""; }
+            if (typeof curVal !== "string") curVal = String(curVal || "");
+          }
+        }
         var label = blk.querySelector(".note-block-lbl").textContent;
         blk.innerHTML = '<div class="note-block-hdr"><span class="note-block-lbl">' + label + '</span></div>' +
-          '<textarea class="note-textarea" id="d-note-ta-' + nidx + '">' + curVal + '</textarea>' +
+          '<textarea class="note-textarea" id="d-note-ta-' + nidx + '">' + escapeHtml(curVal) + '</textarea>' +
           '<div class="note-actions"><button type="button" class="note-save-btn" id="d-note-sv-' + nidx + '">Save</button>' +
           '<button type="button" class="note-cancel-btn" id="d-note-cn-' + nidx + '">Cancel</button></div>';
         document.getElementById("d-note-sv-" + nidx).onclick = function() {

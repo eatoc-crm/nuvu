@@ -1,4 +1,5 @@
 .venv/
+.venv_import/
 __pycache__/
 *.pyc
 *.db

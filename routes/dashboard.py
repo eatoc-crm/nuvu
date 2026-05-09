@@ -355,7 +355,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   display:flex;flex-direction:row;align-items:stretch;
   background:var(--white);border-radius:6px;overflow:hidden;
   cursor:pointer;transition:var(--t);
-  border:2px solid var(--navy);min-width:0;
+  border:6px solid var(--navy);min-width:0;
 }
 .rich-card:hover{background:rgba(27,58,92,.02)}
 .rich-card--attention{border-color:var(--claret)}

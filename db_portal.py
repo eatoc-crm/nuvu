@@ -629,7 +629,7 @@ def enrich_properties_with_portal_forms(properties: list[dict]) -> None:
         }
 
     pipe_ids = [str(p.get("_sales_pipeline_id") or "") for p in properties]
-    ta6ta10_by_pipe = fetch_ta6_ta10_sessions_for_pipeline_ids(pipe_ids)
+    ta6_ta10_by_pipe = fetch_ta6_ta10_sessions_for_pipeline_ids(pipe_ids)
     total_combo = ta6_ta10_total_questions()
 
     def ta6_ta10_line(pipe_id: str | None) -> dict[str, Any]:

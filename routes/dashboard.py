@@ -154,23 +154,23 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pipe-fee-bar-wrap{
   width:100%;max-width:48px;height:100%;display:flex;align-items:flex-end;justify-content:center;
 }
-.pipe-fee-bar{
-  width:100%;max-width:44px;border-radius:4px 4px 0 0;
-  min-height:4px;position:relative;transition:opacity .2s;
+.pipe-fee-bar-stack{
+  position:relative;display:flex;flex-direction:column-reverse;justify-content:flex-start;
+  width:100%;max-width:44px;min-height:0;transition:opacity .2s;
 }
-.pipe-fee-bar--below-target{background:#94a3b8}
-.pipe-fee-bar--below-target.pipe-fee-bar--remainder{background:rgba(100,116,139,.35)}
-.pipe-fee-bar--at-target{background:var(--nuvu-green)}
-.pipe-fee-bar--at-target.pipe-fee-bar--remainder{background:rgba(197,217,58,.55)}
-.pipe-fee-bar:hover{opacity:.88}
-.pipe-fee-bar span{
+.pipe-fee-bar-stack:hover{opacity:.88}
+.pipe-fee-bar-seg{width:100%;min-height:0}
+.pipe-fee-bar-seg--grey{background:#94a3b8}
+.pipe-fee-bar-seg--green{background:#C5D93A}
+.pipe-fee-bar-stack--cap-grey .pipe-fee-bar-seg--grey{border-radius:4px 4px 0 0}
+.pipe-fee-bar-stack--cap-green .pipe-fee-bar-seg--green{border-radius:4px 4px 0 0}
+.pipe-fee-bar-stack--cap-green .pipe-fee-bar-seg--grey.pipe-fee-bar-stack__join{border-radius:0}
+.pipe-fee-bar-stack span{
   position:absolute;top:-18px;left:50%;transform:translateX(-50%);
   font-size:.68rem;font-weight:500;white-space:nowrap;
 }
-.pipe-fee-bar--below-target:not(.pipe-fee-bar--remainder) span{color:#fff}
-.pipe-fee-bar--below-target.pipe-fee-bar--remainder span{color:#475569}
-.pipe-fee-bar--at-target span{color:var(--olive-text)}
-.pipe-fee-bar--at-target.pipe-fee-bar--remainder span{color:var(--olive-text)}
+.pipe-fee-bar-stack--label-light span{color:#fff}
+.pipe-fee-bar-stack--label-olive span{color:var(--olive-text)}
 .pipe-fee-x{
   flex:1;min-width:0;max-width:48px;margin:0 auto;
   font-size:.65rem;font-weight:500;color:var(--txt-secondary);text-align:center;line-height:1.2
@@ -1291,7 +1291,17 @@ a.portal-review-link:hover{color:var(--claret)}
             {% for b in pipeline.fee_bars %}
             <div class="pipe-fee-col">
               <div class="pipe-fee-bar-wrap">
-                <div class="pipe-fee-bar{% if b.remainder %} pipe-fee-bar--remainder{% endif %}{% if b.fee >= pipeline.fee_chart_target_gbp %} pipe-fee-bar--at-target{% else %} pipe-fee-bar--below-target{% endif %}" style="height:{{ b.h_pct }}%"><span>&pound;{{ "{:,.0f}".format(b.fee) }}</span></div>
+                {% if b.h_total_pct > 0 %}
+                <div class="pipe-fee-bar-stack{% if b.h_green_flex > 0 %} pipe-fee-bar-stack--cap-green{% else %} pipe-fee-bar-stack--cap-grey{% endif %}{% if b.fee_label_olive %} pipe-fee-bar-stack--label-olive{% else %} pipe-fee-bar-stack--label-light{% endif %}" style="height:{{ b.h_total_pct }}%">
+                  {% if b.h_grey_flex > 0 %}
+                  <div class="pipe-fee-bar-seg pipe-fee-bar-seg--grey{% if b.h_green_flex > 0 %} pipe-fee-bar-stack__join{% endif %}" style="flex:{{ b.h_grey_flex }} 0 0"></div>
+                  {% endif %}
+                  {% if b.h_green_flex > 0 %}
+                  <div class="pipe-fee-bar-seg pipe-fee-bar-seg--green" style="flex:{{ b.h_green_flex }} 0 0"></div>
+                  {% endif %}
+                  <span>&pound;{{ "{:,.0f}".format(b.fee) }}</span>
+                </div>
+                {% endif %}
               </div>
             </div>
             {% endfor %}
@@ -3075,25 +3085,39 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         idx = _fee_bar_month_offset(sc)
         fee_totals[idx] += float(p.get("_pipe_fee") or 0.0)
 
-    mx_fee = max(fee_totals) if fee_totals else 0.0
-    mx_div = mx_fee if mx_fee > 0 else 1.0
+    # Fee chart Y-scale: £0–£50k maps to bottom 50% of chart; excess uses top 50%
+    # (proportional within each band). Target line fixed at mid-height.
+    fee_chart_target_gbp = 50000
+    T = float(fee_chart_target_gbp)
+    mx_over = max(0.0, max(float(ft) - T for ft in fee_totals) if fee_totals else 0.0)
+
     fee_bars = []
     for i, lab in enumerate(fee_labels):
-        f = fee_totals[i]
+        f_raw = float(fee_totals[i])
+        f_int = int(round(f_raw))
+        h_grey = T and (50.0 * min(f_raw, T) / T) or 0.0
+        if f_raw > T and mx_over > 0:
+            h_green = 50.0 * (f_raw - T) / mx_over
+        else:
+            h_green = 0.0
+        h_total = h_grey + h_green
+        scale = 1000.0  # flex-grow integers — stable ratios
+        h_grey_flex = int(round(h_grey * scale)) if h_grey > 0 else 0
+        h_green_flex = int(round(h_green * scale)) if h_green > 0 else 0
+        if h_grey_flex == 0 and h_green_flex == 0 and f_int > 0:
+            h_grey_flex = 1
         fee_bars.append(
             {
                 "label": lab,
-                "fee": int(round(f)),
-                "h_pct": max(6, int(round(100.0 * f / mx_div))),
-                "remainder": i >= 3,
+                "fee": f_int,
+                "h_total_pct": int(round(min(100.0, max(0.0, h_total)))),
+                "h_grey_flex": h_grey_flex,
+                "h_green_flex": h_green_flex,
+                "fee_label_olive": f_int >= fee_chart_target_gbp,
             }
         )
 
-    # Fee chart only: £50k horizontal reference (display scale matches bar heights).
-    fee_chart_target_gbp = 50000
-    fee_chart_target_line_pct = int(
-        round(min(100.0, max(0.0, 100.0 * fee_chart_target_gbp / mx_div)))
-    )
+    fee_chart_target_line_pct = 50
 
     on_track_n = max(0, active_n - needs_attention_count)
     likely_30 = [p for p in active if _milestone_forecast_score(p) >= 70]

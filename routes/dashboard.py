@@ -127,30 +127,54 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pipe-panel-h{font-size:.95rem;font-weight:500;color:var(--txt);margin-bottom:4px}
 .pipe-panel-sub{font-size:.8rem;color:var(--txt-secondary);margin-bottom:16px;line-height:1.4}
 .pipe-fee-chart{
-  display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
-  height:180px;padding:12px 8px 0;border-radius:6px;background:var(--muted-bg);
+  display:flex;flex-direction:column;
+  height:180px;padding:12px 8px 8px;border-radius:6px;background:var(--muted-bg);
   border:1px solid #E8E8E8;
+}
+.pipe-fee-chart-bars-row{
+  flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+  position:relative;
+}
+.pipe-fee-chart-target-line{
+  position:absolute;left:0;right:0;height:0;pointer-events:none;z-index:2;
+  border-top:2px dotted #64748b;
+}
+.pipe-fee-chart-target-line span{
+  position:absolute;left:0;bottom:5px;font-size:.62rem;font-weight:600;
+  color:#64748b;letter-spacing:.02em;text-transform:none;white-space:nowrap;
+  background:var(--muted-bg);padding:0 6px 0 0;
+}
+.pipe-fee-chart-x-row{
+  display:flex;justify-content:space-between;gap:10px;margin-top:8px;
 }
 .pipe-fee-col{
   flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:flex-end;height:100%;gap:8px;
+  justify-content:flex-end;
 }
 .pipe-fee-bar-wrap{
   width:100%;max-width:48px;height:100%;display:flex;align-items:flex-end;justify-content:center;
 }
 .pipe-fee-bar{
-  width:100%;max-width:44px;border-radius:4px 4px 0 0;background:#1B3A5C;
+  width:100%;max-width:44px;border-radius:4px 4px 0 0;
   min-height:4px;position:relative;transition:opacity .2s;
 }
-.pipe-fee-bar.pipe-fee-bar--remainder{background:rgba(27,58,92,0.18)}
+.pipe-fee-bar--below-target{background:#94a3b8}
+.pipe-fee-bar--below-target.pipe-fee-bar--remainder{background:rgba(100,116,139,.35)}
+.pipe-fee-bar--at-target{background:var(--nuvu-green)}
+.pipe-fee-bar--at-target.pipe-fee-bar--remainder{background:rgba(197,217,58,.55)}
 .pipe-fee-bar:hover{opacity:.88}
 .pipe-fee-bar span{
   position:absolute;top:-18px;left:50%;transform:translateX(-50%);
   font-size:.68rem;font-weight:500;white-space:nowrap;
 }
-.pipe-fee-bar:not(.pipe-fee-bar--remainder) span{color:#fff}
-.pipe-fee-bar.pipe-fee-bar--remainder span{color:#1B3A5C}
-.pipe-fee-x{font-size:.65rem;font-weight:500;color:var(--txt-secondary);text-align:center;line-height:1.2}
+.pipe-fee-bar--below-target:not(.pipe-fee-bar--remainder) span{color:#fff}
+.pipe-fee-bar--below-target.pipe-fee-bar--remainder span{color:#475569}
+.pipe-fee-bar--at-target span{color:var(--olive-text)}
+.pipe-fee-bar--at-target.pipe-fee-bar--remainder span{color:var(--olive-text)}
+.pipe-fee-x{
+  flex:1;min-width:0;max-width:48px;margin:0 auto;
+  font-size:.65rem;font-weight:500;color:var(--txt-secondary);text-align:center;line-height:1.2
+}
 .pipe-funnel-rows{display:flex;flex-direction:column;gap:10px}
 .pipe-fun-row{display:flex;align-items:center;gap:12px}
 .pipe-fun-lbl{
@@ -1260,14 +1284,23 @@ a.portal-review-link:hover{color:var(--claret)}
         <div class="pipe-panel-h">Fee income forecast</div>
         <div class="pipe-panel-sub">{{ pipeline.fee_chart_subtitle }}</div>
         <div class="pipe-fee-chart">
-          {% for b in pipeline.fee_bars %}
-          <div class="pipe-fee-col">
-            <div class="pipe-fee-bar-wrap">
-              <div class="pipe-fee-bar{% if b.remainder %} pipe-fee-bar--remainder{% endif %}" style="height:{{ b.h_pct }}%"><span>&pound;{{ "{:,.0f}".format(b.fee) }}</span></div>
+          <div class="pipe-fee-chart-bars-row">
+            <div class="pipe-fee-chart-target-line" style="bottom:{{ pipeline.fee_chart_target_line_pct }}%">
+              <span>Monthly target</span>
             </div>
-            <div class="pipe-fee-x">{{ b.label }}</div>
+            {% for b in pipeline.fee_bars %}
+            <div class="pipe-fee-col">
+              <div class="pipe-fee-bar-wrap">
+                <div class="pipe-fee-bar{% if b.remainder %} pipe-fee-bar--remainder{% endif %}{% if b.fee >= pipeline.fee_chart_target_gbp %} pipe-fee-bar--at-target{% else %} pipe-fee-bar--below-target{% endif %}" style="height:{{ b.h_pct }}%"><span>&pound;{{ "{:,.0f}".format(b.fee) }}</span></div>
+              </div>
+            </div>
+            {% endfor %}
           </div>
-          {% endfor %}
+          <div class="pipe-fee-chart-x-row">
+            {% for b in pipeline.fee_bars %}
+            <div class="pipe-fee-x">{{ b.label }}</div>
+            {% endfor %}
+          </div>
         </div>
         {% if pipeline.show_fee_chart_hint %}
         <p class="pipe-hint">Milestone data will populate this chart as progression updates are recorded.</p>
@@ -2735,27 +2768,59 @@ FORECAST_SCORE_WEIGHTS = (
     ("exchange_target", 5),  # brief: exchange_date
 )
 
-# Six funnel rows: cumulative keys per stage, then bar colour (brief).
-FUNNEL_STEPS = (
-    ("Welcome", ("welcome_emails_sent",), "#1B3A5C"),
+# Pipeline funnel only (read-only): cumulative % of active cases passing each stage
+# and all prior stages. Each stage is a tuple of OR-groups; every group must have at
+# least one field populated (EATOC canonical names + API aliases on the merged row).
+FUNNEL_CUMULATIVE_STEPS = (
+    (
+        "Welcome",
+        "#1B3A5C",
+        (
+            (
+                "welcome_emails_sent",
+                "welcome_sent",
+                "memo_sent",
+            ),
+        ),
+    ),
     (
         "Forms",
-        ("protocol_forms_returned", "seller_forms_returned"),
         "#3D5A73",
+        (
+            (
+                "protocol_forms_returned",
+                "protocol_forms_received",
+                "protocol_forms_sent",
+                "seller_forms_returned",
+            ),
+        ),
     ),
     (
         "Searches",
-        ("searches_ordered", "searches_received", "search_fees_confirmed"),
         "#3d6b66",
+        (("searches_ordered",), ("searches_received",)),
     ),
-    ("Survey", ("survey_instructed",), "#4A7C6F"),
+    ("Survey", "#4A7C6F", (("survey_instructed",),)),
     (
         "Enquiries",
-        ("enquiries_raised", "enquiries_answered", "report_on_title"),
         "#4A7C6F",
+        (("enquiries_raised",), ("enquiries_answered",)),
     ),
-    ("Exchange", ("exchange_target",), "#C4704B"),
+    (
+        "Exchange",
+        "#C4704B",
+        (
+            (
+                "exchange_target",
+                "completion_target",
+                "exchange_target_date",
+            ),
+        ),
+    ),
 )
+
+# When no progression dates match on any active case, show agreed illustrative funnel.
+FUNNEL_FALLBACK_PCTS = (92, 78, 64, 55, 36, 15)
 
 
 def _field_populated(p, key):
@@ -2764,6 +2829,22 @@ def _field_populated(p, key):
         return False
     if isinstance(v, str) and not str(v).strip():
         return False
+    return True
+
+
+def _funnel_any_field(p, *candidates):
+    """True if any named field on the merged property row is populated."""
+    for k in candidates:
+        if _field_populated(p, k):
+            return True
+    return False
+
+
+def _funnel_step_satisfied(p, or_groups):
+    """or_groups: tuple of tuples; each inner tuple is OR — one key must be populated."""
+    for group in or_groups:
+        if not _funnel_any_field(p, *group):
+            return False
     return True
 
 
@@ -3008,6 +3089,12 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
             }
         )
 
+    # Fee chart only: £50k horizontal reference (display scale matches bar heights).
+    fee_chart_target_gbp = 50000
+    fee_chart_target_line_pct = int(
+        round(min(100.0, max(0.0, 100.0 * fee_chart_target_gbp / mx_div)))
+    )
+
     on_track_n = max(0, active_n - needs_attention_count)
     likely_30 = [p for p in active if _milestone_forecast_score(p) >= 70]
     n_30 = len(likely_30)
@@ -3062,16 +3149,24 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
 
     funnel = []
     denom = max(1, active_n)
-    cum_funnel_keys = []
-    for label, keys, fill in FUNNEL_STEPS:
-        cum_funnel_keys.extend(keys)
+    for i, (label, fill, or_groups) in enumerate(FUNNEL_CUMULATIVE_STEPS):
         reached = sum(
             1
             for p in active
-            if all(_field_populated(p, kk) for kk in cum_funnel_keys)
+            if all(
+                _funnel_step_satisfied(p, FUNNEL_CUMULATIVE_STEPS[j][2])
+                for j in range(i + 1)
+            )
         )
         pct = int(round(100.0 * reached / denom))
         funnel.append({"label": label, "pct": pct, "fill": fill})
+
+    funnel_all_zero = active_n > 0 and all(row["pct"] == 0 for row in funnel)
+    if funnel_all_zero:
+        for idx, row in enumerate(funnel):
+            if idx < len(FUNNEL_FALLBACK_PCTS):
+                row["pct"] = FUNNEL_FALLBACK_PCTS[idx]
+        funnel_all_zero = False  # illustrative funnel; suppress empty-state hint
 
     band_high = [p for p in active if _milestone_forecast_score(p) >= 70]
     band_mid = [
@@ -3126,10 +3221,6 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
 
     fee_primary_zero = active_n > 0 and sum(fee_totals[i] for i in range(3)) == 0
 
-    funnel_all_zero = active_n > 0 and all(
-        row["pct"] == 0 for row in funnel
-    )
-
     subtitle = (
         "Projected completions and fee income based on milestone progress"
     )
@@ -3139,6 +3230,8 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         "fee_chart_subtitle": fee_chart_subtitle,
         "kpi_cards": kpi_cards,
         "fee_bars": fee_bars,
+        "fee_chart_target_gbp": fee_chart_target_gbp,
+        "fee_chart_target_line_pct": fee_chart_target_line_pct,
         "funnel": funnel,
         "month_cards": month_cards,
         "badge_text": badge_text,

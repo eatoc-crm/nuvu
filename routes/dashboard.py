@@ -132,7 +132,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   border:1px solid #E8E8E8;
 }
 .pipe-fee-chart-bars-row{
-  flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+  flex:1;min-height:0;display:flex;align-items:stretch;justify-content:space-between;gap:10px;
   position:relative;
 }
 .pipe-fee-chart-target-line{
@@ -3085,25 +3085,29 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
         idx = _fee_bar_month_offset(sc)
         fee_totals[idx] += float(p.get("_pipe_fee") or 0.0)
 
-    # TEMP: hard-coded even spread for demo — remove when EATOC distribution is fixed.
+    # TEMP: hard-coded demo curve for Jun–Sep — remove when EATOC distribution is fixed.
     _pipe_fee_total_int = int(round(sum(fee_totals)))
+    _demo_shape_gbp = [78400, 92600, 108200, 114738]
     if _pipe_fee_total_int > 0:
-        _n_spread = 4
-        _base = _pipe_fee_total_int // _n_spread
-        _rem = _pipe_fee_total_int % _n_spread
-        fee_totals = [0.0] * 5
-        for _i in range(_n_spread):
-            fee_totals[_i] = float(_base + (1 if _i < _rem else 0))
+        _shape_sum = float(sum(_demo_shape_gbp))
+        _scaled = [_pipe_fee_total_int * (w / _shape_sum) for w in _demo_shape_gbp]
+        _ints = [int(s) for s in _scaled]
+        _rem = _pipe_fee_total_int - sum(_ints)
+        _order = sorted(range(4), key=lambda j: _scaled[j] - _ints[j], reverse=True)
+        for _k in range(_rem):
+            _ints[_order[_k]] += 1
+        fee_totals = [float(_ints[0]), float(_ints[1]), float(_ints[2]), float(_ints[3]), 0.0]
 
     # Fee chart Y-scale: £0–£50k maps to bottom 50% of chart; excess uses top 50%
     # (proportional within each band). Target line fixed at mid-height.
     fee_chart_target_gbp = 50000
     T = float(fee_chart_target_gbp)
-    mx_over = max(0.0, max(float(ft) - T for ft in fee_totals) if fee_totals else 0.0)
+    fee_bar_f_raw = [float(ft) for ft in fee_totals]
+    mx_over = max(0.0, max(x - T for x in fee_bar_f_raw) if fee_bar_f_raw else 0.0)
 
     fee_bars = []
     for i, lab in enumerate(fee_labels):
-        f_raw = float(fee_totals[i])
+        f_raw = fee_bar_f_raw[i]
         f_int = int(round(f_raw))
         h_grey = T and (50.0 * min(f_raw, T) / T) or 0.0
         if f_raw > T and mx_over > 0:

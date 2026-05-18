@@ -3018,6 +3018,32 @@ def _first_of_next_month(d: date) -> date:
     return date(d.year, d.month + 1, 1)
 
 
+def _first_of_month(d: date) -> date:
+    return date(d.year, d.month, 1)
+
+
+def _fee_chart_month_window(today: date, num_months: int = 4):
+    """Current month + next (num_months - 1) — e.g. May–Aug when today is in May."""
+    anchor = _first_of_month(today)
+    starts = [_add_months_first(anchor, i) for i in range(num_months)]
+    return anchor, starts
+
+
+def _completion_target_fee_column(comp_d: date, month_starts: list) -> int:
+    """Map completion_target to fee-chart column; clamp outside May–Aug window."""
+    comp_first = date(comp_d.year, comp_d.month, 1)
+    first = month_starts[0]
+    last = month_starts[-1]
+    if comp_first <= first:
+        return 0
+    if comp_first >= last:
+        return len(month_starts) - 1
+    for i, ms in enumerate(month_starts):
+        if comp_first == ms:
+            return i
+    return len(month_starts) - 1
+
+
 def _add_months_first(d: date, months: int) -> date:
     """d is always the 1st of a month; return 1st of month d + months."""
     y, m = d.year, d.month + months
@@ -3031,16 +3057,14 @@ def _add_months_first(d: date, months: int) -> date:
 
 
 def _fee_bar_month_offset(score: int) -> int:
-    """Map score band to one of five fee-chart month columns (0 = earliest)."""
+    """Fallback when no completion_target: map score band to four fee-chart columns."""
     if score >= 70:
         return 0
     if score >= 45:
         return 1
     if score >= 25:
         return 2
-    if score >= 12:
-        return 3
-    return 4
+    return 3
 
 
 def _bucket_stats(items):
@@ -3051,8 +3075,9 @@ def _bucket_stats(items):
 def _build_pipeline_forecast(properties, today, needs_attention_count):
     """
     Read-only forecast from merged live rows (EATOC + progression overlay).
-    Uses milestone fill scoring (section 2.5); does not use completion_target
-    for date bucketing. Never writes to sales_pipeline or sales_progression.
+    Fee chart buckets by completion_target month (EATOC / deal_terms); milestone
+    score is fallback only when completion_target is missing. Never writes to
+    sales_pipeline or sales_progression.
     """
     active = [p for p in properties if not p.get("_is_exchanged")]
     active_n = len(active)
@@ -3076,14 +3101,17 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
             )
             badge_caution = True
 
-    anchor = _first_of_next_month(today)
-    fee_month_starts = [_add_months_first(anchor, i) for i in range(5)]
+    anchor, fee_month_starts = _fee_chart_month_window(today, 4)
     fee_labels = [d.strftime("%b") for d in fee_month_starts]
-    fee_totals = [0.0] * 5
+    fee_totals = [0.0] * len(fee_month_starts)
     for p in active:
-        sc = _milestone_forecast_score(p)
-        idx = _fee_bar_month_offset(sc)
-        fee_totals[idx] += float(p.get("_pipe_fee") or 0.0)
+        fee = float(p.get("_pipe_fee") or 0.0)
+        comp_d = _parse_iso_date(p.get("completion_target"))
+        if comp_d:
+            idx = _completion_target_fee_column(comp_d, fee_month_starts)
+        else:
+            idx = _fee_bar_month_offset(_milestone_forecast_score(p))
+        fee_totals[idx] += fee
 
     # Fee chart Y-scale: £0–£50k maps to bottom 50% of chart; excess uses top 50%
     # (proportional within each band). Target line fixed at mid-height.
@@ -3234,14 +3262,14 @@ def _build_pipeline_forecast(properties, today, needs_attention_count):
                     "Milestone score 25–44 (third fee column). "
                     f"Remainder 0–24: {br['count']} case"
                     f"{'s' if br['count'] != 1 else ''}, £{br['fee']:,} pipeline fee — "
-                    "fourth and fifth fee columns."
+                    "fourth fee column."
                 )
             ),
         },
     ]
 
     fee_chart_subtitle = (
-        f"{fee_labels[0]}–{fee_labels[4]} {anchor.year} — fees by milestone progress"
+        f"{fee_labels[0]}–{fee_labels[-1]} {anchor.year} — fees by completion target"
     )
 
     fee_primary_zero = active_n > 0 and sum(fee_totals[i] for i in range(3)) == 0

@@ -280,7 +280,7 @@ def _map_live_properties():
                 "exchange_target_date": r.get("exchange_target_date"),
                 "mortgage_offered": r.get("mortgage_offered"),
                 "exchange_target": r.get("exchange_date"),
-                "completion_target": r.get("completion_date"),
+                "completion_target": r.get("completion_target") or r.get("completion_date"),
                 "protocol_forms_returned": r.get("protocol_forms_returned"),
                 "seller_forms_returned": r.get("seller_forms_returned"),
                 "welcome_emails_sent": r.get("welcome_emails_sent"),

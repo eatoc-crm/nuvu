@@ -1,7 +1,7 @@
 import json
 from datetime import date, datetime
 
-from flask import Blueprint, abort, render_template_string, request
+from flask import Blueprint, abort, render_template, render_template_string, request
 
 from db_supabase import (
     fetch_chain_links,
@@ -229,6 +229,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .dash-tab:last-child{border-right:none}
 .dash-tab:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5)}
 .dash-tab--active{background:var(--nuvu-green);color:var(--olive);font-weight:600}
+a.dash-tab--link{text-decoration:none;display:flex;align-items:center;justify-content:center}
 .tab-panel{display:none}
 .tab-panel.tab-panel--active{display:block}
 .lb-wrap{max-width:960px;margin:0 auto;padding:24px 20px 48px}
@@ -1122,6 +1123,7 @@ a.portal-review-link:hover{color:var(--claret)}
     <button type="button" class="dash-tab" data-tab="mortgage">Mortgage</button>
     <button type="button" class="dash-tab" data-tab="surveyors">Surveyors</button>
     <button type="button" class="dash-tab" data-tab="removals">Removals</button>
+    <a href="/live-map" class="dash-tab dash-tab--link">Live Map</a>
   </div>
 </nav>
 
@@ -3706,6 +3708,11 @@ _DEPRECATED_CRM_API_METHODS = (
 )
 def _deprecated_api_crm(_rest=""):
     abort(404)
+
+
+@dashboard_bp.route("/live-map")
+def live_map():
+    return render_template("live_map.html")
 
 
 @dashboard_bp.route("/")

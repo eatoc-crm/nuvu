@@ -176,6 +176,7 @@ AUTH_EXEMPT_PREFIXES = (
     "/auth/",
     "/logout",
     "/static/",
+    "/live-map",
     "/api/intake",
     "/api/update",
 )

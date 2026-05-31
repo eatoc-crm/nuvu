@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import secrets
 import os
 
-from flask import Blueprint, redirect, render_template_string, request, session
+from flask import Blueprint, redirect, render_template, render_template_string, request, session
 
 import shared  # ensures shared config (e.g. resend.api_key) is loaded
 import resend
@@ -181,10 +181,22 @@ AUTH_EXEMPT_PREFIXES = (
     "/api/update",
 )
 
+# Public demo pages (exact path; also covered by AUTH_EXEMPT_PREFIXES).
+AUTH_EXEMPT_EXACT_PATHS = frozenset({"/live-map"})
+
+
+@auth_bp.route("/live-map", strict_slashes=False)
+def live_map():
+    """Public UK map demo — simulated data only; no API or database calls."""
+    return render_template("live_map.html")
+
 
 @auth_bp.before_app_request
 def require_login():
     path = request.path
+    norm = path.rstrip("/") or "/"
+    if norm in AUTH_EXEMPT_EXACT_PATHS or path.startswith("/live-map/"):
+        return None
     # Legacy CRM URLs removed; dashboard registers 404 handlers — skip login so they are not 302.
     if path == "/crm" or path.startswith("/crm/"):
         return None

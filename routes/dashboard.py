@@ -1,7 +1,7 @@
 import json
 from datetime import date, datetime
 
-from flask import Blueprint, abort, render_template, render_template_string, request
+from flask import Blueprint, abort, render_template_string, request
 
 from db_supabase import (
     fetch_chain_links,
@@ -1123,7 +1123,7 @@ a.portal-review-link:hover{color:var(--claret)}
     <button type="button" class="dash-tab" data-tab="mortgage">Mortgage</button>
     <button type="button" class="dash-tab" data-tab="surveyors">Surveyors</button>
     <button type="button" class="dash-tab" data-tab="removals">Removals</button>
-    <a href="/live-map" class="dash-tab dash-tab--link">Live Map</a>
+    <a href="/live-map" class="dash-tab dash-tab--link" target="_blank" rel="noopener noreferrer">Live Map</a>
   </div>
 </nav>
 
@@ -2424,7 +2424,7 @@ a.portal-review-link:hover{color:var(--claret)}
     syncDashTab();
     openModalFromHashIfPresent();
   }
-  document.querySelectorAll(".dash-tab").forEach(function(b){
+  document.querySelectorAll(".dash-tab[data-tab]").forEach(function(b){
     b.addEventListener("click", function(ev){
       ev.preventDefault();
       var id = b.getAttribute("data-tab");
@@ -3708,11 +3708,6 @@ _DEPRECATED_CRM_API_METHODS = (
 )
 def _deprecated_api_crm(_rest=""):
     abort(404)
-
-
-@dashboard_bp.route("/live-map")
-def live_map():
-    return render_template("live_map.html")
 
 
 @dashboard_bp.route("/")

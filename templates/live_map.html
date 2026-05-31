@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NUVU — UK Live Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--navy:#091a2b;--navy2:#0E2438;--panel:#13314c;--line:#21466a;--ink:#EAF2F8;--dim:#8FB0C9;--faint:#587a96;
---lime:#C5D93A;--cyan:#58C7E6;--green:#3FBF7F;--amber:#F0A93B}
+--lime:#C5D93A;--cyan:#58C7E6;--green:#3FBF7F;--amber:#F0A93B;--red:#E8654E;--gold:#FFD86B}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'IBM Plex Sans',sans-serif;color:var(--ink);
 background:radial-gradient(1000px 700px at 50% -5%,rgba(197,217,58,.07),transparent 60%),var(--navy);
-min-height:100vh;padding:16px 12px 36px;-webkit-font-smoothing:antialiased}
+min-height:100vh;padding:16px 12px 40px;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1000px;margin:0 auto}
 header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
 .brand{font-weight:700;font-size:22px;letter-spacing:.18em}.brand .u{color:var(--lime)}
@@ -20,39 +19,20 @@ color:var(--lime);padding:5px 10px;border:1px solid rgba(197,217,58,.4);border-r
 @keyframes beat{0%{box-shadow:0 0 0 0 rgba(197,217,58,.6)}70%{box-shadow:0 0 0 9px rgba(197,217,58,0)}100%{box-shadow:0 0 0 0 rgba(197,217,58,0)}}
 .spacer{flex:1}.clock{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--dim)}
 .layout{display:grid;grid-template-columns:1.45fr 1fr;gap:16px;margin-top:16px}
-.stage{position:relative;border:1px solid var(--line);border-radius:18px;overflow:hidden;
-background:radial-gradient(600px 520px at 48% 42%,rgba(20,48,73,.8),rgba(9,26,43,.92))}
+.stage{position:relative;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:radial-gradient(600px 520px at 48% 42%,rgba(20,48,73,.8),rgba(9,26,43,.92))}
 .cap{position:absolute;left:16px;top:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase;z-index:2}
 svg.map{display:block;width:100%;height:auto}
 .side{display:flex;flex-direction:column;gap:11px}
-.legend{display:flex;gap:14px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px}
-.legend span{display:flex;align-items:center;gap:7px;color:var(--dim)}.legend i{width:9px;height:9px;border-radius:50%}
+.legend2{display:flex;gap:14px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px}
+.legend2 span{display:flex;align-items:center;gap:7px;color:var(--dim)}.legend2 i{width:9px;height:9px;border-radius:50%}
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.card{background:linear-gradient(180deg,var(--panel),var(--navy2));border:1px solid var(--line);border-radius:14px;padding:13px}
+.card{background:linear-gradient(180deg,var(--panel),var(--navy2));border:1px solid var(--line);border-radius:14px;padding:13px;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,transparent,var(--lime),transparent);opacity:.45}
 .card .n{font-family:'IBM Plex Mono',monospace;font-size:25px;font-weight:600;line-height:1}.card .n.fl{filter:brightness(1.45)}
 .card .l{font-size:10.5px;color:var(--dim);margin-top:7px;text-transform:uppercase;letter-spacing:.05em}
 .card.out .n{color:var(--lime)}.card.inb .n{color:var(--cyan)}
 .wide{background:linear-gradient(180deg,var(--panel),var(--navy2));border:1px solid var(--line);border-radius:14px;padding:13px}
 .wide .l{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}.wide .sub{font-size:13px;margin-top:5px}
-/* feed */
-.feedwrap{margin-top:16px;border:1px solid #2a557d;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#173a5b,#0d2740);box-shadow:0 14px 34px rgba(0,0,0,.28)}
-.fh{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
-.fh .t{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#F2F8FC;font-weight:600}
-.fh .r{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint)}
-.feed{height:262px;overflow:hidden;position:relative}
-.feed::after{content:"";position:absolute;bottom:0;left:0;right:0;height:46px;background:linear-gradient(transparent,rgba(19,49,76,.92));pointer-events:none}
-.row{display:flex;align-items:center;gap:11px;padding:10px 16px;border-bottom:1px solid rgba(33,70,106,.4);border-left:3px solid transparent;animation:slide .42s cubic-bezier(.2,.8,.2,1) both;font-size:14px}
-@keyframes slide{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
-.row .tm{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#88a8c0;min-width:42px}
-.pill{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;padding:3px 8px;border-radius:6px}
-.pill.out{background:var(--lime);color:#0c1f0a;box-shadow:0 0 10px rgba(197,217,58,.55)}
-.pill.inb{background:var(--cyan);color:#05222b;box-shadow:0 0 10px rgba(88,199,230,.55)}
-.row.out{border-left-color:var(--lime);background:linear-gradient(90deg,rgba(197,217,58,.12),transparent 45%)}
-.row.inb{border-left-color:var(--cyan);background:linear-gradient(90deg,rgba(88,199,230,.12),transparent 45%)}
-.row .arr{font-weight:700;font-size:15px}.row.out .arr{color:var(--lime)}.row.inb .arr{color:var(--cyan)}
-.row .tx{color:#F2F8FC;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.row .tx b{font-weight:700}.row.out .tx b{color:var(--lime);text-shadow:0 0 9px rgba(197,217,58,.45)}.row.inb .tx b{color:var(--cyan);text-shadow:0 0 9px rgba(88,199,230,.45)}
-.row .ad{color:#88a8c0;font-family:'IBM Plex Mono',monospace;font-size:11px;white-space:nowrap}
 .ins{background:linear-gradient(160deg,rgba(197,217,58,.18),rgba(19,49,76,.6));border:1px solid rgba(197,217,58,.5);border-radius:14px;padding:15px}
 .ins h{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--lime);margin-bottom:10px;font-weight:600}
 .mv{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.08)}.mv:last-child{border-bottom:none}
@@ -62,8 +42,7 @@ svg.map{display:block;width:100%;height:auto}
 .mvd{font-size:18px;font-weight:700}.mvd.cyan{color:var(--cyan)}.mvd.lime{color:var(--lime)}
 .hot{background:linear-gradient(180deg,var(--panel),var(--navy2));border:1px solid var(--line);border-radius:14px;padding:15px}
 .hot h{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#cfe0ee;margin-bottom:12px;font-weight:600}
-.hr{display:flex;align-items:center;gap:10px;margin-bottom:11px}
-.hr:last-child{margin-bottom:0}
+.hr{display:flex;align-items:center;gap:10px;margin-bottom:11px}.hr:last-child{margin-bottom:0}
 .hr .rk{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint);min-width:14px}
 .hr .nm{font-size:12.5px;color:#eaf2f8;min-width:104px;font-weight:500}
 .hr .bar{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden}
@@ -75,12 +54,63 @@ svg.map{display:block;width:100%;height:auto}
 .kpi .kn{font-family:'IBM Plex Mono',monospace;font-size:25px;font-weight:600;line-height:1}
 .kpi.b .kn{color:var(--cyan)}.kpi.g .kn{color:var(--lime)}.kpi.w .kn{color:#fff}
 .kpi .kl{font-size:10.5px;color:var(--dim);margin-top:7px;line-height:1.3;text-transform:uppercase;letter-spacing:.04em}
-.foot{text-align:center;margin-top:18px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint)}
-@media(max-width:760px){.layout{grid-template-columns:1fr}.row .ad{display:none}}
+/* functional feed */
+.feedwrap{margin-top:16px;border:1px solid #2a557d;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#173a5b,#0d2740);box-shadow:0 14px 34px rgba(0,0,0,.28)}
+.fh{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line)}
+.fh .t{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#F2F8FC;font-weight:600}
+.fh .r{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint)}
+.hintbar{font-size:11.5px;color:var(--faint);text-align:center;padding:8px;font-style:italic;border-bottom:1px solid rgba(33,70,106,.4)}
+.feed{}
+.evt{border-bottom:1px solid rgba(33,70,106,.4);border-left:3px solid transparent;animation:slide .42s cubic-bezier(.2,.8,.2,1) both}
+@keyframes slide{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.evt.out{border-left-color:var(--lime)}.evt.inb{border-left-color:var(--cyan)}.evt.flag{border-left-color:var(--red)}
+.evh{display:flex;align-items:center;gap:11px;padding:11px 16px;cursor:pointer;font-size:14px;transition:background .12s}
+.evh:hover{background:rgba(255,255,255,.05)}
+.evt.out .evh{background:linear-gradient(90deg,rgba(197,217,58,.10),transparent 50%)}
+.evt.inb .evh{background:linear-gradient(90deg,rgba(88,199,230,.10),transparent 50%)}
+.evt.flag .evh{background:linear-gradient(90deg,rgba(232,101,78,.12),transparent 50%)}
+.tm{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#88a8c0;min-width:42px}
+.pill{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.1em;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.pill.out{background:var(--lime);color:#0c1f0a;box-shadow:0 0 10px rgba(197,217,58,.5)}
+.pill.inb{background:var(--cyan);color:#05222b;box-shadow:0 0 10px rgba(88,199,230,.5)}
+.pill.flag{background:var(--red);color:#2a0d07;box-shadow:0 0 10px rgba(232,101,78,.5)}
+.arr{font-weight:700;font-size:15px}.evt.out .arr{color:var(--lime)}.evt.inb .arr{color:var(--cyan)}.evt.flag .arr{color:var(--red)}
+.tx{color:#F2F8FC;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx b{font-weight:700}.evt.out .tx b{color:var(--lime);text-shadow:0 0 9px rgba(197,217,58,.4)}.evt.inb .tx b{color:var(--cyan);text-shadow:0 0 9px rgba(88,199,230,.4)}
+.ad{color:#88a8c0;font-family:'IBM Plex Mono',monospace;font-size:11px;white-space:nowrap}
+.chev{color:var(--faint);font-size:12px;transition:transform .2s;flex:0 0 auto}
+.evt.open .chev{transform:rotate(90deg)}
+.detail{max-height:0;overflow:hidden;transition:max-height .35s ease;background:rgba(4,16,28,.55)}
+.evt.open .detail{max-height:560px}
+.dinner{padding:15px 18px 20px}
+.daddr{font-size:15px;font-weight:600;color:#fff;margin-bottom:2px}
+.dmeta{font-size:11.5px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-bottom:14px}
+.mile{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.ms{font-size:10.5px;font-weight:600;padding:5px 10px;border-radius:7px;border:1px solid var(--line);color:var(--faint);background:rgba(255,255,255,.02)}
+.ms.done{background:var(--green);color:#04220f;border-color:var(--green)}
+.ms.now{background:var(--lime);color:#0c1f0a;border-color:var(--lime);box-shadow:0 0 10px rgba(197,217,58,.4)}
+.ms.stall{background:var(--red);color:#2a0d07;border-color:var(--red)}
+.drow{display:flex;gap:26px;margin-bottom:13px;flex-wrap:wrap}
+.dstat .k{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.dstat .v{font-size:14px;font-weight:600;color:#eaf2f8}.dstat .v.bad{color:var(--red)}
+.dlog{border-top:1px solid var(--line);padding-top:12px}
+.dlog .lt{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.li{display:flex;gap:9px;font-size:12px;color:var(--dim);padding:3px 0;align-items:baseline}
+.li .ld{font-family:'IBM Plex Mono',monospace;color:var(--faint);min-width:62px;font-size:11px}
+.li .lc{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:1px 5px;border-radius:4px;border:1px solid currentColor}
+.li .lc.hi{color:var(--green)}.li .lc.med{color:var(--amber)}
+.dact{margin-top:13px;display:flex;gap:8px;flex-wrap:wrap}
+.db{font-size:11px;font-weight:600;padding:7px 13px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink)}
+.db.prime{background:var(--lime);color:#0c1f0a;border-color:var(--lime)}
+.foot{text-align:center;margin-top:20px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint)}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.ad{display:none}}
+body.embed{padding:10px 12px 28px}
+body.embed header{display:none}
+body.embed .foot{margin-top:14px}
 </style></head>
-<body><div style="position:fixed;top:10px;right:12px;z-index:99;font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#0c1f0a;background:#C5D93A;padding:5px 9px;border-radius:6px">Demo · simulated data</div><div class="wrap">
-<header><div class="brand">N<span class="u">U</span>VU</div>
-<div class="live"><span class="hb"></span>UK LIVE MAP</div><div class="spacer"></div><div class="clock" id="clock">--:--:--</div></header>
+<body><div class="wrap">
+<header><div class="brand">N<span class="u">U</span>VU</div><div class="live"><span class="hb"></span>UK LIVE MAP</div>
+<div class="spacer"></div><div class="clock" id="clock">--:--:--</div></header>
 <div class="layout">
 <div class="stage"><div class="cap">Live comms · in &amp; out of HQ</div>
 <svg class="map" id="map" viewBox="0 0 300.0 543.5" preserveAspectRatio="xMidYMid meet">
@@ -90,124 +120,125 @@ svg.map{display:block;width:100%;height:auto}
 <g id="radar"></g><g id="arcs"></g><g id="pkout"></g><g id="pkin"></g><g id="nodes"></g><g id="labels"></g>
 </svg></div>
 <div class="side">
-<div class="legend"><span><i style="background:#C5D93A"></i>Outbound — sending</span><span><i style="background:#58C7E6"></i>Inbound — replies</span></div>
+<div class="legend2"><span><i style="background:#C5D93A"></i>Outbound — sending</span><span><i style="background:#58C7E6"></i>Inbound — replies</span></div>
 <div class="cards">
-<div class="card out"><div class="n" id="cout">247</div><div class="l">Outbound today</div></div>
-<div class="card inb"><div class="n" id="cin">163</div><div class="l">Inbound replies</div></div>
-<div class="card"><div class="n" id="flight">0</div><div class="l">In flight now</div></div>
-<div class="card"><div class="n" id="regions">14</div><div class="l">Active regions</div></div>
+<div class="card out"><div class="n" id="mout">247</div><div class="l">Outbound today</div></div>
+<div class="card inb"><div class="n" id="min">163</div><div class="l">Inbound replies</div></div>
 </div>
 <div class="wide"><div class="l">Busiest corridor</div><div class="sub" id="corridor">Penrith ↔ Manchester</div></div>
-<div class="ins"><h>Mover patterns · live</h><div class="mv"><span class="mvn cyan">7</span><span class="mvt"><b>into Cumbria</b> — buyers relocating from Manchester &amp; Leeds</span><span class="mvd cyan">&#8595;</span></div><div class="mv"><span class="mvn lime">3</span><span class="mvt"><b>outbound</b> — Penrith sellers buying in the South West</span><span class="mvd lime">&#8593;</span></div></div>
+<div class="ins"><h>Mover patterns · live</h>
+<div class="mv"><span class="mvn cyan">7</span><span class="mvt"><b>into Cumbria</b> — buyers relocating from Manchester &amp; Leeds</span><span class="mvd cyan">&#8595;</span></div>
+<div class="mv"><span class="mvn lime">3</span><span class="mvt"><b>outbound</b> — Penrith sellers buying in the South West</span><span class="mvd lime">&#8593;</span></div></div>
 <div class="hot"><h>Regional hotspots · today</h>
 <div class="hr"><span class="rk">1</span><span class="nm">Cumbria</span><span class="bar"><span class="fillb" id="hb0" style="width:0%"></span></span><span class="vv" id="hv0">0</span></div>
 <div class="hr"><span class="rk">2</span><span class="nm">Gtr Manchester</span><span class="bar"><span class="fillb" id="hb1" style="width:0%"></span></span><span class="vv" id="hv1">0</span></div>
 <div class="hr"><span class="rk">3</span><span class="nm">West Yorkshire</span><span class="bar"><span class="fillb" id="hb2" style="width:0%"></span></span><span class="vv" id="hv2">0</span></div>
 <div class="hr"><span class="rk">4</span><span class="nm">Greater London</span><span class="bar"><span class="fillb" id="hb3" style="width:0%"></span></span><span class="vv" id="hv3">0</span></div>
-<div class="hr"><span class="rk">5</span><span class="nm">Tyne &amp; Wear</span><span class="bar"><span class="fillb" id="hb4" style="width:0%"></span></span><span class="vv" id="hv4">0</span></div>
-</div>
+<div class="hr"><span class="rk">5</span><span class="nm">Tyne &amp; Wear</span><span class="bar"><span class="fillb" id="hb4" style="width:0%"></span></span><span class="vv" id="hv4">0</span></div></div>
 <div class="kpis">
 <div class="kpi g"><div class="kn" id="k1">£2.3M</div><div class="kl">Pipeline value live</div></div>
 <div class="kpi b"><div class="kn" id="k2">9</div><div class="kl">Fall-throughs prevented this Qtr</div></div>
-<div class="kpi w"><div class="kn" id="k3">16.4</div><div class="kl">Avg weeks to exchange</div></div>
-<div class="kpi g"><div class="kn" id="k4">2.4</div><div class="kl">Avg chain length</div></div>
-</div>
+<div class="kpi w"><div class="kn">16.4</div><div class="kl">Avg weeks to exchange</div></div>
+<div class="kpi g"><div class="kn">2.4</div><div class="kl">Avg chain length</div></div></div>
 </div></div>
-<div class="feedwrap"><div class="fh"><span class="t">Live comms feed</span><span class="r" id="rate">~34 / min</span></div><div class="feed" id="feed"></div></div>
+<div class="feedwrap"><div class="fh"><span class="t">Live comms feed</span><span class="r">~34 / min</span></div>
+<div class="hintbar">Each line is a real action — click any to open that sale's progress</div>
+<div class="feed" id="feed"></div></div>
 <div class="foot">NUVU · progression, not updates</div>
 </div>
 <script>
 (function(){
 function pad(n){return n<10?'0'+n:''+n}
+var EMBED=new URLSearchParams(location.search).has('embed');
+if(EMBED){document.body.classList.add('embed');
+  function postH(){try{parent.postMessage({type:'nuvu-map-height',height:document.documentElement.scrollHeight},'*');}catch(e){}}
+  if('ResizeObserver' in window){new ResizeObserver(postH).observe(document.body);}
+  window.addEventListener('load',postH);setInterval(postH,800);postH();
+}
 const clk=document.getElementById('clock');
 setInterval(()=>{const d=new Date();clk.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())},1000);
-const NS="http://www.w3.org/2000/svg";const C={"Penrith": [162.23, 306.72], "Edinburgh": [150.39, 245.74], "Glasgow": [121.28, 250.15], "Aberdeen": [180.32, 189.13], "Inverness": [122.05, 173.55], "Newcastle": [193.34, 291.9], "Carlisle": [157.39, 295.97], "Leeds": [195.22, 347.62], "Manchester": [176.27, 362.77], "Liverpool": [155.75, 366.22], "Birmingham": [185.9, 409.87], "Cardiff": [150.64, 457.44], "Bristol": [166.83, 458.72], "London": [234.1, 456.21], "Norwich": [273.08, 403.05], "Plymouth": [124.27, 509.75], "Brighton": [233.85, 488.64], "Hull": [228.41, 350.27]};const home=C.Penrith;
+function fl(el){if(!el)return;el.classList.add('fl');setTimeout(()=>el.classList.remove('fl'),200)}
+
+const MILES=['Welcome','Forms','Searches','Survey','Enquiries','Exchange'];
+const PROPS={
+ "1 Kirk Houses, Penrith":{city:"Carlisle",beds:"2 bed · terrace",price:"£2,188",sstc:"SSTC 12 Mar 2026",stage:3,days:84,target:127,chain:"Chain of 3",sol:"Napthens",neg:"Donna Vogt",stall:false},
+ "Field Head House, Penrith":{city:"Penrith",beds:"4 bed · detached",price:"£5,940",sstc:"SSTC 02 Apr 2026",stage:2,days:59,target:120,chain:"No chain",sol:"Cartmell Shepherd",neg:"Brendan Foley",confirm:true},
+ "Plot 12 Swallows Rise":{city:"Penrith",beds:"3 bed · bungalow",price:"£6,188",sstc:"SSTC 21 Apr 2026",stage:4,days:94,target:85,chain:"Chain of 2",sol:"Bendles",neg:"Donna Vogt",stall:true},
+ "7 Rowcliffe Lane":{city:"Penrith",beds:"2 bed · flat",price:"£3,400",sstc:"SSTC 17 Apr 2026",stage:3,days:44,target:120,chain:"Chain of 4",sol:"Burnetts",neg:"Donna Vogt",downval:true},
+ "9 Loughrigg Park":{city:"Manchester",beds:"3 bed · semi",price:"£4,100",sstc:"SSTC 28 Feb 2026",stage:5,days:96,target:110,chain:"No chain",sol:"Scott Duff",neg:"Travis Roberts"},
+ "South View, Wigton":{city:"Leeds",beds:"4 bed · detached",price:"£5,600",sstc:"SSTC 19 Mar 2026",stage:2,days:73,target:120,chain:"Chain of 3",sol:"Napthens",neg:"Hart Fell"},
+ "3 Regis Garth":{city:"London",beds:"2 bed · cottage",price:"£3,900",sstc:"SSTC 05 Apr 2026",stage:4,days:56,target:115,chain:"Chain of 2",sol:"Bendles",neg:"Brendan Foley"},
+ "11 Tait Street":{city:"Edinburgh",beds:"1 bed · flat",price:"£2,400",sstc:"SSTC 14 Apr 2026",stage:1,days:47,target:120,chain:"No chain",sol:"Burnetts",neg:"Travis Roberts"}
+};
+const PNAMES=Object.keys(PROPS);
+function logFor(name){const p=PROPS[name];const base=[
+ {d:'today 09:14',c:'hi',t:'Chased '+p.sol+' — search results outstanding'},
+ {d:'today 08:40',c:'hi',t:'Update sent to seller and buyer'},
+ {d:'yest 16:22',c:'med',t:'Parsed reply → searches received'},
+ {d:'yest 11:05',c:'hi',t:'Protocol forms returned by vendor'}];
+ if(p.stall)base.unshift({d:'today 10:02',c:'med',t:'STALL: '+p.sol+' silent 9 days — escalated to '+p.neg});
+ if(p.downval)base.unshift({d:'today 10:30',c:'med',t:'Survey £8k under offer — gated for human decision'});
+ return base;}
+function buildDetail(name){const p=PROPS[name];let miles='';
+ for(let i=0;i<MILES.length;i++){let cls='ms';if(i<p.stage)cls+=' done';else if(i===p.stage)cls+=(p.stall||p.downval)?' stall':' now';miles+='<span class="'+cls+'">'+MILES[i]+'</span>';}
+ const overdue=p.days>p.target;
+ const log=logFor(name).map(l=>'<div class="li"><span class="ld">'+l.d+'</span><span class="lc '+l.c+'">'+(l.c==='hi'?'HIGH':'MED')+'</span><span>'+l.t+'</span></div>').join('');
+ return '<div class="dinner"><div class="daddr">'+name+'</div><div class="dmeta">'+p.beds+' · '+p.sstc+' · '+p.price+' commission</div>'+
+  '<div class="mile">'+miles+'</div><div class="drow">'+
+  '<div class="dstat"><div class="k">Days in progress</div><div class="v'+(overdue?' bad':'')+'">'+p.days+' / '+p.target+' target</div></div>'+
+  '<div class="dstat"><div class="k">Chain</div><div class="v">'+p.chain+'</div></div>'+
+  '<div class="dstat"><div class="k">Solicitor</div><div class="v">'+p.sol+'</div></div>'+
+  '<div class="dstat"><div class="k">Progressor</div><div class="v">'+p.neg+'</div></div></div>'+
+  '<div class="dlog"><div class="lt">Recent actions on this sale</div>'+log+'</div>'+
+  '<div class="dact">'+(p.downval||p.confirm?'<span class="db prime">Make decision →</span>':'<span class="db prime">Open full sale →</span>')+'<span class="db">View chain</span><span class="db">Message parties</span></div></div>';}
+
+const OUT=[n=>'Chased '+PROPS[n].sol+' — search results outstanding',n=>'Update sent to seller — <b>survey booked</b>',n=>'Protocol forms requested from vendor',n=>'Nudged mortgage broker — offer due',n=>'Buyer informed — valuation arranged',n=>'Exchange readiness check sent'];
+const IN=[n=>'Reply from '+PROPS[n].sol+' → <b>searches received</b>',n=>'Buyer\u2019s solicitor → <b>enquiries answered</b>',n=>'<b>Mortgage offer</b> confirmed by lender',n=>'Draft contract received from '+PROPS[n].sol,n=>'Memo of sale acknowledged'];
+const FLAG=[n=>'STALL — '+PROPS[n].sol+' silent 9 days, escalated',n=>'Survey under offer — gated for your decision'];
+const feed=document.getElementById('feed');let ft=new Date();
+function emit(){ft=new Date(ft.getTime()+(6+Math.floor(Math.random()*26))*1000);
+ const name=PNAMES[Math.floor(Math.random()*PNAMES.length)];const r=Math.random();let txt,kind;
+ if(r<0.07){txt=FLAG[Math.floor(Math.random()*FLAG.length)](name);kind='flag';}
+ else if(r<0.6){txt=OUT[Math.floor(Math.random()*OUT.length)](name);kind='out';}
+ else{txt=IN[Math.floor(Math.random()*IN.length)](name);kind='inb';}
+ const label=kind==='out'?'OUT':kind==='inb'?'IN':'FLAG';const arrow=kind==='out'?'→':kind==='inb'?'←':'!';
+ const wrap=document.createElement('div');wrap.className='evt '+kind;
+ wrap.innerHTML='<div class="evh"><span class="tm">'+pad(ft.getHours())+':'+pad(ft.getMinutes())+'</span>'+
+  '<span class="pill '+kind+'">'+label+'</span><span class="arr">'+arrow+'</span>'+
+  '<span class="tx">'+txt+'</span><span class="ad">'+name.split(',')[0]+'</span><span class="chev">▶</span></div>'+
+  '<div class="detail">'+buildDetail(name)+'</div>';
+ wrap.querySelector('.evh').addEventListener('click',()=>wrap.classList.toggle('open'));
+ feed.insertBefore(wrap,feed.firstChild);
+ while(feed.children.length>16)feed.removeChild(feed.lastChild);}
+for(let i=0;i<9;i++)emit();
+setTimeout(()=>{const f=feed.querySelector('.evt');if(f)f.classList.add('open');},400);
+function loop(){emit();setTimeout(loop,1700+Math.random()*1500)}setTimeout(loop,1200);
+
+let outN=247,inN=163;const outEl=document.getElementById('mout'),inEl=document.getElementById('min');
+// hotspots
+const hot=[{b:'hb0',v:'hv0',cur:128},{b:'hb1',v:'hv1',cur:74},{b:'hb2',v:'hv2',cur:61},{b:'hb3',v:'hv3',cur:52},{b:'hb4',v:'hv4',cur:38}];
+function paintHot(){const max=Math.max(...hot.map(h=>h.cur));hot.forEach(h=>{const bar=document.getElementById(h.b),vv=document.getElementById(h.v);if(bar)bar.style.width=Math.round(h.cur/max*100)+'%';if(vv)vv.textContent=h.cur;});}
+paintHot();setInterval(()=>{const h=hot[Math.floor(Math.random()*hot.length)];h.cur+=1+Math.floor(Math.random()*3);paintHot();},1400);
+let kv1=2.3,kv2=9;const k1=document.getElementById('k1'),k2=document.getElementById('k2');
+setInterval(()=>{kv1=Math.round((kv1+0.1)*10)/10;if(k1)k1.textContent='£'+kv1.toFixed(1)+'M';},5200);
+setInterval(()=>{if(Math.random()<0.4&&k2){kv2++;k2.textContent=kv2;}},9000);
+
+// map
+const NS="http://www.w3.org/2000/svg",C={"Penrith": [162.23, 306.72], "Edinburgh": [150.39, 245.74], "Glasgow": [121.28, 250.15], "Aberdeen": [180.32, 189.13], "Inverness": [122.05, 173.55], "Newcastle": [193.34, 291.9], "Carlisle": [157.39, 295.97], "Leeds": [195.22, 347.62], "Manchester": [176.27, 362.77], "Liverpool": [155.75, 366.22], "Birmingham": [185.9, 409.87], "Cardiff": [150.64, 457.44], "Bristol": [166.83, 458.72], "London": [234.1, 456.21], "Norwich": [273.08, 403.05], "Plymouth": [124.27, 509.75], "Brighton": [233.85, 488.64], "Hull": [228.41, 350.27]},home=C.Penrith;
 const radar=document.getElementById('radar');
-[24,48,74,104].forEach((r,i)=>{const c=document.createElementNS(NS,'circle');c.setAttribute('cx',home[0]);c.setAttribute('cy',home[1]);c.setAttribute('r',r);
-c.setAttribute('fill','none');c.setAttribute('stroke','rgba(197,217,58,'+(0.11-i*0.02)+')');c.setAttribute('stroke-width','0.6');radar.appendChild(c);});
+[24,48,74,104].forEach((r,i)=>{const c=document.createElementNS(NS,'circle');c.setAttribute('cx',home[0]);c.setAttribute('cy',home[1]);c.setAttribute('r',r);c.setAttribute('fill','none');c.setAttribute('stroke','rgba(197,217,58,'+(.11-i*.02)+')');c.setAttribute('stroke-width','.6');radar.appendChild(c);});
 const hg=document.createElementNS(NS,'circle');hg.setAttribute('cx',home[0]);hg.setAttribute('cy',home[1]);hg.setAttribute('r',30);hg.setAttribute('fill','url(#home)');radar.appendChild(hg);
 const targets=Object.keys(C).filter(n=>n!=='Penrith');
 const arcsG=document.getElementById('arcs'),outG=document.getElementById('pkout'),inG=document.getElementById('pkin'),ndG=document.getElementById('nodes'),lbG=document.getElementById('labels');
-const arcs={};
-targets.forEach(n=>{const A=home,B=C[n],mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2,dx=B[0]-A[0],dy=B[1]-A[1],len=Math.hypot(dx,dy)||1,off=Math.min(len*0.22,22),cxp=mx-dy/len*off,cyp=my+dx/len*off;
-const p=document.createElementNS(NS,'path');p.setAttribute('d',`M${A[0]} ${A[1]} Q${cxp} ${cyp} ${B[0]} ${B[1]}`);
-p.setAttribute('fill','none');p.setAttribute('stroke','rgba(143,176,201,.10)');p.setAttribute('stroke-width','0.6');arcsG.appendChild(p);arcs[n]={A,B,c:[cxp,cyp]};});
+const arcs={};targets.forEach(n=>{const A=home,B=C[n],mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2,dx=B[0]-A[0],dy=B[1]-A[1],len=Math.hypot(dx,dy)||1,off=Math.min(len*.22,22),cxp=mx-dy/len*off,cyp=my+dx/len*off;const p=document.createElementNS(NS,'path');p.setAttribute('d',`M${A[0]} ${A[1]} Q${cxp} ${cyp} ${B[0]} ${B[1]}`);p.setAttribute('fill','none');p.setAttribute('stroke','rgba(143,176,201,.10)');p.setAttribute('stroke-width','.6');arcsG.appendChild(p);arcs[n]={A,B,c:[cxp,cyp]};});
 const big=['London','Manchester','Edinburgh','Cardiff','Newcastle','Birmingham','Leeds','Glasgow'];
-Object.entries(C).forEach(([n,[x,y]])=>{const hm=n==='Penrith';
-const c=document.createElementNS(NS,'circle');c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',hm?4:2.4);c.setAttribute('fill',hm?'#C5D93A':'#8FB0C9');c.setAttribute('filter','url(#glow)');ndG.appendChild(c);
-if(hm||big.includes(n)){const t=document.createElementNS(NS,'text');t.setAttribute('x',x+(x>180?-5:5));t.setAttribute('y',y-5);t.setAttribute('fill',hm?'#C5D93A':'rgba(143,176,201,.7)');
-t.setAttribute('font-size',hm?'8':'6.3');t.setAttribute('font-family','IBM Plex Mono');t.setAttribute('text-anchor',x>180?'end':'start');t.textContent=n.toUpperCase();lbG.appendChild(t);}
-const pr=document.createElementNS(NS,'circle');pr.setAttribute('cx',x);pr.setAttribute('cy',y);pr.setAttribute('r',hm?4:2.4);pr.setAttribute('fill','none');pr.setAttribute('stroke',hm?'#C5D93A':'#5AA9E6');pr.setAttribute('stroke-width','0.9');ndG.appendChild(pr);
-pr._t=Math.random()*2;pr._hm=hm;(ndG._p=ndG._p||[]).push(pr);});
-let pkts=[];const flightEl=document.getElementById('flight');
-function qp(a,t){const A=a.A,B=a.B,c=a.c,u=1-t;return [u*u*A[0]+2*u*t*c[0]+t*t*B[0],u*u*A[1]+2*u*t*c[1]+t*t*B[1]];}
-let outN=247,inN=163;const outEl=document.getElementById('cout'),inEl=document.getElementById('cin');
-function flash(el){el.classList.add('fl');setTimeout(()=>el.classList.remove('fl'),180)}
-function spawn(dir){if(pkts.length>50)return;const n=targets[Math.floor(Math.random()*targets.length)];const arc=arcs[n];
-const a=dir==='out'?arc:{A:arc.B,B:arc.A,c:arc.c};const el=document.createElementNS(NS,'circle');el.setAttribute('r',dir==='out'?'2':'1.9');
-el.setAttribute('fill',dir==='out'?'#C5D93A':'#58C7E6');el.setAttribute('filter','url(#glow)');(dir==='out'?outG:inG).appendChild(el);
-pkts.push({el,arc:a,t:0,sp:0.005+Math.random()*0.009,dir});}
-function mloop(){if(Math.random()<0.5)spawn('out');if(Math.random()<0.38)spawn('in');if(Math.random()<0.15)spawn('out');
-pkts=pkts.filter(p=>{p.t+=p.sp;if(p.t>=1){p.el.remove();return false;}const pt=qp(p.arc,p.t);p.el.setAttribute('cx',pt[0]);p.el.setAttribute('cy',pt[1]);
-p.el.setAttribute('opacity',p.t<0.1?p.t*10:(p.t>0.9?(1-p.t)*10:1));return true;});flightEl.textContent=pkts.length;
-(ndG._p||[]).forEach(pr=>{pr._t+=0.02;const ph=(pr._t%2)/2,base=pr._hm?4:2.4;pr.setAttribute('r',base+ph*(pr._hm?9:5));pr.setAttribute('stroke-opacity',(1-ph)*(pr._hm?0.5:0.3));});
-requestAnimationFrame(mloop);}
+Object.entries(C).forEach(([n,[x,y]])=>{const hm=n==='Penrith';const c=document.createElementNS(NS,'circle');c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r',hm?4:2.4);c.setAttribute('fill',hm?'#C5D93A':'#8FB0C9');c.setAttribute('filter','url(#glow)');ndG.appendChild(c);
+ if(hm||big.includes(n)){const t=document.createElementNS(NS,'text');t.setAttribute('x',x+(x>180?-5:5));t.setAttribute('y',y-5);t.setAttribute('fill',hm?'#C5D93A':'rgba(143,176,201,.7)');t.setAttribute('font-size',hm?'8':'6.3');t.setAttribute('font-family','IBM Plex Mono');t.setAttribute('text-anchor',x>180?'end':'start');t.textContent=n.toUpperCase();lbG.appendChild(t);}});
+let pkts=[];function qp(a,t){const A=a.A,B=a.B,c=a.c,u=1-t;return[u*u*A[0]+2*u*t*c[0]+t*t*B[0],u*u*A[1]+2*u*t*c[1]+t*t*B[1]];}
+function spawn(dir){if(pkts.length>50)return;const n=targets[Math.floor(Math.random()*targets.length)],arc=arcs[n],a=dir==='out'?arc:{A:arc.B,B:arc.A,c:arc.c};const el=document.createElementNS(NS,'circle');el.setAttribute('r',dir==='out'?'2':'1.9');el.setAttribute('fill',dir==='out'?'#C5D93A':'#58C7E6');el.setAttribute('filter','url(#glow)');(dir==='out'?outG:inG).appendChild(el);pkts.push({el,arc:a,t:0,sp:.005+Math.random()*.009,dir});}
+function mloop(){if(Math.random()<.5)spawn('out');if(Math.random()<.38)spawn('in');pkts=pkts.filter(p=>{p.t+=p.sp;if(p.t>=1){p.el.remove();if(p.dir==='out'){outN++;fl(outEl);outEl.textContent=outN;}else{inN++;fl(inEl);inEl.textContent=inN;}return false;}const pt=qp(p.arc,p.t);p.el.setAttribute('cx',pt[0]);p.el.setAttribute('cy',pt[1]);p.el.setAttribute('opacity',p.t<.1?p.t*10:(p.t>.9?(1-p.t)*10:1));return true;});requestAnimationFrame(mloop);}
 for(let i=0;i<12;i++){spawn('out');spawn('in');}requestAnimationFrame(mloop);
-const corr=['Penrith ↔ Manchester','Penrith ↔ London','Penrith ↔ Leeds','Carlisle ↔ Newcastle','Manchester ↔ Birmingham'];
-let ci=0;const corrEl=document.getElementById('corridor'),regEl=document.getElementById('regions');
+const corr=['Penrith ↔ Manchester','Penrith ↔ London','Penrith ↔ Leeds','Carlisle ↔ Newcastle','Manchester ↔ Birmingham'];let ci=0;const corrEl=document.getElementById('corridor');
 setInterval(()=>{ci=(ci+1)%corr.length;corrEl.textContent=corr[ci];},3200);
-setInterval(()=>{regEl.textContent=13+Math.floor(Math.random()*3);},2600);
-/* hotspots */
-const hot=[ {b:'hb0',v:'hv0',base:128},{b:'hb1',v:'hv1',base:74},{b:'hb2',v:'hv2',base:61},{b:'hb3',v:'hv3',base:52},{b:'hb4',v:'hv4',base:38} ];
-hot.forEach(h=>{h.cur=h.base;});
-function paintHot(){const max=Math.max(...hot.map(h=>h.cur));
- hot.forEach(h=>{const bar=document.getElementById(h.b),vv=document.getElementById(h.v);
-  if(bar)bar.style.width=Math.round(h.cur/max*100)+'%'; if(vv)vv.textContent=h.cur;});}
-paintHot();
-setInterval(()=>{const h=hot[Math.floor(Math.random()*hot.length)];h.cur+=1+Math.floor(Math.random()*3);paintHot();},1400);
-/* kpis drift */
-let kv1=2.3,kv2=9;const k1=document.getElementById('k1'),k2=document.getElementById('k2');
-setInterval(()=>{kv1=Math.round((kv1+0.1)*10)/10;if(k1){k1.textContent='£'+kv1.toFixed(1)+'M';}},5200);
-setInterval(()=>{if(Math.random()<0.4&&k2){kv2++;k2.textContent=kv2;}},9000);
-
-/* ---- live text feed ---- */
-const sols=["Napthens","Cartmell Shepherd","Bendles","Burnetts","Scott Duff & Co"];
-const cityNames=targets.slice();
-const Sg=()=>sols[Math.floor(Math.random()*sols.length)];
-const Ct=()=>cityNames[Math.floor(Math.random()*cityNames.length)];
-const OUT=[
- ()=>'Chased '+Sg()+' — search results outstanding',
- ()=>'Update sent to seller — <b>survey booked</b>',
- ()=>'Protocol forms requested from vendor',
- ()=>'Nudged mortgage broker — offer due',
- ()=>'Chain update pushed to all parties',
- ()=>'Buyer informed — valuation arranged',
- ()=>'Exchange readiness check sent',
- ()=>'Reminder to '+Sg()+' — enquiries pending'
-];
-const IN=[
- ()=>'Reply from '+Sg()+' → <b>searches received</b>',
- ()=>'Buyer\u2019s solicitor → <b>enquiries answered</b>',
- ()=>'<b>Mortgage offer</b> confirmed by lender',
- ()=>'Memo of sale acknowledged',
- ()=>'Survey report returned → <b>no issues</b>',
- ()=>'Draft contract received from '+Sg(),
- ()=>'Vendor returned signed protocol forms'
-];
-const feed=document.getElementById('feed');let ft=new Date();
-function emit(){
- ft=new Date(ft.getTime()+(6+Math.floor(Math.random()*26))*1000);
- const out=Math.random()<0.58;const dir=out?'out':'inb';
- const txt=(out?OUT:IN)[Math.floor(Math.random()*(out?OUT.length:IN.length))]();
- const row=document.createElement('div');row.className='row '+dir;
- row.innerHTML='<span class="tm">'+pad(ft.getHours())+':'+pad(ft.getMinutes())+'</span>'+
-  '<span class="pill '+dir+'">'+(out?'OUT':'IN')+'</span>'+
-  '<span class="arr">'+(out?'→':'←')+'</span>'+
-  '<span class="tx">'+txt+'</span><span class="ad">'+Ct()+'</span>';
- feed.insertBefore(row,feed.firstChild);
- while(feed.children.length>9)feed.removeChild(feed.lastChild);
- setTimeout(emit,800+Math.random()*1100);
-}
-for(let i=0;i<7;i++)emit();
 })();
 </script></body></html>

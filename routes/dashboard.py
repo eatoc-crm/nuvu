@@ -211,10 +211,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
 /* ═══ DASH TABS + LEADERBOARDS ════════════════════════════ */
 .dash-tab-toolbar{
-  position:sticky;top:0;z-index:100;width:100%;
+  position:sticky;top:0;z-index:50;width:100%;
   background:var(--navy);
   overflow-x:auto;-webkit-overflow-scrolling:touch;
 }
+body.dash-livemap-active .hero{display:none}
 .dash-tab-inner{
   width:100%;min-width:min-content;margin:0;padding:0;
   display:flex;flex-wrap:nowrap;align-items:stretch;gap:0;
@@ -232,9 +233,6 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 a.dash-tab--link{text-decoration:none;display:flex;align-items:center;justify-content:center}
 .tab-panel{display:none}
 .tab-panel.tab-panel--active{display:block}
-.livemap-panel-toolbar{padding:12px 20px 0;font-size:13px}
-.livemap-panel-toolbar a{color:var(--nuvu-green);text-decoration:none}
-.livemap-panel-toolbar a:hover{text-decoration:underline}
 .lb-wrap{max-width:960px;margin:0 auto;padding:24px 20px 48px}
 .lb-header{
   display:flex;align-items:stretch;gap:16px;margin-bottom:22px;
@@ -1376,10 +1374,7 @@ a.portal-review-link:hover{color:var(--claret)}
 {% endfor %}
 
 <div id="tab-panel-livemap" class="tab-panel">
-  <div class="livemap-panel-toolbar">
-    <a href="/live-map" target="_blank" rel="noopener noreferrer">Open fullscreen ↗</a>
-  </div>
-  <iframe id="livemap-iframe" data-src="/live-map" title="NUVU Live Map" style="width:100%;height:80vh;border:0"></iframe>
+  <iframe id="livemap-iframe" data-src="/live-map?embed=1" title="NUVU Live Map" style="width:100%;border:0;min-height:600px"></iframe>
 </div>
 
 </div>
@@ -2428,8 +2423,15 @@ a.portal-review-link:hover{color:var(--claret)}
         else btn.classList.remove("dash-tab--active");
       }
     }
+    document.body.classList.toggle("dash-livemap-active", raw === "livemap");
     if (raw === "livemap") loadLiveMapIframe();
   }
+  window.addEventListener("message", function(e){
+    if (e.data && e.data.type === "nuvu-map-height") {
+      var f = document.querySelector("#tab-panel-livemap iframe");
+      if (f) f.style.height = e.data.height + "px";
+    }
+  });
   function openModalFromHashIfPresent(){
     var rawFull = (location.hash || "").replace(/^#/,"");
     var pm = /^property-(.+)$/i.exec(rawFull);

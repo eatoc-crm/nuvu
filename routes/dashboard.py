@@ -232,6 +232,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 a.dash-tab--link{text-decoration:none;display:flex;align-items:center;justify-content:center}
 .tab-panel{display:none}
 .tab-panel.tab-panel--active{display:block}
+.livemap-panel-toolbar{padding:12px 20px 0;font-size:13px}
+.livemap-panel-toolbar a{color:var(--nuvu-green);text-decoration:none}
+.livemap-panel-toolbar a:hover{text-decoration:underline}
 .lb-wrap{max-width:960px;margin:0 auto;padding:24px 20px 48px}
 .lb-header{
   display:flex;align-items:stretch;gap:16px;margin-bottom:22px;
@@ -1123,7 +1126,7 @@ a.portal-review-link:hover{color:var(--claret)}
     <button type="button" class="dash-tab" data-tab="mortgage">Mortgage</button>
     <button type="button" class="dash-tab" data-tab="surveyors">Surveyors</button>
     <button type="button" class="dash-tab" data-tab="removals">Removals</button>
-    <a href="/live-map" class="dash-tab dash-tab--link" target="_blank" rel="noopener noreferrer">Live Map</a>
+    <button type="button" class="dash-tab" data-tab="livemap">Live Map</button>
   </div>
 </nav>
 
@@ -1371,6 +1374,13 @@ a.portal-review-link:hover{color:var(--claret)}
 {% for lb in leaderboard_tabs %}
 {{ dash_leaderboard_panel(lb) }}
 {% endfor %}
+
+<div id="tab-panel-livemap" class="tab-panel">
+  <div class="livemap-panel-toolbar">
+    <a href="/live-map" target="_blank" rel="noopener noreferrer">Open fullscreen ↗</a>
+  </div>
+  <iframe id="livemap-iframe" data-src="/live-map" title="NUVU Live Map" style="width:100%;height:80vh;border:0"></iframe>
+</div>
 
 </div>
 
@@ -2393,8 +2403,14 @@ a.portal-review-link:hover{color:var(--claret)}
 
   /* ── Tabbed dashboard (URL hash) ─────────────────────── */
   var DASH_TABS = [
-    "properties","pipeline","portal","solicitors","mortgage","surveyors","removals"
+    "properties","pipeline","portal","solicitors","mortgage","surveyors","removals","livemap"
   ];
+  function loadLiveMapIframe(){
+    var iframe = document.getElementById("livemap-iframe");
+    if (!iframe || iframe.getAttribute("src")) return;
+    var src = iframe.getAttribute("data-src");
+    if (src) iframe.setAttribute("src", src);
+  }
   function syncDashTab(){
     var raw = (location.hash || "").replace(/^#/,"").toLowerCase() || "properties";
     if (/^property-/.test(raw)) raw = "properties";
@@ -2412,6 +2428,7 @@ a.portal-review-link:hover{color:var(--claret)}
         else btn.classList.remove("dash-tab--active");
       }
     }
+    if (raw === "livemap") loadLiveMapIframe();
   }
   function openModalFromHashIfPresent(){
     var rawFull = (location.hash || "").replace(/^#/,"");

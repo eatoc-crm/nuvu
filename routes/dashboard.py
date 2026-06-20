@@ -881,6 +881,46 @@ a.portal-review-link:hover{color:var(--claret)}
   margin-left:8px;vertical-align:middle;text-transform:uppercase;
 }
 @media(max-width:640px){.card-grid-na{grid-template-columns:1fr}}
+
+/* ═══ ACTIVITY TAB ════════════════════════════════════════ */
+.ev-activity-section{max-width:1280px;margin:0 auto;padding:28px 20px 40px}
+.ev-activity-hdr{margin-bottom:24px}
+.ev-activity-hdr h2{font-size:20px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
+.ev-activity-hdr p{font-size:13px;color:var(--stone);margin-top:6px;max-width:46rem;line-height:1.45}
+
+/* Summary cards */
+.ev-summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:900px){.ev-summary-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.ev-summary-grid{grid-template-columns:repeat(2,1fr)}}
+.ev-summary-card{background:var(--navy);border-radius:6px;padding:18px 16px;text-align:left}
+.ev-summary-card--attention{background:var(--claret)}
+.ev-summary-val{font-size:1.75rem;font-weight:700;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+.ev-summary-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.65);font-weight:600;margin-top:8px}
+.ev-summary-sub{font-size:.75rem;color:rgba(255,255,255,.5);margin-top:5px;line-height:1.3}
+
+/* Feed */
+.ev-feed-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.ev-feed-hdr h3{font-size:16px;font-weight:700;color:var(--navy)}
+.ev-feed-hdr span{font-size:12px;color:var(--stone)}
+.ev-feed{background:var(--white);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.ev-feed-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);transition:background .1s}
+.ev-feed-item:last-child{border-bottom:none}
+.ev-feed-item:hover{background:var(--muted-bg)}
+.ev-feed-meta{flex-shrink:0;width:120px;text-align:right}
+.ev-feed-time{font-size:11px;color:var(--stone-dark);font-weight:500}
+.ev-feed-addr{font-size:.8rem;color:var(--stone);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-feed-body{flex:1;min-width:0}
+.ev-feed-summary{font-size:.88rem;color:var(--txt);line-height:1.4}
+.ev-feed-actor{font-size:.75rem;color:var(--stone);margin-top:3px}
+.ev-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.ev-badge--comms_sent{background:#1B3A5C;color:#fff}
+.ev-badge--inbound_parsed{background:#4A7C6F;color:#fff}
+.ev-badge--milestone_changed{background:#C5D93A;color:#2A3A0C}
+.ev-badge--gate_raised{background:#D4940A;color:#fff}
+.ev-badge--human_decision{background:#962D3E;color:#fff}
+.ev-badge--progression_state_changed{background:#8B8680;color:#fff}
+.ev-badge--unknown{background:#EDEAE5;color:#6B6560}
+.ev-empty{padding:32px;text-align:center;color:var(--stone);font-size:.9rem}
 </style>
 </head>
 <body>
@@ -1125,6 +1165,7 @@ a.portal-review-link:hover{color:var(--claret)}
     <button type="button" class="dash-tab" data-tab="surveyors">Surveyors</button>
     <button type="button" class="dash-tab" data-tab="removals">Removals</button>
     <button type="button" class="dash-tab" data-tab="livemap">Live Map</button>
+    <button type="button" class="dash-tab" data-tab="activity">Activity</button>
   </div>
 </nav>
 
@@ -1375,6 +1416,76 @@ a.portal-review-link:hover{color:var(--claret)}
 
 <div id="tab-panel-livemap" class="tab-panel">
   <iframe id="livemap-iframe" data-src="/live-map?embed=1" title="NUVU Live Map" style="width:100%;border:0;min-height:600px"></iframe>
+</div>
+
+<!-- ═══ ACTIVITY TAB ════════════════════════════════════ -->
+<div id="tab-panel-activity" class="tab-panel">
+{%- set ev_list = recent_events|default([]) %}
+{%- set ev_cnt  = event_counts|default({}) %}
+{%- set gates_n = active_gates_count|default(0) %}
+<div class="ev-activity-section">
+
+  <div class="ev-activity-hdr">
+    <h2>Activity Feed</h2>
+    <p>Every action NUVU has taken — chases sent, emails parsed, milestones recorded, and gates raised — in chronological order. This is the proof-of-work backbone of the dashboard.</p>
+  </div>
+
+  <!-- 3b: Summary count cards -->
+  <div class="ev-summary-grid">
+    <div class="ev-summary-card">
+      <div class="ev-summary-val">{{ ev_cnt.get('comms_sent', 0) }}</div>
+      <div class="ev-summary-lbl">Chases Sent</div>
+      <div class="ev-summary-sub">Total outbound chase actions</div>
+    </div>
+    <div class="ev-summary-card">
+      <div class="ev-summary-val">{{ ev_cnt.get('inbound_parsed', 0) }}</div>
+      <div class="ev-summary-lbl">Emails Parsed</div>
+      <div class="ev-summary-sub">Inbound emails processed</div>
+    </div>
+    <div class="ev-summary-card">
+      <div class="ev-summary-val">{{ ev_cnt.get('milestone_changed', 0) }}</div>
+      <div class="ev-summary-lbl">Milestones Hit</div>
+      <div class="ev-summary-sub">Progression milestones recorded</div>
+    </div>
+    <div class="ev-summary-card">
+      <div class="ev-summary-val">{{ ev_cnt.get('human_decision', 0) }}</div>
+      <div class="ev-summary-lbl">Decisions Made</div>
+      <div class="ev-summary-sub">Human confirmations received</div>
+    </div>
+    <div class="ev-summary-card{% if gates_n > 0 %} ev-summary-card--attention{% endif %}">
+      <div class="ev-summary-val">{{ gates_n }}</div>
+      <div class="ev-summary-lbl">Attention Needed</div>
+      <div class="ev-summary-sub">Properties needing intervention now</div>
+    </div>
+  </div>
+
+  <!-- 3a: Activity Feed -->
+  <div class="ev-feed-hdr">
+    <h3>Recent Events</h3>
+    <span>Most recent {{ [ev_list|length, 50]|min }} of all recorded events</span>
+  </div>
+  <div class="ev-feed">
+    {% if ev_list|length == 0 %}
+    <div class="ev-empty">No events recorded yet. Events will appear here as NUVU chases, parses emails, and records milestones.</div>
+    {% endif %}
+    {% for ev in ev_list %}
+    {%- set etype = ev.event_type|default('unknown') %}
+    {%- set ts_raw = ev.created_at|default('') %}
+    <div class="ev-feed-item">
+      <div class="ev-feed-meta">
+        <div class="ev-feed-time">{{ ts_raw[:16]|replace('T',' ') if ts_raw else '—' }}</div>
+        <div class="ev-feed-addr" title="{{ ev.property_address|default('') }}">{{ ev.property_address|default('—') }}</div>
+      </div>
+      <span class="ev-badge ev-badge--{{ etype }}">{{ etype|replace('_',' ') }}</span>
+      <div class="ev-feed-body">
+        <div class="ev-feed-summary">{{ ev.summary|default('—') }}</div>
+        <div class="ev-feed-actor">{{ ev.actor|default('system') }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
 </div>
 
 </div>
@@ -3756,6 +3867,21 @@ def dashboard():
         # Fallback: show error
         return f"<h2>Error loading live data</h2><pre>{e}</pre>", 500
 
+    # ── Event-powered sections (gracefully degrade on failure) ──
+    try:
+        from utils.event_queries import (
+            get_active_gates,
+            get_event_counts_by_type,
+            get_recent_events,
+        )
+        recent_events = get_recent_events(limit=50)
+        event_counts = get_event_counts_by_type()
+        active_gates_count = len(get_active_gates())
+    except Exception:
+        recent_events = []
+        event_counts = {}
+        active_gates_count = 0
+
     props_json = (
         properties
         if show_test
@@ -3772,5 +3898,8 @@ def dashboard():
         leaderboard_tabs=LEADERBOARD_TABS,
         show_test_properties=show_test,
         test_props_toggle_base="/",
+        recent_events=recent_events,
+        event_counts=event_counts,
+        active_gates_count=active_gates_count,
     )
 

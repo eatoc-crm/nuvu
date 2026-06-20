@@ -134,6 +134,39 @@ def _load_progression_row(client, prog_id: str) -> dict[str, Any] | None:
         return None
 
 
+def _enrich_with_chase_state(client, chain_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Overlay chain_chase_state progression columns onto chain_links rows.
+
+    chain_links is EATOC-owned; NUVU writes progression data to chain_chase_state.
+    This merges the two so callers see a unified row dict.
+    """
+    if not chain_rows:
+        return chain_rows
+    ids = [str(r.get("id") or "") for r in chain_rows if r.get("id")]
+    if not ids:
+        return chain_rows
+    try:
+        res = (
+            client.table("chain_chase_state")
+            .select("*")
+            .in_("chain_link_id", ids)
+            .execute()
+        )
+    except Exception as ex:
+        print(f"[chain_chase] fetch chain_chase_state for enrichment failed: {ex}")
+        return chain_rows
+    state_by_id = {
+        str(r.get("chain_link_id") or ""): r for r in (res.data or [])
+    }
+    _skip = {"id", "chain_link_id", "created_at", "updated_at"}
+    for row in chain_rows:
+        lid = str(row.get("id") or "")
+        for k, v in state_by_id.get(lid, {}).items():
+            if k not in _skip:
+                row[k] = v
+    return chain_rows
+
+
 def _pipeline_negotiator(client, property_address: str) -> str:
     addr = (property_address or "").strip()
     if not addr:
@@ -243,16 +276,20 @@ def try_process_chain_link_outreach_for_row(
 
     now = datetime.now(timezone.utc).isoformat()
     try:
-        client.table("chain_links").update(
+        client.table("chain_chase_state").upsert(
             {
+                "chain_link_id": lid,
+                "property_address": addr,
                 "solicitor_status": "contacted",
                 "chain_solicitor_first_email_at": now,
                 "chain_solicitor_intro_sent_at": now,
                 "solicitor_email": to_em,
-            }
-        ).eq("id", lid).execute()
+                "updated_at": now,
+            },
+            on_conflict="chain_link_id",
+        ).execute()
     except Exception as ex:
-        print(f"[chain_chase] chain_links update after Phase1 failed: {ex}")
+        print(f"[chain_chase] chain_chase_state upsert after Phase1 failed: {ex}")
 
 
 def run_chain_cadence_check() -> None:
@@ -272,7 +309,7 @@ def run_chain_cadence_check() -> None:
         print(f"[chain_chase] fetch chain_links failed: {e}")
         return
 
-    for cl in res.data or []:
+    for cl in _enrich_with_chase_state(client, res.data or []):
         lid = str(cl.get("id") or "")
         pid = str(cl.get("property_id") or "")
         if not lid or not pid:
@@ -363,14 +400,18 @@ def run_chain_cadence_check() -> None:
             email_disp = to_em or "unknown email"
             _append_nuvu_notes(client, pid, chain_solicitor_flag_note_text(firm, email_disp))
             try:
-                client.table("chain_links").update(
+                client.table("chain_chase_state").upsert(
                     {
+                        "chain_link_id": lid,
+                        "property_address": addr,
                         "solicitor_status": "unresponsive",
                         "chain_solicitor_unresponsive_at": now.isoformat(),
-                    }
-                ).eq("id", lid).execute()
+                        "updated_at": now.isoformat(),
+                    },
+                    on_conflict="chain_link_id",
+                ).execute()
             except Exception as ex:
-                print(f"[chain_chase] Day-9 flag update failed: {ex}")
+                print(f"[chain_chase] Day-9 flag upsert failed: {ex}")
 
 
 def _maybe_reinstate_prompt(
@@ -396,11 +437,17 @@ def _maybe_reinstate_prompt(
     firm = _firm_label(cl)
     _append_nuvu_notes(client, pid, chain_solicitor_reinstate_prompt_text(firm))
     try:
-        client.table("chain_links").update(
-            {"chain_solicitor_reinstate_prompt_at": now.isoformat()}
-        ).eq("id", str(cl.get("id"))).execute()
+        client.table("chain_chase_state").upsert(
+            {
+                "chain_link_id": str(cl.get("id")),
+                "property_address": (prog.get("property_address") or "").strip(),
+                "chain_solicitor_reinstate_prompt_at": now.isoformat(),
+                "updated_at": now.isoformat(),
+            },
+            on_conflict="chain_link_id",
+        ).execute()
     except Exception as ex:
-        print(f"[chain_chase] reinstate prompt stamp failed: {ex}")
+        print(f"[chain_chase] reinstate prompt upsert failed: {ex}")
 
 
 def _maybe_send_progress_request(
@@ -495,7 +542,7 @@ def check_reinstate_keywords_on_note_text(property_id: str, note_text: str) -> N
 
     links = [
         x
-        for x in (r.data or [])
+        for x in _enrich_with_chase_state(client, r.data or [])
         if (x.get("solicitor_status") or "").lower() == "unresponsive"
     ]
     if not links:
@@ -505,22 +552,28 @@ def check_reinstate_keywords_on_note_text(property_id: str, note_text: str) -> N
     date_disp = f"{now.day} {now.strftime('%B %Y')}"
 
     if has_reinstate:
+        prog = _load_progression_row(client, pid)
+        addr = (prog.get("property_address") or "").strip() if prog else ""
         for cl in links:
             lid = str(cl.get("id") or "")
             if not lid:
                 continue
             try:
-                client.table("chain_links").update(
+                client.table("chain_chase_state").upsert(
                     {
+                        "chain_link_id": lid,
+                        "property_address": addr,
                         "solicitor_status": "contacted",
                         "chain_solicitor_unresponsive_at": None,
                         "chain_solicitor_reinstate_prompt_at": None,
                         "chain_solicitor_intro_sent_at": None,
                         "chain_solicitor_first_email_at": None,
-                    }
-                ).eq("id", lid).execute()
+                        "updated_at": now.isoformat(),
+                    },
+                    on_conflict="chain_link_id",
+                ).execute()
             except Exception as ex:
-                print(f"[chain_chase] reinstate clear failed: {ex}")
+                print(f"[chain_chase] reinstate clear upsert failed: {ex}")
                 continue
             try:
                 r2 = (
@@ -530,7 +583,8 @@ def check_reinstate_keywords_on_note_text(property_id: str, note_text: str) -> N
                     .limit(1)
                     .execute()
                 )
-                row = (r2.data or [None])[0]
+                enriched_rows = _enrich_with_chase_state(client, r2.data or [])
+                row = (enriched_rows or [None])[0]
                 if row:
                     try_process_chain_link_outreach_for_row(
                         client, row, reason="reinstate_keyword"
@@ -576,8 +630,10 @@ def handle_inbound_sender_for_chain_solicitor(
         print(f"[chain_chase] inbound chain lookup failed: {ex}")
         return
 
+    prog = _load_progression_row(client, pid)
+    addr = (prog.get("property_address") or "").strip() if prog else ""
     now = datetime.now(timezone.utc).isoformat()
-    for cl in r.data or []:
+    for cl in _enrich_with_chase_state(client, r.data or []):
         cand = _norm_email(_recipient_email_for_link(cl))
         if not cand or cand != se:
             continue
@@ -585,15 +641,19 @@ def handle_inbound_sender_for_chain_solicitor(
             continue
         lid = str(cl.get("id"))
         try:
-            client.table("chain_links").update(
+            client.table("chain_chase_state").upsert(
                 {
+                    "chain_link_id": lid,
+                    "property_address": addr,
                     "solicitor_status": "confirmed",
                     "solicitor_acting_confirmed_at": now,
                     "last_chain_solicitor_reply_at": now,
-                }
-            ).eq("id", lid).execute()
+                    "updated_at": now,
+                },
+                on_conflict="chain_link_id",
+            ).execute()
         except Exception as ex:
-            print(f"[chain_chase] confirm chain solicitor failed: {ex}")
+            print(f"[chain_chase] confirm chain solicitor upsert failed: {ex}")
 
 
 def notify_confirmed_chain_solicitors_milestone(
@@ -631,7 +691,7 @@ def notify_confirmed_chain_solicitors_milestone(
     target = _completion_phrase_from_prog(prog)
     date_disp = _milestone_date_display(prog, milestone_key)
 
-    for cl in r.data or []:
+    for cl in _enrich_with_chase_state(client, r.data or []):
         if (cl.get("solicitor_status") or "").lower() != "confirmed":
             continue
         to_em = _recipient_email_for_link(cl)
@@ -663,28 +723,57 @@ def notify_confirmed_chain_solicitors_milestone(
         )
         if chain_chase_sending_enabled():
             try:
-                client.table("chain_links").update(
-                    {"last_chain_inform_sent_at": datetime.now(timezone.utc).isoformat()}
-                ).eq("id", lid).execute()
+                client.table("chain_chase_state").upsert(
+                    {
+                        "chain_link_id": lid,
+                        "property_address": addr,
+                        "last_chain_inform_sent_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    },
+                    on_conflict="chain_link_id",
+                ).execute()
             except Exception:
                 pass
 
 
 def fetch_property_ids_chain_solicitor_unresponsive() -> dict[str, list[dict[str, Any]]]:
-    """property_id (sales_progression) -> list of {firm, chain_link_id} for Needs Attention."""
+    """property_id (sales_progression) -> list of {firm, chain_link_id} for Needs Attention.
+
+    Queries chain_chase_state for solicitor_status (NUVU-owned progression data),
+    then fetches chain_links structure columns for display labels.
+    """
     client = supabase_for_backend()
     try:
-        r = (
-            client.table("chain_links")
-            .select("id,property_id,link_address,estate_agent,solicitor_firm,solicitor_email")
+        state_res = (
+            client.table("chain_chase_state")
+            .select("chain_link_id")
             .eq("solicitor_status", "unresponsive")
             .limit(500)
             .execute()
         )
     except Exception:
         return {}
+    state_rows = state_res.data or []
+    if not state_rows:
+        return {}
+    chain_link_ids = [
+        str(r.get("chain_link_id") or "")
+        for r in state_rows
+        if r.get("chain_link_id")
+    ]
+    if not chain_link_ids:
+        return {}
+    try:
+        links_res = (
+            client.table("chain_links")
+            .select("id,property_id,link_address,estate_agent,solicitor_firm,solicitor_email")
+            .in_("id", chain_link_ids)
+            .execute()
+        )
+    except Exception:
+        return {}
     out: dict[str, list[dict[str, Any]]] = {}
-    for row in r.data or []:
+    for row in links_res.data or []:
         pid = str(row.get("property_id") or "")
         if not pid:
             continue

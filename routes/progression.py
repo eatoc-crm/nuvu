@@ -350,6 +350,21 @@ def api_chain_outreach():
             jsonify({"error": "Outreach already sent for this chain link"}),
             400,
         )
+    try:
+        ccs_r = (
+            sb.table("chain_chase_state")
+            .select("solicitor_details_requested")
+            .eq("chain_link_id", chain_link_id)
+            .limit(1)
+            .execute()
+        )
+        if ccs_r.data and ccs_r.data[0].get("solicitor_details_requested") is True:
+            return (
+                jsonify({"error": "Outreach already sent for this chain link"}),
+                400,
+            )
+    except Exception:
+        pass
 
     agent_email = (cl.get("estate_agent_email") or "").strip()
     if not agent_email:
@@ -446,8 +461,14 @@ def api_chain_outreach():
         )
 
     try:
-        sb.table("chain_links").update({"solicitor_details_requested": True}).eq(
-            "id", chain_link_id
+        sb.table("chain_chase_state").upsert(
+            {
+                "chain_link_id": chain_link_id,
+                "property_address": property_address,
+                "solicitor_details_requested": True,
+                "updated_at": datetime.utcnow().isoformat(),
+            },
+            on_conflict="chain_link_id",
         ).execute()
     except Exception as e:
         return jsonify({"error": f"update failed: {e}"}), 500

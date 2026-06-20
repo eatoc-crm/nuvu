@@ -1,0 +1,38 @@
+name: NUVU Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      NUVU_API_KEY: ${{ secrets.NUVU_API_KEY }}
+      EATOC_API_BASE: ${{ secrets.EATOC_API_BASE }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run smoke tests
+        run: pytest tests/smoke/ -v --tb=short
+
+      - name: Run unit tests
+        run: pytest tests/unit/ -v --tb=short

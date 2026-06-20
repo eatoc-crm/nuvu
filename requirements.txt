@@ -6,3 +6,4 @@ python-dotenv
 resend
 anthropic
 pypdf
+pytest>=7.0

@@ -80,4 +80,18 @@ def patch_sales_pipeline(pipe_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+    # Local write: keep NUVU's local read copy in sync immediately so the
+    # dashboard reflects the change without waiting for the next adapter sync.
+    try:
+        from db_supabase import supabase_for_backend
+        supabase_for_backend().table("sales_pipeline").update(
+            updates
+        ).eq("id", pipe_id).execute()
+    except Exception as local_err:
+        import logging as _logging
+        _logging.getLogger(__name__).warning(
+            "local sales_pipeline update failed for id '%s': %s — will catch up on next sync",
+            pipe_id, local_err,
+        )
+
     return jsonify({"ok": True, "updated": list(updates.keys())})

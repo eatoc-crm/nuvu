@@ -19,6 +19,14 @@ def _headers():
     return {"x-api-key": NUVU_API_KEY, "Content-Type": "application/json"}
 
 
+def eatoc_get(path: str, params: dict | None = None) -> dict | list:
+    """GET from EATOC API. Returns parsed JSON on success; raises on HTTP error."""
+    url = f"{EATOC_API_BASE}{path}"
+    resp = http_requests.get(url, params=params, headers=_headers(), timeout=15)
+    resp.raise_for_status()
+    return resp.json()
+
+
 def eatoc_post(path: str, body: dict) -> dict:
     """POST to EATOC API. Returns parsed JSON on success; raises on HTTP error."""
     url = f"{EATOC_API_BASE}{path}"

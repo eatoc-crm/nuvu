@@ -19,16 +19,26 @@ def start_chase_cadence_scheduler() -> None:
         return
 
     def _loop() -> None:
+        # Immediate startup sync — populate local tables before first dashboard request.
+        try:
+            from utils.adapter_sync import run_adapter_sync
+
+            run_adapter_sync()
+        except Exception as e:
+            print(f"[chase_scheduler] startup adapter_sync error: {e}")
+
         time.sleep(60)
         while True:
             try:
+                from utils.adapter_sync import run_adapter_sync
                 from routes.chase_engine import run_cadence_check
                 from routes.chain_chase import run_chain_cadence_check
 
+                run_adapter_sync()
                 run_cadence_check()
                 run_chain_cadence_check()
             except Exception as e:
-                print(f"[chase_scheduler] run_cadence_check error: {e}")
+                print(f"[chase_scheduler] cadence error: {e}")
             time.sleep(900)
 
     t = threading.Thread(

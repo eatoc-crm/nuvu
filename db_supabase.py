@@ -297,13 +297,28 @@ def fetch_solicitors():
 
 
 def fetch_property_images():
-    """Fetch image columns from properties table for card thumbnails."""
-    return (
-        supabase.table("properties")
-        .select("id,ref,address,image_url,photo_urls")
-        .execute()
-        .data
-    )
+    """Fetch image data for card thumbnails via the EATOC adapter API.
+
+    Replaces the previous direct query against the EATOC-owned properties table.
+    Returns a list of dicts shaped like the original rows: {id, address, image_url, photo_urls}.
+    """
+    try:
+        from utils.eatoc_live_map import fetch_eatoc_properties
+
+        raw, _err = fetch_eatoc_properties()
+        rows = []
+        for r in raw:
+            rows.append(
+                {
+                    "id": r.get("id"),
+                    "address": r.get("property_address") or r.get("address") or "",
+                    "image_url": r.get("image_url") or "",
+                    "photo_urls": r.get("photo_urls") or [],
+                }
+            )
+        return rows
+    except Exception:
+        return []
 
 
 def fetch_chain_links():

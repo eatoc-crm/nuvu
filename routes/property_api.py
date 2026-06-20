@@ -1,4 +1,7 @@
+import requests as http_requests
 from flask import Blueprint, jsonify, request
+
+from utils.eatoc_api import eatoc_patch
 
 property_api_bp = Blueprint("property_api", __name__)
 
@@ -46,31 +49,35 @@ def patch_sales_pipeline(pipe_id):
     if not updates:
         return jsonify({"error": "No valid fields to update"}), 400
 
+    # Resolve property_address from local sales_pipeline (read still OK per Brief 3).
     try:
         from db_supabase import supabase_for_backend
 
-        res = (
+        row_res = (
             supabase_for_backend()
             .table("sales_pipeline")
-            .update(updates)
+            .select("property_address")
             .eq("id", pipe_id)
-            .select("id")
+            .limit(1)
             .execute()
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    if not (res.data or []):
-        return (
-            jsonify(
-                {
-                    "error": (
-                        "No sales_pipeline row was updated. "
-                        "Check id and SUPABASE_SERVICE_ROLE_KEY."
-                    )
-                }
-            ),
-            409,
-        )
+    if not (row_res.data or []):
+        return jsonify({"error": "Pipeline row not found"}), 404
+
+    property_address = (row_res.data[0].get("property_address") or "").strip()
+    if not property_address:
+        return jsonify({"error": "Pipeline row has no property_address"}), 500
+
+    patch_body = {"property_address": property_address, **updates}
+    try:
+        eatoc_patch("/api/nuvu/pipeline", patch_body)
+    except http_requests.HTTPError as e:
+        status_code = e.response.status_code if e.response is not None else 500
+        return jsonify({"error": str(e)}), status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
     return jsonify({"ok": True, "updated": list(updates.keys())})

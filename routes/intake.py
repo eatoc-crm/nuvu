@@ -1,8 +1,14 @@
+import logging
+
 from flask import Blueprint, jsonify, request
+import requests as http_requests
 
 import shared  # loads shared config and provides `sb`
 from shared import sb, require_nuvu_api_key
 from routes.progression import _send_welcome_emails
+from utils.eatoc_api import eatoc_post
+
+log = logging.getLogger(__name__)
 
 intake_bp = Blueprint("intake", __name__)
 
@@ -37,18 +43,22 @@ def api_intake():
 
     # --- Handle reversal: For Sale = sale fell through ---
     if incoming_status == "For Sale":
-        update_row = {"status": "For Sale"}
+        reversal_body = {"property_address": addr}
+        if alto_ref:
+            reversal_body["alto_ref"] = alto_ref
         try:
-            if alto_ref:
-                sb.table("sales_pipeline").update(update_row).eq(
-                    "alto_ref", alto_ref
-                ).execute()
+            eatoc_post("/api/nuvu/pipeline/reversal", reversal_body)
+        except http_requests.HTTPError as e:
+            if e.response is not None and e.response.status_code == 404:
+                log.warning(
+                    "pipeline/reversal 404 for '%s' (alto_ref=%s) — row not found in EATOC",
+                    addr,
+                    alto_ref,
+                )
             else:
-                sb.table("sales_pipeline").update(update_row).eq(
-                    "property_address", addr
-                ).execute()
+                return jsonify({"error": f"pipeline reversal failed: {e}"}), 500
         except Exception as e:
-            return jsonify({"error": f"sales_pipeline reversal failed: {e}"}), 500
+            return jsonify({"error": f"pipeline reversal failed: {e}"}), 500
         return (
             jsonify({"success": True, "property": addr, "action": "reversed"}),
             200,
@@ -74,11 +84,11 @@ def api_intake():
         "status": "Under Offer",
     }
 
-    conflict_col = "alto_ref" if alto_ref else "property_address"
     try:
-        sb.table("sales_pipeline").upsert(pipeline_row, on_conflict=conflict_col).execute()
+        eatoc_post("/api/nuvu/pipeline", pipeline_row)
     except Exception as e:
-        return jsonify({"error": f"sales_pipeline upsert failed: {e}"}), 500
+        log.error("pipeline upsert failed for '%s': %s", addr, e)
+        return jsonify({"error": f"pipeline upsert failed: {e}"}), 500
 
     # --- Upsert sales_progression ---
     progression_row = {

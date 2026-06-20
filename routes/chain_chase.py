@@ -20,6 +20,7 @@ from utils.chase_templates import (
     render_chain_solicitor_nudge_2,
     render_chain_solicitor_progress_request,
 )
+from utils.events import emit_event
 from utils.needs_attention import parse_progression_timestamp as _parse_ts
 
 chain_chase_bp = Blueprint("chain_chase", __name__)
@@ -264,6 +265,21 @@ def try_process_chain_link_outreach_for_row(
         outbound_enabled=chain_chase_sending_enabled(),
     )
 
+    if sent_ok:
+        emit_event(
+            event_type="comms_sent",
+            property_address=addr,
+            summary=f"Chase email sent to {to_em} re chain_solicitor_outreach",
+            actor="chase_engine",
+            payload={
+                "recipient": to_em,
+                "stage": "chain_solicitor_outreach",
+                "subject": subj,
+                "channel": "email",
+                "dry_run": not chain_chase_sending_enabled(),
+            },
+        )
+
     if not chain_chase_sending_enabled():
         print(
             f"[chain_chase] Phase 1 dry-run (no DB progression) link={lid} property={pid} "
@@ -367,7 +383,7 @@ def run_chain_cadence_check() -> None:
 
         if elapsed >= 3:
             subj, html_b = render_chain_solicitor_nudge_1(ctx)
-            send_chase_message(
+            _n1_ok = send_chase_message(
                 property_id=pid,
                 chase_stage="chain_solicitor_nudge1",
                 chase_day=3,
@@ -379,10 +395,24 @@ def run_chain_cadence_check() -> None:
                 chain_link_id=lid,
                 outbound_enabled=chain_chase_sending_enabled(),
             )
+            if _n1_ok:
+                emit_event(
+                    event_type="comms_sent",
+                    property_address=addr,
+                    summary=f"Chase email sent to {to_em} re chain_solicitor_nudge1",
+                    actor="chase_engine",
+                    payload={
+                        "recipient": to_em,
+                        "stage": "chain_solicitor_nudge1",
+                        "subject": subj,
+                        "channel": "email",
+                        "dry_run": not chain_chase_sending_enabled(),
+                    },
+                )
 
         if elapsed >= 6:
             subj, html_b = render_chain_solicitor_nudge_2(ctx)
-            send_chase_message(
+            _n2_ok = send_chase_message(
                 property_id=pid,
                 chase_stage="chain_solicitor_nudge2",
                 chase_day=6,
@@ -394,6 +424,20 @@ def run_chain_cadence_check() -> None:
                 chain_link_id=lid,
                 outbound_enabled=chain_chase_sending_enabled(),
             )
+            if _n2_ok:
+                emit_event(
+                    event_type="comms_sent",
+                    property_address=addr,
+                    summary=f"Chase email sent to {to_em} re chain_solicitor_nudge2",
+                    actor="chase_engine",
+                    payload={
+                        "recipient": to_em,
+                        "stage": "chain_solicitor_nudge2",
+                        "subject": subj,
+                        "channel": "email",
+                        "dry_run": not chain_chase_sending_enabled(),
+                    },
+                )
 
         if elapsed >= 9 and st != "unresponsive":
             firm = _firm_label(cl)
@@ -486,7 +530,7 @@ def _maybe_send_progress_request(
     if weeks >= 4:
         ctx["weeks_in"] = 4
         subj, html_b = render_chain_solicitor_progress_request(ctx)
-        send_chase_message(
+        _w4_ok = send_chase_message(
             property_id=pid,
             chase_stage="chain_solicitor_request",
             chase_day=4,
@@ -498,11 +542,26 @@ def _maybe_send_progress_request(
             chain_link_id=lid,
             outbound_enabled=chain_chase_sending_enabled(),
         )
+        if _w4_ok:
+            emit_event(
+                event_type="comms_sent",
+                property_address=addr,
+                summary=f"Chase email sent to {to_em} re chain_solicitor_request (week 4)",
+                actor="chase_engine",
+                payload={
+                    "recipient": to_em,
+                    "stage": "chain_solicitor_request",
+                    "subject": subj,
+                    "channel": "email",
+                    "dry_run": not chain_chase_sending_enabled(),
+                    "weeks_in": 4,
+                },
+            )
 
     if weeks >= 8:
         ctx["weeks_in"] = 8
         subj, html_b = render_chain_solicitor_progress_request(ctx)
-        send_chase_message(
+        _w8_ok = send_chase_message(
             property_id=pid,
             chase_stage="chain_solicitor_request",
             chase_day=8,
@@ -514,6 +573,21 @@ def _maybe_send_progress_request(
             chain_link_id=lid,
             outbound_enabled=chain_chase_sending_enabled(),
         )
+        if _w8_ok:
+            emit_event(
+                event_type="comms_sent",
+                property_address=addr,
+                summary=f"Chase email sent to {to_em} re chain_solicitor_request (week 8)",
+                actor="chase_engine",
+                payload={
+                    "recipient": to_em,
+                    "stage": "chain_solicitor_request",
+                    "subject": subj,
+                    "channel": "email",
+                    "dry_run": not chain_chase_sending_enabled(),
+                    "weeks_in": 8,
+                },
+            )
 
 
 def check_reinstate_keywords_on_note_text(property_id: str, note_text: str) -> None:
@@ -654,6 +728,19 @@ def handle_inbound_sender_for_chain_solicitor(
             ).execute()
         except Exception as ex:
             print(f"[chain_chase] confirm chain solicitor upsert failed: {ex}")
+            continue
+        emit_event(
+            event_type="human_decision",
+            property_address=addr,
+            summary=f"{se} confirmed as chain solicitor",
+            actor=se,
+            payload={
+                "decision": "confirmed",
+                "confirmation_type": "chain_solicitor_reply",
+                "confirmed_by": se,
+                "stage": "chain_solicitor",
+            },
+        )
 
 
 def notify_confirmed_chain_solicitors_milestone(
@@ -709,7 +796,7 @@ def notify_confirmed_chain_solicitors_milestone(
             "target_completion_phrase": target,
         }
         subj, html_b = render_chain_solicitor_milestone_update(ctx)
-        send_chase_message(
+        _inf_ok = send_chase_message(
             property_id=pid,
             chase_stage="chain_solicitor_inform",
             chase_day=day_code,
@@ -721,6 +808,21 @@ def notify_confirmed_chain_solicitors_milestone(
             chain_link_id=lid,
             outbound_enabled=chain_chase_sending_enabled(),
         )
+        if _inf_ok:
+            emit_event(
+                event_type="comms_sent",
+                property_address=addr,
+                summary=f"Chase email sent to {to_em} re milestone update ({label})",
+                actor="chase_engine",
+                payload={
+                    "recipient": to_em,
+                    "stage": "chain_solicitor_inform",
+                    "subject": subj,
+                    "channel": "email",
+                    "dry_run": not chain_chase_sending_enabled(),
+                    "milestone": milestone_key,
+                },
+            )
         if chain_chase_sending_enabled():
             try:
                 client.table("chain_chase_state").upsert(

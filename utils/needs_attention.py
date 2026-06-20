@@ -413,3 +413,74 @@ def get_needs_attention(
 
     results.sort(key=_sort_key)
     return results
+
+
+def emit_needs_attention_events(na_results: list[dict]) -> None:
+    """Emit gate_raised events for newly fired Needs Attention triggers.
+
+    Called after get_needs_attention(). Deduplicates against events seen in
+    the last 24 hours so that repeated dashboard loads don't flood the log.
+    """
+    if not na_results:
+        return
+
+    from datetime import timedelta
+
+    from db_supabase import supabase_for_backend
+    from utils.events import emit_event
+
+    addrs = []
+    for item in na_results:
+        p = item.get("property") or {}
+        a = (p.get("address") or p.get("property_address") or "").strip()
+        if a and a not in addrs:
+            addrs.append(a)
+
+    if not addrs:
+        return
+
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    client = supabase_for_backend()
+    try:
+        res = (
+            client.table("events")
+            .select("property_address,payload")
+            .eq("event_type", "gate_raised")
+            .in_("property_address", addrs)
+            .gte("created_at", cutoff)
+            .execute()
+        )
+        recent = res.data or []
+    except Exception:
+        recent = []
+
+    seen: set[tuple[str, str]] = set()
+    for ev in recent:
+        a = ev.get("property_address") or ""
+        payload = ev.get("payload") or {}
+        t = payload.get("trigger") or ""
+        if a and t:
+            seen.add((a, t))
+
+    for item in na_results:
+        p = item.get("property") or {}
+        addr = (p.get("address") or p.get("property_address") or "").strip()
+        if not addr:
+            continue
+        for t in item.get("triggers") or []:
+            trigger_id = t.get("trigger_id") or ""
+            if not trigger_id or (addr, trigger_id) in seen:
+                continue
+            emit_event(
+                event_type="gate_raised",
+                property_address=addr,
+                summary=f"Needs attention: {t.get('trigger_name') or trigger_id}",
+                actor="system",
+                payload={
+                    "trigger": trigger_id,
+                    "reason": t.get("suggested_action") or t.get("trigger_name") or trigger_id,
+                    "days_stalled": t.get("days_overdue"),
+                    "milestone": trigger_id,
+                },
+            )
+            seen.add((addr, trigger_id))

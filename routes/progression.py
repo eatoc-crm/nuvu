@@ -8,11 +8,23 @@ import resend
 from email_engine import DEFAULT_SEND_FROM, send_html_email
 from db_supabase import supabase_for_backend
 from shared import require_nuvu_api_key, sb
+from utils.events import emit_event
 
 progression_bp = Blueprint("progression", __name__)
 
 # Kill switch: when False, chain outreach is logged only (no Resend send).
 CHAIN_OUTREACH_ENABLED = False
+
+# Milestone-type fields on sales_progression that represent tracking dates/events.
+# Note fields and email address fields are excluded.
+_MILESTONE_FIELDS = {
+    "offer_accepted", "memo_sent", "welcome_emails_sent",
+    "searches_ordered", "searches_received", "search_fees_confirmed",
+    "survey_instructed", "mortgage_offered", "draft_contract_sent",
+    "draft_contract_issued", "enquiries_raised", "enquiries_answered",
+    "exchange_target_date", "report_on_title", "exchange_date",
+    "completion_date", "protocol_forms_returned", "seller_forms_returned",
+}
 
 # ─────────────────────────────────────────────────────────────
 #  PATCH API — update milestone dates and notes on progression
@@ -71,7 +83,7 @@ def patch_progression(prog_id):
             client.table("sales_progression")
             .update(updates)
             .eq("id", prog_id)
-            .select("id")
+            .select("id,property_address")
             .execute()
         )
     except Exception as e:
@@ -113,6 +125,21 @@ def patch_progression(prog_id):
         on_sales_progression_patch(prog_id, list(updates.keys()))
     except Exception as ex:
         print(f"[progression] chase engine Phase B hook after PATCH failed: {ex}")
+
+    property_address = (res.data[0].get("property_address") or "").strip() if res.data else ""
+    for k, v in updates.items():
+        if v and k in _MILESTONE_FIELDS and property_address:
+            emit_event(
+                event_type="milestone_changed",
+                property_address=property_address,
+                summary=f"Milestone updated: {k} → {v}",
+                actor="staff",
+                payload={
+                    "milestone": k,
+                    "new_value": str(v),
+                    "source": "manual",
+                },
+            )
 
     return jsonify({"ok": True, "updated": list(updates.keys())})
 

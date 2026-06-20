@@ -3586,6 +3586,12 @@ def _build_live_dashboard_data(show_test_properties=False):
             {"property": it["property"], "triggers": it["triggers"]}
         )
 
+    try:
+        from utils.needs_attention import emit_needs_attention_events
+        emit_needs_attention_events(na_raw)
+    except Exception:
+        pass
+
     any_red_na = any(
         t["severity"] == "red" for it in na_raw for t in it["triggers"]
     )

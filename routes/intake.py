@@ -7,6 +7,7 @@ import shared  # loads shared config and provides `sb`
 from shared import sb, require_nuvu_api_key
 from routes.progression import _send_welcome_emails
 from utils.eatoc_api import eatoc_post
+from utils.events import emit_event
 
 log = logging.getLogger(__name__)
 
@@ -59,6 +60,19 @@ def api_intake():
                 return jsonify({"error": f"pipeline reversal failed: {e}"}), 500
         except Exception as e:
             return jsonify({"error": f"pipeline reversal failed: {e}"}), 500
+
+        # Local write: mirror the reversal on NUVU's local sales_pipeline copy.
+        try:
+            from db_supabase import supabase_for_backend
+            supabase_for_backend().table("sales_pipeline").update(
+                {"status": "For Sale"}
+            ).eq("property_address", addr).execute()
+        except Exception as local_err:
+            log.warning(
+                "local sales_pipeline reversal update failed for '%s': %s — will catch up on next sync",
+                addr, local_err,
+            )
+
         return (
             jsonify({"success": True, "property": addr, "action": "reversed"}),
             200,
@@ -89,6 +103,19 @@ def api_intake():
     except Exception as e:
         log.error("pipeline upsert failed for '%s': %s", addr, e)
         return jsonify({"error": f"pipeline upsert failed: {e}"}), 500
+
+    # Local write: immediately reflect the new pipeline row so the dashboard
+    # shows fresh data without waiting for the next adapter sync.
+    try:
+        from db_supabase import supabase_for_backend
+        supabase_for_backend().table("sales_pipeline").upsert(
+            pipeline_row, on_conflict="property_address"
+        ).execute()
+    except Exception as local_err:
+        log.warning(
+            "local sales_pipeline upsert failed for '%s': %s — will catch up on next sync",
+            addr, local_err,
+        )
 
     # --- Upsert sales_progression ---
     progression_row = {
@@ -239,6 +266,21 @@ def api_update():
         process_inbound_email(str(email_id))
     except Exception:
         pass
+
+    resolved_addr = (prog.get("property_address") or addr or "").strip()
+    emit_event(
+        event_type="inbound_parsed",
+        property_address=resolved_addr,
+        summary=f"Inbound note from {note_source} parsed",
+        actor="inbound_parser",
+        payload={
+            "sender": staff_initials or note_source,
+            "subject": subject,
+            "matched_property": resolved_addr,
+            "action_taken": "stored",
+            "channel": 3,
+        },
+    )
     return jsonify({"status": "received", "email_id": str(email_id)}), 200
 
 

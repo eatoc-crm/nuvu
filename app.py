@@ -49,6 +49,10 @@ from routes.health import health_bp
 
 app.register_blueprint(health_bp)
 
+from routes.intake_queue import intake_queue_bp
+
+app.register_blueprint(intake_queue_bp)
+
 from routes.portal import portal_bp
 from routes.portal_forms import portal_forms_bp, portal_staff_api_bp
 

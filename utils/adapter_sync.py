@@ -156,9 +156,16 @@ def sync_chain_links() -> None:
 
 
 def run_adapter_sync() -> None:
-    """Run both property and chain-link syncs. Called by chase_scheduler on the
-    15-minute loop and once at startup."""
+    """Run both property and chain-link syncs, then evaluate the completeness gate.
+    Called by chase_scheduler on the 15-minute loop and once at startup."""
     log.info("[adapter_sync] starting adapter sync")
     sync_sales_pipeline()
     sync_chain_links()
     log.info("[adapter_sync] adapter sync complete")
+
+    # Completeness gate — runs after every sync; fail silently
+    try:
+        from utils.completeness_gate import run_completeness_gate
+        run_completeness_gate()
+    except Exception as exc:
+        log.warning("[adapter_sync] completeness gate error: %s", exc)

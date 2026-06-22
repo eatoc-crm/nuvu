@@ -41,3 +41,43 @@ def eatoc_patch(path: str, body: dict) -> dict:
     resp = http_requests.patch(url, json=body, headers=_headers(), timeout=15)
     resp.raise_for_status()
     return resp.json()
+
+
+def eatoc_get_company(company_id: str) -> dict | None:
+    """Fetch a solicitor firm from GET /api/nuvu/companies/<company_id>.
+
+    Returns the JSON dict on success, or None on 404 / any error (fail silently).
+    """
+    if not company_id:
+        return None
+    try:
+        return eatoc_get(f"/api/nuvu/companies/{company_id}")
+    except http_requests.HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == 404:
+            log.debug("[eatoc_api] company %s not found (404)", company_id)
+        else:
+            log.warning("[eatoc_api] eatoc_get_company(%s) error: %s", company_id, exc)
+        return None
+    except Exception as exc:
+        log.warning("[eatoc_api] eatoc_get_company(%s) unexpected error: %s", company_id, exc)
+        return None
+
+
+def eatoc_get_contact(contact_id: str) -> dict | None:
+    """Fetch a solicitor contact from GET /api/nuvu/contacts/<contact_id>.
+
+    Returns the JSON dict on success, or None on 404 / any error (fail silently).
+    """
+    if not contact_id:
+        return None
+    try:
+        return eatoc_get(f"/api/nuvu/contacts/{contact_id}")
+    except http_requests.HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == 404:
+            log.debug("[eatoc_api] contact %s not found (404)", contact_id)
+        else:
+            log.warning("[eatoc_api] eatoc_get_contact(%s) error: %s", contact_id, exc)
+        return None
+    except Exception as exc:
+        log.warning("[eatoc_api] eatoc_get_contact(%s) unexpected error: %s", contact_id, exc)
+        return None

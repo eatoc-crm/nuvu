@@ -18,6 +18,91 @@ import logging
 log = logging.getLogger(__name__)
 
 
+def _enrich_solicitor_fields(rows: list) -> None:
+    """Mutate each row in-place with solicitor contact/company data from EATOC.
+
+    Collects unique company and contact UUIDs across the batch, makes one lookup
+    per unique ID, then applies the results — avoiding duplicate calls when multiple
+    properties share the same solicitor firm.
+
+    Failures are silently logged; a lookup error never blocks the sync.
+    """
+    from utils.eatoc_api import eatoc_get_company, eatoc_get_contact
+
+    # Collect unique UUIDs
+    company_ids: set[str] = set()
+    contact_ids: set[str] = set()
+    for r in rows:
+        for field in ("buyer_solicitor_firm_id", "seller_solicitor_firm_id"):
+            val = (r.get(field) or "").strip()
+            if val:
+                company_ids.add(val)
+        for field in ("buyer_solicitor_contact_id", "seller_solicitor_contact_id"):
+            val = (r.get(field) or "").strip()
+            if val:
+                contact_ids.add(val)
+
+    # Batch lookup (one call per unique ID)
+    company_cache: dict[str, dict] = {}
+    for cid in company_ids:
+        result = eatoc_get_company(cid)
+        if result:
+            company_cache[cid] = result
+
+    contact_cache: dict[str, dict] = {}
+    for cid in contact_ids:
+        result = eatoc_get_contact(cid)
+        if result:
+            contact_cache[cid] = result
+
+    log.info(
+        "[adapter_sync] solicitor enrichment: %d companies, %d contacts fetched",
+        len(company_cache), len(contact_cache),
+    )
+
+    # Apply to each row
+    for r in rows:
+        for side, firm_field, contact_field, email_key, phone_key, addr_key, contact_name_key in (
+            (
+                "buyer",
+                "buyer_solicitor_firm_id",
+                "buyer_solicitor_contact_id",
+                "buyer_solicitor_email",
+                "buyer_solicitor_phone",
+                "buyer_solicitor_address",
+                "buyer_solicitor_contact_name",
+            ),
+            (
+                "seller",
+                "seller_solicitor_firm_id",
+                "seller_solicitor_contact_id",
+                "seller_solicitor_email",
+                "seller_solicitor_phone",
+                "seller_solicitor_address",
+                "seller_solicitor_contact_name",
+            ),
+        ):
+            firm_id = (r.get(firm_field) or "").strip()
+            contact_id = (r.get(contact_field) or "").strip()
+
+            company = company_cache.get(firm_id) if firm_id else None
+            contact = contact_cache.get(contact_id) if contact_id else None
+
+            r[email_key] = (
+                (contact or {}).get("email")
+                or (company or {}).get("email")
+                or r.get(email_key)
+                or None
+            )
+            r[phone_key] = (
+                (contact or {}).get("phone")
+                or (company or {}).get("phone")
+                or None
+            )
+            r[addr_key] = (company or {}).get("address") or None
+            r[contact_name_key] = (contact or {}).get("name") or None
+
+
 def sync_sales_pipeline() -> None:
     """Fetch properties from EATOC and upsert into local sales_pipeline."""
     try:
@@ -31,6 +116,12 @@ def sync_sales_pipeline() -> None:
             log.info("[adapter_sync] sales_pipeline sync: no rows returned from EATOC")
             return
 
+        # Enrich each property with solicitor firm/contact details from EATOC
+        try:
+            _enrich_solicitor_fields(rows)
+        except Exception as exc:
+            log.warning("[adapter_sync] solicitor enrichment failed (continuing): %s", exc)
+
         from db_supabase import supabase_for_backend
 
         client = supabase_for_backend()
@@ -42,33 +133,41 @@ def sync_sales_pipeline() -> None:
                 skipped += 1
                 continue
             row = {
-                "property_address":     addr,
-                "alto_ref":             r.get("alto_ref") or None,
-                "our_ref":              r.get("our_ref") or None,
-                "postcode":             r.get("postcode") or None,
-                "status":               r.get("status") or None,
-                "date_agreed":          r.get("date_agreed") or r.get("offer_accepted") or None,
-                "current_price":        r.get("current_price") or r.get("sale_price") or None,
-                "est_exchange":         r.get("est_exchange") or None,
-                "exchange_date":        r.get("exchange_date") or None,
-                "est_completion":       r.get("est_completion") or r.get("completion_target") or None,
-                "fee":                  r.get("fee") or None,
-                "fee_pct":              r.get("fee_pct") or None,
-                "agreed_fee":           r.get("agreed_fee") or None,
-                "buyers_solicitor":     r.get("buyers_solicitor") or r.get("buyer_solicitor") or None,
-                "vendors_solicitor":    r.get("vendors_solicitor") or r.get("vendor_solicitor") or None,
-                "negotiator":           r.get("negotiator") or r.get("negotiator_name") or None,
-                "agreed_by":            r.get("agreed_by") or None,
-                "buyer_name":           r.get("buyer_name") or None,
-                "buyer_phone":          r.get("buyer_phone") or None,
-                "buyer_email":          r.get("buyer_email") or None,
-                "vendor_name":          r.get("vendor_name") or None,
-                "vendor_phone":         r.get("vendor_phone") or None,
-                "vendor_email":         r.get("vendor_email") or None,
-                "mortgage_broker":      r.get("mortgage_broker") or None,
-                "surveyor":             r.get("surveyor") or None,
-                "buyer_solicitor_email": r.get("buyers_solicitor_email") or r.get("buyer_solicitor_email") or None,
-                "seller_solicitor_email": r.get("vendors_solicitor_email") or r.get("seller_solicitor_email") or None,
+                "property_address":             addr,
+                "alto_ref":                     r.get("alto_ref") or None,
+                "our_ref":                      r.get("our_ref") or None,
+                "postcode":                     r.get("postcode") or None,
+                "status":                       r.get("status") or None,
+                "date_agreed":                  r.get("date_agreed") or r.get("offer_accepted") or None,
+                "current_price":                r.get("current_price") or r.get("sale_price") or None,
+                "est_exchange":                 r.get("est_exchange") or None,
+                "exchange_date":                r.get("exchange_date") or None,
+                "est_completion":               r.get("est_completion") or r.get("completion_target") or None,
+                "fee":                          r.get("fee") or None,
+                "fee_pct":                      r.get("fee_pct") or None,
+                "agreed_fee":                   r.get("agreed_fee") or None,
+                "buyers_solicitor":             r.get("buyers_solicitor") or r.get("buyer_solicitor") or None,
+                "vendors_solicitor":            r.get("vendors_solicitor") or r.get("vendor_solicitor") or None,
+                "negotiator":                   r.get("negotiator") or r.get("negotiator_name") or None,
+                "agreed_by":                    r.get("agreed_by") or None,
+                "buyer_name":                   r.get("buyer_name") or None,
+                "buyer_phone":                  r.get("buyer_phone") or None,
+                "buyer_email":                  r.get("buyer_email") or None,
+                "vendor_name":                  r.get("vendor_name") or None,
+                "vendor_phone":                 r.get("vendor_phone") or None,
+                "vendor_email":                 r.get("vendor_email") or None,
+                "mortgage_broker":              r.get("mortgage_broker") or None,
+                "surveyor":                     r.get("surveyor") or None,
+                # Solicitor email (enriched by _enrich_solicitor_fields or raw EATOC fallback)
+                "buyer_solicitor_email":        r.get("buyer_solicitor_email") or None,
+                "seller_solicitor_email":       r.get("seller_solicitor_email") or None,
+                # New enriched solicitor fields
+                "buyer_solicitor_contact_name": r.get("buyer_solicitor_contact_name") or None,
+                "buyer_solicitor_phone":        r.get("buyer_solicitor_phone") or None,
+                "buyer_solicitor_address":      r.get("buyer_solicitor_address") or None,
+                "seller_solicitor_contact_name": r.get("seller_solicitor_contact_name") or None,
+                "seller_solicitor_phone":       r.get("seller_solicitor_phone") or None,
+                "seller_solicitor_address":     r.get("seller_solicitor_address") or None,
             }
             try:
                 client.table("sales_pipeline").upsert(

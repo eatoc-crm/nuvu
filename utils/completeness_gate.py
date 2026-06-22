@@ -77,18 +77,23 @@ def check_tier_1a(property_data: dict) -> tuple[bool, list[str]]:
 
 
 def check_tier_1b(property_data: dict) -> tuple[bool, list[str]]:
-    """Tier 1B: buyer's and seller's solicitor details."""
+    """Tier 1B: buyer's and seller's solicitor details.
+
+    Firm name: buyer_solicitor / vendor_solicitor (text name field).
+    Email:     buyer_solicitor_email / seller_solicitor_email.
+    Phone:     buyer_solicitor_phone / seller_solicitor_phone.
+    Contact person (buyer_solicitor_contact_name / seller_solicitor_contact_name) is
+    stored when available but does NOT block the gate.
+    """
     missing: list[str] = []
 
     checks = [
-        ("buyer_solicitor_name",   _non_empty,    property_data.get("buyer_solicitor_name") or property_data.get("buyers_solicitor")),
-        ("buyer_solicitor_firm",   _non_empty,    property_data.get("buyer_solicitor_firm")),
-        ("buyer_solicitor_email",  validate_email, property_data.get("buyer_solicitor_email") or property_data.get("buyers_solicitor_email")),
-        ("buyer_solicitor_phone",  validate_phone, property_data.get("buyer_solicitor_phone")),
-        ("seller_solicitor_name",  _non_empty,    property_data.get("seller_solicitor_name") or property_data.get("vendors_solicitor")),
-        ("seller_solicitor_firm",  _non_empty,    property_data.get("seller_solicitor_firm")),
-        ("seller_solicitor_email", validate_email, property_data.get("seller_solicitor_email") or property_data.get("vendors_solicitor_email")),
-        ("seller_solicitor_phone", validate_phone, property_data.get("seller_solicitor_phone")),
+        ("buyer_solicitor",        _non_empty,     property_data.get("buyer_solicitor") or property_data.get("buyers_solicitor")),
+        ("buyer_solicitor_email",  validate_email,  property_data.get("buyer_solicitor_email")),
+        ("buyer_solicitor_phone",  validate_phone,  property_data.get("buyer_solicitor_phone")),
+        ("vendor_solicitor",       _non_empty,      property_data.get("vendor_solicitor") or property_data.get("vendors_solicitor")),
+        ("seller_solicitor_email", validate_email,  property_data.get("seller_solicitor_email")),
+        ("seller_solicitor_phone", validate_phone,  property_data.get("seller_solicitor_phone")),
     ]
 
     for field, validator, value in checks:
@@ -182,7 +187,7 @@ def run_completeness_gate() -> None:
 
         client = supabase_for_backend()
 
-        result = client.table("sales_pipeline").select("*").execute()
+        result = client.table("sales_pipeline").select("*").eq("status", "active").execute()
         properties = result.data or []
 
         if not properties:

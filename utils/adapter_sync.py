@@ -103,8 +103,50 @@ def _enrich_solicitor_fields(rows: list) -> None:
             r[contact_name_key] = (contact or {}).get("name") or None
 
 
+def _build_pipeline_row(r: dict) -> dict:
+    """Map a raw EATOC property dict to a sales_pipeline upsert row."""
+    addr = (r.get("property_address") or "").strip()
+    return {
+        "property_address":              addr,
+        "alto_ref":                      r.get("alto_ref") or None,
+        "our_ref":                       r.get("our_ref") or None,
+        "postcode":                      r.get("postcode") or None,
+        "status":                        r.get("status") or None,
+        "date_agreed":                   r.get("date_agreed") or r.get("offer_accepted") or None,
+        "current_price":                 r.get("current_price") or r.get("sale_price") or None,
+        "est_exchange":                  r.get("est_exchange") or None,
+        "exchange_date":                 r.get("exchange_date") or None,
+        "est_completion":                r.get("est_completion") or r.get("completion_target") or None,
+        "fee":                           r.get("fee") or None,
+        "fee_pct":                       r.get("fee_pct") or None,
+        "agreed_fee":                    r.get("agreed_fee") or None,
+        "buyers_solicitor":              r.get("buyers_solicitor") or r.get("buyer_solicitor") or None,
+        "vendors_solicitor":             r.get("vendors_solicitor") or r.get("vendor_solicitor") or None,
+        "negotiator":                    r.get("negotiator") or r.get("negotiator_name") or None,
+        "agreed_by":                     r.get("agreed_by") or None,
+        "buyer_name":                    r.get("buyer_name") or None,
+        "buyer_phone":                   r.get("buyer_phone") or None,
+        "buyer_email":                   r.get("buyer_email") or None,
+        "vendor_name":                   r.get("vendor_name") or None,
+        "vendor_phone":                  r.get("vendor_phone") or None,
+        "vendor_email":                  r.get("vendor_email") or None,
+        "mortgage_broker":               r.get("mortgage_broker") or None,
+        "surveyor":                      r.get("surveyor") or None,
+        # Solicitor email (enriched by _enrich_solicitor_fields or raw EATOC fallback)
+        "buyer_solicitor_email":         r.get("buyer_solicitor_email") or None,
+        "seller_solicitor_email":        r.get("seller_solicitor_email") or None,
+        # Enriched solicitor contact fields
+        "buyer_solicitor_contact_name":  r.get("buyer_solicitor_contact_name") or None,
+        "buyer_solicitor_phone":         r.get("buyer_solicitor_phone") or None,
+        "buyer_solicitor_address":       r.get("buyer_solicitor_address") or None,
+        "seller_solicitor_contact_name": r.get("seller_solicitor_contact_name") or None,
+        "seller_solicitor_phone":        r.get("seller_solicitor_phone") or None,
+        "seller_solicitor_address":      r.get("seller_solicitor_address") or None,
+    }
+
+
 def sync_sales_pipeline() -> None:
-    """Fetch properties from EATOC and upsert into local sales_pipeline."""
+    """Fetch all properties from EATOC and upsert into local sales_pipeline."""
     try:
         from utils.eatoc_live_map import fetch_eatoc_properties
 
@@ -132,43 +174,7 @@ def sync_sales_pipeline() -> None:
             if not addr:
                 skipped += 1
                 continue
-            row = {
-                "property_address":             addr,
-                "alto_ref":                     r.get("alto_ref") or None,
-                "our_ref":                      r.get("our_ref") or None,
-                "postcode":                     r.get("postcode") or None,
-                "status":                       r.get("status") or None,
-                "date_agreed":                  r.get("date_agreed") or r.get("offer_accepted") or None,
-                "current_price":                r.get("current_price") or r.get("sale_price") or None,
-                "est_exchange":                 r.get("est_exchange") or None,
-                "exchange_date":                r.get("exchange_date") or None,
-                "est_completion":               r.get("est_completion") or r.get("completion_target") or None,
-                "fee":                          r.get("fee") or None,
-                "fee_pct":                      r.get("fee_pct") or None,
-                "agreed_fee":                   r.get("agreed_fee") or None,
-                "buyers_solicitor":             r.get("buyers_solicitor") or r.get("buyer_solicitor") or None,
-                "vendors_solicitor":            r.get("vendors_solicitor") or r.get("vendor_solicitor") or None,
-                "negotiator":                   r.get("negotiator") or r.get("negotiator_name") or None,
-                "agreed_by":                    r.get("agreed_by") or None,
-                "buyer_name":                   r.get("buyer_name") or None,
-                "buyer_phone":                  r.get("buyer_phone") or None,
-                "buyer_email":                  r.get("buyer_email") or None,
-                "vendor_name":                  r.get("vendor_name") or None,
-                "vendor_phone":                 r.get("vendor_phone") or None,
-                "vendor_email":                 r.get("vendor_email") or None,
-                "mortgage_broker":              r.get("mortgage_broker") or None,
-                "surveyor":                     r.get("surveyor") or None,
-                # Solicitor email (enriched by _enrich_solicitor_fields or raw EATOC fallback)
-                "buyer_solicitor_email":        r.get("buyer_solicitor_email") or None,
-                "seller_solicitor_email":       r.get("seller_solicitor_email") or None,
-                # New enriched solicitor fields
-                "buyer_solicitor_contact_name": r.get("buyer_solicitor_contact_name") or None,
-                "buyer_solicitor_phone":        r.get("buyer_solicitor_phone") or None,
-                "buyer_solicitor_address":      r.get("buyer_solicitor_address") or None,
-                "seller_solicitor_contact_name": r.get("seller_solicitor_contact_name") or None,
-                "seller_solicitor_phone":       r.get("seller_solicitor_phone") or None,
-                "seller_solicitor_address":     r.get("seller_solicitor_address") or None,
-            }
+            row = _build_pipeline_row(r)
             try:
                 client.table("sales_pipeline").upsert(
                     row, on_conflict="property_address"
@@ -184,6 +190,72 @@ def sync_sales_pipeline() -> None:
         )
     except Exception as exc:
         log.warning("[adapter_sync] sync_sales_pipeline unexpected error: %s", exc)
+
+
+def sync_single_property(property_address: str) -> None:
+    """Fetch one property from EATOC and upsert it into sales_pipeline.
+
+    Called by the webhook receiver when EATOC fires a real-time notification.
+    Does NOT trigger a full pipeline sync — only the changed property is touched.
+    After upsert, runs the completeness gate for that property only.
+    """
+    property_address = property_address.strip()
+    if not property_address:
+        log.warning("[adapter_sync] sync_single_property called with empty address")
+        return
+
+    try:
+        from utils.eatoc_live_map import fetch_eatoc_properties
+
+        rows, error = fetch_eatoc_properties()
+        if error:
+            log.warning(
+                "[adapter_sync] sync_single_property fetch error for '%s': %s",
+                property_address, error,
+            )
+            return
+
+        target = next(
+            (r for r in (rows or [])
+             if (r.get("property_address") or "").strip() == property_address),
+            None,
+        )
+        if target is None:
+            log.info(
+                "[adapter_sync] sync_single_property: '%s' not found in EATOC response",
+                property_address,
+            )
+            return
+
+        try:
+            _enrich_solicitor_fields([target])
+        except Exception as exc:
+            log.warning(
+                "[adapter_sync] solicitor enrichment failed for '%s' (continuing): %s",
+                property_address, exc,
+            )
+
+        from db_supabase import supabase_for_backend
+
+        client = supabase_for_backend()
+        row = _build_pipeline_row(target)
+        client.table("sales_pipeline").upsert(row, on_conflict="property_address").execute()
+        log.info("[adapter_sync] sync_single_property: upserted '%s'", property_address)
+
+        # Run completeness gate for this property only
+        try:
+            from utils.completeness_gate import run_completeness_gate_for_address
+            run_completeness_gate_for_address(property_address)
+        except Exception as exc:
+            log.warning(
+                "[adapter_sync] completeness gate error for '%s': %s", property_address, exc
+            )
+
+    except Exception as exc:
+        log.warning(
+            "[adapter_sync] sync_single_property unexpected error for '%s': %s",
+            property_address, exc,
+        )
 
 
 def sync_chain_links() -> None:

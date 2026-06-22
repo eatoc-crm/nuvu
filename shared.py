@@ -13,11 +13,23 @@ resend.api_key = os.environ.get("RESEND_API_KEY", "")
 #
 # Completeness Gate: set COMPLETENESS_GATE_ENABLED=false to bypass entirely.
 # Default true = gate runs on every adapter sync cycle.
+#
+# Webhook Receiver: set WEBHOOK_RECEIVER_ENABLED=true to activate real-time EATOC sync.
+# Default false = POST /api/webhook/eatoc exists but returns 503.
+# Also set NUVU_WEBHOOK_SECRET to a 32+ char random string shared with EATOC.
 
 
 def chain_chase_sending_enabled() -> bool:
     """Kill switch for Track 6 chain solicitor Resend sends (default off)."""
     return os.environ.get("CHAIN_CHASE_ENABLED", "false").lower() == "true"
+
+
+def webhook_receiver_enabled() -> bool:
+    """Kill switch for the EATOC webhook receiver (default off).
+    Set WEBHOOK_RECEIVER_ENABLED=true on Railway to activate real-time sync.
+    The endpoint always exists; when disabled it returns 503.
+    """
+    return os.environ.get("WEBHOOK_RECEIVER_ENABLED", "false").lower() == "true"
 
 
 def completeness_gate_enabled() -> bool:

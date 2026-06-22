@@ -221,6 +221,50 @@ def run_completeness_gate() -> None:
         log.warning("[completeness_gate] run_completeness_gate unexpected error: %s", exc)
 
 
+def run_completeness_gate_for_address(property_address: str) -> None:
+    """Run the completeness gate for a single property.
+
+    Fetches the row from sales_pipeline and evaluates all tiers.
+    Called by webhook sync for targeted re-evaluation after a real-time update.
+    Kill switch and all normal gate logic apply identically to the full-sweep version.
+    """
+    if os.environ.get("COMPLETENESS_GATE_ENABLED", "true").lower() != "true":
+        log.debug("[completeness_gate] disabled — skipping single-property eval")
+        return
+
+    property_address = (property_address or "").strip()
+    if not property_address:
+        return
+
+    try:
+        from db_supabase import supabase_for_backend
+        from utils.events import emit_event
+        from utils.intake_notifications import send_intake_notification
+
+        client = supabase_for_backend()
+        result = (
+            client.table("sales_pipeline")
+            .select("*")
+            .eq("property_address", property_address)
+            .execute()
+        )
+        rows = result.data or []
+        if not rows:
+            log.info(
+                "[completeness_gate] no row in sales_pipeline for '%s' — skipping gate",
+                property_address,
+            )
+            return
+
+        _evaluate_property(rows[0], client, emit_event, send_intake_notification)
+
+    except Exception as exc:
+        log.warning(
+            "[completeness_gate] run_completeness_gate_for_address error for '%s': %s",
+            property_address, exc,
+        )
+
+
 def _evaluate_property(prop: dict, client, emit_event_fn, notify_fn) -> None:
     addr = (prop.get("property_address") or "").strip()
     if not addr:

@@ -24,6 +24,16 @@ from datetime import datetime, timezone
 
 log = logging.getLogger(__name__)
 
+# Statuses that represent active or completed pipeline progression.
+# "For Sale" and legacy "active" are intentionally excluded.
+PROGRESSION_STATUSES = [
+    "Under Offer (SSTC)",
+    "Under Offer",
+    "SSTC",
+    "Exchanged",
+    "exchanged",
+]
+
 # ─────────────────────────────────────────────────────────────
 #  VALIDATORS
 # ─────────────────────────────────────────────────────────────
@@ -199,7 +209,11 @@ def run_completeness_gate() -> None:
 
         client = supabase_for_backend()
 
-        result = client.table("sales_pipeline").select("*").eq("status", "active").execute()
+        # Clear stale intake_queue entries before rebuild
+        client.table("intake_queue").delete().neq("id", 0).execute()
+        log.info("[completeness_gate] intake_queue cleared — rebuilding from current pipeline")
+
+        result = client.table("sales_pipeline").select("*").in_("status", PROGRESSION_STATUSES).execute()
         properties = result.data or []
 
         if not properties:

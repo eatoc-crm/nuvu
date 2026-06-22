@@ -221,7 +221,7 @@ body.dash-livemap-active .hero{display:none}
   display:flex;flex-wrap:nowrap;align-items:stretch;gap:0;
 }
 .dash-tab{
-  flex:1;min-width:88px;padding:11px 0;font-size:12px;font-weight:500;
+  flex:1;min-width:72px;padding:11px 4px;font-size:12px;font-weight:500;
   font-family:inherit;color:rgba(255,255,255,.5);background:transparent;border:none;
   cursor:pointer;white-space:nowrap;transition:var(--t);
   text-align:center;text-transform:uppercase;letter-spacing:.02em;
@@ -230,7 +230,7 @@ body.dash-livemap-active .hero{display:none}
 .dash-tab:last-child{border-right:none}
 .dash-tab:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5)}
 .dash-tab--active{background:var(--nuvu-green);color:var(--olive);font-weight:600}
-a.dash-tab--link{text-decoration:none;display:flex;align-items:center;justify-content:center}
+a.dash-tab--link{text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .tab-panel{display:none}
 .tab-panel.tab-panel--active{display:block}
 .lb-wrap{max-width:960px;margin:0 auto;padding:24px 20px 48px}
@@ -1166,6 +1166,12 @@ a.portal-review-link:hover{color:var(--claret)}
     <button type="button" class="dash-tab" data-tab="removals">Removals</button>
     <button type="button" class="dash-tab" data-tab="livemap">Live Map</button>
     <button type="button" class="dash-tab" data-tab="activity">Activity</button>
+    <a href="/intake-queue" class="dash-tab dash-tab--link">
+      Intake Queue
+      {% if intake_queue_ready_count > 0 %}
+      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;background:#962D3E;color:#fff;border-radius:9px;font-size:11px;font-weight:700;line-height:1;">{{ intake_queue_ready_count }}</span>
+      {% endif %}
+    </a>
   </div>
 </nav>
 
@@ -3882,6 +3888,20 @@ def dashboard():
         event_counts = {}
         active_gates_count = 0
 
+    # ── Intake Queue badge count (gracefully degrade) ──
+    try:
+        from db_supabase import supabase_for_backend as _sb_backend
+        _iq_result = (
+            _sb_backend()
+            .table("intake_queue")
+            .select("id", count="exact")
+            .eq("gate_status", "ready")
+            .execute()
+        )
+        intake_queue_ready_count = _iq_result.count or 0
+    except Exception:
+        intake_queue_ready_count = 0
+
     props_json = (
         properties
         if show_test
@@ -3901,5 +3921,6 @@ def dashboard():
         recent_events=recent_events,
         event_counts=event_counts,
         active_gates_count=active_gates_count,
+        intake_queue_ready_count=intake_queue_ready_count,
     )
 

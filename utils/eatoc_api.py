@@ -6,6 +6,7 @@ URL and key come from env vars; defaults match Brief 1 deployment.
 
 import logging
 import os
+from typing import Dict, List, Optional, Union
 
 import requests as http_requests
 
@@ -19,7 +20,7 @@ def _headers():
     return {"x-api-key": NUVU_API_KEY, "Content-Type": "application/json"}
 
 
-def eatoc_get(path: str, params: dict | None = None) -> dict | list:
+def eatoc_get(path: str, params: Optional[Dict] = None) -> Union[Dict, List]:
     """GET from EATOC API. Returns parsed JSON on success; raises on HTTP error."""
     url = f"{EATOC_API_BASE}{path}"
     resp = http_requests.get(url, params=params, headers=_headers(), timeout=15)
@@ -43,7 +44,7 @@ def eatoc_patch(path: str, body: dict) -> dict:
     return resp.json()
 
 
-def eatoc_get_company(company_id: str) -> dict | None:
+def eatoc_get_company(company_id: str) -> Optional[Dict]:
     """Fetch a solicitor firm from GET /api/nuvu/companies/<company_id>.
 
     Returns the JSON dict on success, or None on 404 / any error (fail silently).
@@ -63,7 +64,7 @@ def eatoc_get_company(company_id: str) -> dict | None:
         return None
 
 
-def eatoc_get_contact(contact_id: str) -> dict | None:
+def eatoc_get_contact(contact_id: str) -> Optional[Dict]:
     """Fetch a solicitor contact from GET /api/nuvu/contacts/<contact_id>.
 
     Returns the JSON dict on success, or None on 404 / any error (fail silently).

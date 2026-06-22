@@ -88,10 +88,22 @@ def check_tier_1b(property_data: dict) -> tuple[bool, list[str]]:
     missing: list[str] = []
 
     checks = [
-        ("buyer_solicitor",        _non_empty,     property_data.get("buyer_solicitor") or property_data.get("buyers_solicitor")),
+        (
+            "buyer_solicitor_firm",
+            _non_empty,
+            property_data.get("buyer_solicitor_firm")
+            or property_data.get("buyer_solicitor")
+            or property_data.get("buyers_solicitor"),
+        ),
         ("buyer_solicitor_email",  validate_email,  property_data.get("buyer_solicitor_email")),
         ("buyer_solicitor_phone",  validate_phone,  property_data.get("buyer_solicitor_phone")),
-        ("vendor_solicitor",       _non_empty,      property_data.get("vendor_solicitor") or property_data.get("vendors_solicitor")),
+        (
+            "seller_solicitor_firm",
+            _non_empty,
+            property_data.get("seller_solicitor_firm")
+            or property_data.get("vendor_solicitor")
+            or property_data.get("vendors_solicitor"),
+        ),
         ("seller_solicitor_email", validate_email,  property_data.get("seller_solicitor_email")),
         ("seller_solicitor_phone", validate_phone,  property_data.get("seller_solicitor_phone")),
     ]

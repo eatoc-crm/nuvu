@@ -210,7 +210,7 @@ def run_completeness_gate() -> None:
         client = supabase_for_backend()
 
         # Clear stale intake_queue entries before rebuild
-        client.table("intake_queue").delete().neq("id", 0).execute()
+        client.table("intake_queue").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
         log.info("[completeness_gate] intake_queue cleared — rebuilding from current pipeline")
 
         result = client.table("sales_pipeline").select("*").in_("status", PROGRESSION_STATUSES).execute()

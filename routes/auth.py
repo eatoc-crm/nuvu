@@ -216,12 +216,6 @@ def require_login():
         return None
     if path.startswith("/portal/form"):
         return None
-    if path in ("/portal", "/portal/"):
-        return None
-    if path.startswith("/portal/login") or path.startswith("/portal/logout") or path.startswith(
-        "/portal/home"
-    ):
-        return None
     for prefix in AUTH_EXEMPT_PREFIXES:
         if path.startswith(prefix):
             return

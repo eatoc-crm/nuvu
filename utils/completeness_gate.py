@@ -24,15 +24,8 @@ from datetime import datetime, timezone
 
 log = logging.getLogger(__name__)
 
-# Statuses that represent active or completed pipeline progression.
-# "For Sale" and legacy "active" are intentionally excluded.
-PROGRESSION_STATUSES = [
-    "Under Offer (SSTC)",
-    "Under Offer",
-    "SSTC",
-    "Exchanged",
-    "exchanged",
-]
+# Statuses that represent properties eligible for NUVU progression.
+PROGRESSION_STATUSES = ["active", "exchanged"]
 
 # ─────────────────────────────────────────────────────────────
 #  VALIDATORS
@@ -213,7 +206,13 @@ def run_completeness_gate() -> None:
         client.table("intake_queue").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
         log.info("[completeness_gate] intake_queue cleared — rebuilding from current pipeline")
 
-        result = client.table("sales_pipeline").select("*").in_("status", PROGRESSION_STATUSES).execute()
+        result = (
+            client.table("sales_pipeline")
+            .select("*")
+            .in_("status", PROGRESSION_STATUSES)
+            .eq("do_not_chase", False)
+            .execute()
+        )
         properties = result.data or []
 
         if not properties:
@@ -266,6 +265,14 @@ def run_completeness_gate_for_address(property_address: str) -> None:
         if not rows:
             log.info(
                 "[completeness_gate] no row in sales_pipeline for '%s' — skipping gate",
+                property_address,
+            )
+            return
+
+        if rows[0].get("do_not_chase") is True:
+            client.table("intake_queue").delete().eq("property_address", property_address).execute()
+            log.info(
+                "[completeness_gate] '%s' is do_not_chase — removed from intake queue",
                 property_address,
             )
             return

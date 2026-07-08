@@ -17,6 +17,8 @@ import logging
 
 log = logging.getLogger(__name__)
 
+LOCAL_ONLY_PIPELINE_FIELDS = {"do_not_chase"}
+
 
 def _enrich_solicitor_fields(rows: list) -> None:
     """Mutate each row in-place with solicitor contact/company data from EATOC.
@@ -145,6 +147,13 @@ def _build_pipeline_row(r: dict) -> dict:
     }
 
 
+def _strip_local_only_pipeline_fields(row: dict) -> dict:
+    """Keep NUVU-owned flags out of EATOC cache upserts."""
+    for field in LOCAL_ONLY_PIPELINE_FIELDS:
+        row.pop(field, None)
+    return row
+
+
 def sync_sales_pipeline() -> None:
     """Fetch all properties from EATOC and upsert into local sales_pipeline."""
     try:
@@ -174,7 +183,7 @@ def sync_sales_pipeline() -> None:
             if not addr:
                 skipped += 1
                 continue
-            row = _build_pipeline_row(r)
+            row = _strip_local_only_pipeline_fields(_build_pipeline_row(r))
             try:
                 client.table("sales_pipeline").upsert(
                     row, on_conflict="property_address"
@@ -238,7 +247,7 @@ def sync_single_property(property_address: str) -> None:
         from db_supabase import supabase_for_backend
 
         client = supabase_for_backend()
-        row = _build_pipeline_row(target)
+        row = _strip_local_only_pipeline_fields(_build_pipeline_row(target))
         client.table("sales_pipeline").upsert(row, on_conflict="property_address").execute()
         log.info("[adapter_sync] sync_single_property: upserted '%s'", property_address)
 

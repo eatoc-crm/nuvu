@@ -111,13 +111,19 @@ CREATE TABLE IF NOT EXISTS sales_pipeline (
     local_authority     TEXT,
     buyer_solicitor_email   TEXT,
     seller_solicitor_email  TEXT,
+    buyer_solicitor_contact_name  TEXT,
+    buyer_solicitor_phone         TEXT,
+    buyer_solicitor_address       TEXT,
+    seller_solicitor_contact_name TEXT,
+    seller_solicitor_phone        TEXT,
+    seller_solicitor_address      TEXT,
     pipeline_status     TEXT,
     buyer_solicitor     TEXT,
     vendor_solicitor    TEXT,
     agreed_fee          NUMERIC,
+    do_not_chase        BOOLEAN NOT NULL DEFAULT false,
     is_test             BOOLEAN DEFAULT false,
-    CONSTRAINT sales_pipeline_property_address_key UNIQUE (property_address),
-    CONSTRAINT sales_pipeline_alto_ref_key UNIQUE (alto_ref)
+    CONSTRAINT sales_pipeline_property_address_key UNIQUE (property_address)
 );
 
 CREATE INDEX IF NOT EXISTS idx_sales_pipeline_status

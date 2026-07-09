@@ -199,6 +199,7 @@ def run_completeness_gate() -> None:
         from db_supabase import supabase_for_backend
         from utils.events import emit_event
         from utils.intake_notifications import send_intake_notification
+        from utils.intake_notifications import send_gate_digest
 
         client = supabase_for_backend()
 
@@ -221,12 +222,33 @@ def run_completeness_gate() -> None:
 
         log.info("[completeness_gate] evaluating %d properties", len(properties))
 
+        notification_candidates = []
         for prop in properties:
             try:
-                _evaluate_property(prop, client, emit_event, send_intake_notification)
+                candidate = _evaluate_property(prop, client, emit_event)
+                if candidate:
+                    notification_candidates.append(candidate)
             except Exception as exc:
                 addr = prop.get("property_address", "unknown")
                 log.warning("[completeness_gate] error evaluating '%s': %s", addr, exc)
+
+        send_gate_digest(notification_candidates)
+        for candidate in notification_candidates:
+            if candidate.get("gate_status") == "ready":
+                try:
+                    send_intake_notification(
+                        candidate["property_address"],
+                        candidate["gate_status"],
+                        candidate["property_data"],
+                        candidate["missing_fields"],
+                        candidate["tiers"],
+                    )
+                except Exception as exc:
+                    log.warning(
+                        "[completeness_gate] ready notification failed for '%s': %s",
+                        candidate.get("property_address", "unknown"),
+                        exc,
+                    )
 
         log.info("[completeness_gate] gate evaluation complete")
 
@@ -277,7 +299,15 @@ def run_completeness_gate_for_address(property_address: str) -> None:
             )
             return
 
-        _evaluate_property(rows[0], client, emit_event, send_intake_notification)
+        candidate = _evaluate_property(rows[0], client, emit_event)
+        if candidate:
+            send_intake_notification(
+                candidate["property_address"],
+                candidate["gate_status"],
+                candidate["property_data"],
+                candidate["missing_fields"],
+                candidate["tiers"],
+            )
 
     except Exception as exc:
         log.warning(
@@ -286,10 +316,10 @@ def run_completeness_gate_for_address(property_address: str) -> None:
         )
 
 
-def _evaluate_property(prop: dict, client, emit_event_fn, notify_fn) -> None:
+def _evaluate_property(prop: dict, client, emit_event_fn) -> dict | None:
     addr = (prop.get("property_address") or "").strip()
     if not addr:
-        return
+        return None
 
     # Run tiers
     pass_1a, miss_1a = check_tier_1a(prop)
@@ -322,7 +352,7 @@ def _evaluate_property(prop: dict, client, emit_event_fn, notify_fn) -> None:
 
     # If approved, never regress — skip further processing
     if prev_status in ("approved", "rejected"):
-        return
+        return None
 
     # Determine whether to emit events / notifications
     status_changed = (prev_status != new_status)
@@ -343,7 +373,7 @@ def _evaluate_property(prop: dict, client, emit_event_fn, notify_fn) -> None:
         "updated_at":        datetime.now(timezone.utc).isoformat(),
     }
 
-    # Reset notification flag on status change so the new status notifies
+    # Display flag only. Send decisions come from notification_log.
     if status_changed:
         row["notification_sent"] = False
 
@@ -365,8 +395,10 @@ def _evaluate_property(prop: dict, client, emit_event_fn, notify_fn) -> None:
             payload={"tiers": tiers, "gate_status": new_status, "missing_fields": all_missing},
         )
 
-        # Send notification (fail silently inside notify_fn)
-        try:
-            notify_fn(addr, new_status, prop, all_missing, tiers)
-        except Exception as exc:
-            log.warning("[completeness_gate] notification failed for '%s': %s", addr, exc)
+    return {
+        "property_address": addr,
+        "gate_status": new_status,
+        "property_data": prop,
+        "missing_fields": all_missing,
+        "tiers": {"1a": pass_1a, "1b": pass_1b, "1c": pass_1c, "1d": pass_1d},
+    }

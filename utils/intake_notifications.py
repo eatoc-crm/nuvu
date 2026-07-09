@@ -1,12 +1,9 @@
 """
 NUVU Intake Queue Notifications — utils/intake_notifications.py
 
-Sends a brief Resend email to NOTIFICATION_EMAIL when a property's gate_status
-changes (new entry blocked, or blocked → ready).
-
-Rate limiting: uses the intake_queue.notification_sent flag — one notification
-per gate_status transition.  When gate_status changes, the completeness gate
-resets notification_sent to False so a fresh notification is sent.
+Sends gate notifications through notification_log so queue rebuilds cannot
+re-trigger the same email. The intake_queue.notification_sent column is kept
+only as a display flag.
 
 Fail-silent: all errors are logged, never raised.
 """
@@ -18,9 +15,17 @@ import os
 
 import resend
 
+from utils.notification_log import (
+    _content_hash,
+    _insert_notification_log,
+    _notification_exists,
+    send_notification_once,
+)
+
 log = logging.getLogger(__name__)
 
 SEND_FROM = "David Britton Estates, powered by NUVU <salesprog@brittonestates.co.uk>"
+DIGEST_PROPERTY_ADDRESS = "__gate_digest__"
 
 
 def _notification_email() -> str:
@@ -40,55 +45,184 @@ def send_intake_notification(
 ) -> None:
     """Send one notification to the office inbox for this gate_status event.
 
-    Called by completeness_gate._evaluate_property only on first appearance
-    or status change, and only when notification_sent is False.
-    Marks notification_sent = True on success.
+    Used for single-property gate evaluations and ready notifications. Full
+    gate sweeps send blocked-property digest emails via send_gate_digest().
     """
     to_email = _notification_email()
     if not to_email:
         log.info("[intake_notifications] NOTIFICATION_EMAIL not set — skipping")
         return
 
-    # Re-check notification_sent flag from DB to prevent duplicates
+    subject, body = _build_email(property_address, gate_status, property_data, missing_fields, tiers)
+    notification_type = "gate_blocked" if gate_status == "blocked" else "gate_ready"
+    content = _gate_blocked_content(missing_fields) if gate_status == "blocked" else body
+
+    try:
+        result = send_notification_once(
+            property_address,
+            notification_type,
+            content,
+            to_email,
+            lambda: resend.Emails.send(
+                {
+                    "from": SEND_FROM,
+                    "to": [to_email],
+                    "subject": subject,
+                    "text": body,
+                }
+            ),
+        )
+        if result in ("sent", "duplicate_skipped"):
+            _mark_notification_sent(property_address)
+        if result == "sent":
+            log.info("[intake_notifications] sent %s notification for '%s'", gate_status, property_address)
+        elif result == "duplicate_skipped":
+            log.info(
+                "[intake_notifications] skipped duplicate %s notification for '%s'",
+                gate_status,
+                property_address,
+            )
+        else:
+            log.warning(
+                "[intake_notifications] notification failed for '%s': %s",
+                property_address,
+                result,
+            )
+    except Exception as exc:
+        log.warning("[intake_notifications] notification send failed for '%s': %s", property_address, exc)
+
+
+def send_gate_digest(candidates: list[dict], send_fn=None) -> None:
+    """Send one digest email for newly notifiable blocked properties."""
+    to_email = _notification_email()
+    if not to_email:
+        log.info("[intake_notifications] NOTIFICATION_EMAIL not set — skipping digest")
+        return
+
+    blocked = [c for c in candidates if c.get("gate_status") == "blocked"]
+    if not blocked:
+        return
+
+    newly_notifiable: list[dict] = []
+    for item in blocked:
+        property_address = item.get("property_address", "")
+        content = _gate_blocked_content(item.get("missing_fields") or [])
+        try:
+            if _notification_exists(property_address, "gate_blocked", content):
+                _mark_notification_sent(property_address)
+            else:
+                newly_notifiable.append(item)
+        except Exception as exc:
+            log.warning(
+                "[intake_notifications] could not check notification_log for '%s': %s",
+                property_address,
+                exc,
+            )
+
+    if not newly_notifiable:
+        log.info("[intake_notifications] no new blocked properties for digest")
+        return
+
+    subject, body = _build_digest_email(newly_notifiable)
+    message = {
+        "from": SEND_FROM,
+        "to": [to_email],
+        "subject": subject,
+        "text": body,
+    }
+
+    def _send_digest():
+        if send_fn is not None:
+            return send_fn(message)
+        return resend.Emails.send(message)
+
+    result = send_notification_once(
+        DIGEST_PROPERTY_ADDRESS,
+        "gate_digest",
+        body,
+        to_email,
+        _send_digest,
+    )
+
+    if result not in ("sent", "duplicate_skipped"):
+        log.warning("[intake_notifications] digest notification failed: %s", result)
+        return
+
+    digest_hash = _content_hash(body)
+    for item in newly_notifiable:
+        property_address = item.get("property_address", "")
+        content = _gate_blocked_content(item.get("missing_fields") or [])
+        payload = {
+            "content": content,
+            "property_address": property_address,
+            "included_in_digest": True,
+            "digest_content_hash": digest_hash,
+            "missing_fields": content,
+            "tiers": item.get("tiers") or {},
+        }
+        try:
+            if not _notification_exists(property_address, "gate_blocked", content):
+                _insert_notification_log(
+                    property_address,
+                    "gate_blocked",
+                    content,
+                    to_email,
+                    payload,
+                )
+            _mark_notification_sent(property_address)
+        except Exception as exc:
+            log.error(
+                "[intake_notifications] digest sent but failed to log property '%s': %s",
+                property_address,
+                exc,
+            )
+
+    log.info(
+        "[intake_notifications] %s gate digest for %d blocked properties",
+        "sent" if result == "sent" else "skipped duplicate",
+        len(newly_notifiable),
+    )
+
+
+def _mark_notification_sent(property_address: str) -> None:
     try:
         from db_supabase import supabase_for_backend
-        client = supabase_for_backend()
 
-        check = (
-            client.table("intake_queue")
-            .select("notification_sent")
-            .eq("property_address", property_address)
-            .execute()
-        )
-        row = (check.data or [{}])[0]
-        if row.get("notification_sent") is True:
-            return
-    except Exception as exc:
-        log.warning("[intake_notifications] could not check notification_sent: %s", exc)
+        supabase_for_backend().table("intake_queue").update({"notification_sent": True}).eq(
+            "property_address", property_address
+        ).execute()
+    except Exception as upd_exc:
+        log.warning("[intake_notifications] failed to set notification_sent: %s", upd_exc)
 
-    subject, body = _build_email(property_address, gate_status, property_data, missing_fields, tiers)
 
-    try:
-        resend.Emails.send(
-            {
-                "from": SEND_FROM,
-                "to": [to_email],
-                "subject": subject,
-                "text": body,
-            }
-        )
-        log.info("[intake_notifications] sent %s notification for '%s'", gate_status, property_address)
+def _gate_blocked_content(missing_fields: list[str]) -> list[str]:
+    return sorted(str(field) for field in (missing_fields or []))
 
-        # Mark sent
-        try:
-            client.table("intake_queue").update({"notification_sent": True}).eq(
-                "property_address", property_address
-            ).execute()
-        except Exception as upd_exc:
-            log.warning("[intake_notifications] failed to set notification_sent: %s", upd_exc)
 
-    except Exception as exc:
-        log.warning("[intake_notifications] Resend send failed for '%s': %s", property_address, exc)
+def _build_digest_email(candidates: list[dict]) -> tuple[str, str]:
+    queue_url = f"{_base_url()}/intake-queue"
+    subject = f"NUVU Intake: {len(candidates)} Properties Need Data"
+    lines = [
+        "The completeness gate found new properties that need attention:",
+        "",
+    ]
+
+    for item in sorted(candidates, key=lambda c: c.get("property_address", "")):
+        property_address = item.get("property_address") or "Unknown property"
+        missing = ", ".join(_gate_blocked_content(item.get("missing_fields") or []))
+        lines.append(f"- {property_address}")
+        lines.append(f"  Missing: {missing or 'See NUVU for details'}")
+
+    lines.extend(
+        [
+            "",
+            f"View details: {queue_url}",
+            "",
+            "Please enter the missing data in EATOC.",
+            "NUVU will re-check automatically on next sync.",
+        ]
+    )
+    return subject, "\n".join(lines)
 
 
 def _build_email(

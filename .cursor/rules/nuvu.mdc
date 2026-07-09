@@ -3,6 +3,10 @@ description: NUVU project context, architecture constraints, and code rules
 alwaysApply: true
 ---
 
+## Standing Rules — Read First
+
+The Standing Rules in .cursorrules (project root) apply in full to every session and override anything ambiguous in any brief or in this file. Database scope is absolute: the ONLY Supabase project any NUVU session may touch is xhxgqbjrgqyrrazmvufh. Project grosqsxnwhuvazgbjwan is EATOC's and is never touched, not even read-only.
+
 # NUVU — Cursor Rules
 
 ## Read First
@@ -12,7 +16,7 @@ Before making any changes, read `ARCHITECTURE.md` in the project root. It contai
 ## Project Context
 
 - NUVU is a Flask/Python sales progression platform
-- Backend: Supabase (service role key, RLS currently disabled)
+- Backend: Supabase (app uses anon key via db_supabase.py; RLS enabled on newer tables — check per table, do not assume).
 - Hosting: Railway (autodeploy on push to main)
 - Email: Resend (sending domain salesprog@brittonestates.co.uk)
 - David (the product owner) does not write code. You execute all code changes.

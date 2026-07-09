@@ -1,77 +1,43 @@
-# NUVU — Cursor Rules
+# NUVU — Cursor Standing Rules
 
-Keep this file in sync with `.cursor/rules/nuvu.mdc` when you change agent rules.
+Mandatory preamble for every brief. These rules override anything ambiguous in any brief.
 
-## Read First
+## Rule 0 — Instructions Come First
 
-Before making any changes, read `ARCHITECTURE.md` in the project root. It contains the full philosophy, progression model, file structure, and hard rules.
+When asking David a question, state the required action or decision in the first line, then the reasoning. When reporting, lead with the outcome.
 
-## Project Context
+## Rule 1 — Database Scope Is Absolute
 
-- NUVU is a Flask/Python sales progression platform
-- Backend: Supabase (service role key, RLS currently disabled)
-- Hosting: Railway (autodeploy on push to main)
-- Email: Resend (sending domain salesprog@brittonestates.co.uk)
-- David (the product owner) does not write code. You execute all code changes.
+The ONLY database any NUVU brief may touch is Supabase project `xhxgqbjrgqyrrazmvufh` (`nuvu-production`). Any operation, read or write, against ANY other project ID is forbidden. Project `grosqsxnwhuvazgbjwan` is EATOC's database: it is NEVER touched from a NUVU session, not even read-only, not even to fix something that looks broken. If any tool, test, config, or environment variable points at a different project ID, STOP and report it to David. That pointing is itself the bug.
 
-## Code Rules
+## Rule 2 — Brief Scope Means Nothing Extra
 
-### Architecture
+Do exactly what the brief says. No drive-by fixes, no repairs discovered along the way, no schema corrections outside the brief, no restoring tables that appear missing, and no cleanup of anything not named in the brief. If something outside scope looks broken: report it, quote the evidence, and make no change.
 
-- `app.py` is the Flask entry point. It registers Blueprints only. Do not add routes or logic here.
-- All routes live in `routes/` as Flask Blueprints: `auth.py`, `intake.py`, `progression.py`, `dashboard.py`, `property_api.py`, `chase_engine.py`, `chain_chase.py`
-- Shared config (Supabase client, Resend key, constants) lives in `shared.py`
-- Never import from `app.py` in route modules. Import from `shared.py` or sibling route modules.
+## Rule 3 — Failing Tests Outside Scope
 
-### CRM-Agnostic
+If the brief's own tests pass but the wider suite fails for reasons outside the brief, report the failures as pre-existing, list them, and ask David whether to commit. Never modify schema, config, or other code to make unrelated tests pass. Never treat a failing test as authorisation to change anything.
 
-- NUVU never talks directly to Alto, Street, Reapit, or any CRM
-- All external data enters via `/api/intake` in a standardised format
-- EATOC-specific logic belongs in the EATOC codebase, not here
+## Rule 4 — Read-Only Means Read-Only
 
-### Data Rules
+A read-only brief permits SELECTs and file reads only. No INSERT, UPDATE, DELETE, DDL, migrations, environment variable changes, commits, pushes, or temporary exceptions. If a read-only task seems to require a write to proceed, STOP and report.
 
-- Only properties that are Under Offer or beyond exist in NUVU. Never process or store data for properties outside this scope.
-- Status is human-set, never automatic. Do not write code that auto-updates property status.
-- 100% data accuracy required. No rounding, no approximation, no "close enough."
+## Rule 5 — Destructive Operations
 
-### Outbound Communication
+Any DELETE, DROP, TRUNCATE, or bulk UPDATE requires: (a) it is explicitly written in the brief, (b) a backup is taken first exactly as the brief specifies, and (c) if the operation would touch a different number of rows than the brief states, STOP and report. Do not guess. Exchanged status is always a human action, never automated.
 
-- All outbound-capable features MUST have a kill switch (environment variable)
-- Nothing sends emails, makes API calls to external parties, or contacts anyone without an explicit enable flag
-- The Welcome Engine kill switch is `WELCOME_ENGINE_ENABLED` in `routes/progression.py`
-- When building new outbound features, add a similar kill switch pattern
-- Track 6 chain solicitor emails use `CHAIN_CHASE_ENABLED` in `routes/chain_chase.py` (default false)
+## Rule 6 — Kill Switches and Email
 
-### Tone (for any AI-generated copy)
+Never change `COMPLETENESS_GATE_ENABLED`, `WEBHOOK_RECEIVER_ENABLED`, `CHASE_ENGINE_ENABLED`, `WELCOME_ENGINE_ENABLED`, `SEND_GOVERNOR_ENABLED`, any `SEND_CATEGORY_*` flag, or any other kill switch unless the brief names the exact flag and exact value. No live email may ever send during a build brief. All send-path testing uses stubs.
 
-- Professional, dignified, supportive
-- Never aggressive, pushy, or pressuring
-- Frame everything as guidance and support, not demands
-- Reference the 21-week UK average as motivation, not a scare tactic
-- Make people feel excited about their move
+## Rule 7 — EATOC Is Load-Bearing
 
-### When Unsure
+EATOC, including its codebase, Railway service, and database, is never touched from a NUVU session under any circumstances. EATOC work happens only in the EATOC thread with David's per-change approval. If NUVU work appears to require an EATOC change, report it. David carries it to the EATOC thread.
 
-- Stop and ask. Do not guess at business logic.
-- If a brief is ambiguous, request clarification rather than making assumptions.
-- Flag compliance, data, or operational risks before building.
+## Rule 8 — Stop Points Are Hard Stops
 
-## File Locations
+Where a brief says STOP and report, produce the report, make no further changes, and wait for David's instruction. One brief at a time. Never start the next phase's work inside the current session.
 
-- Routes: `routes/`
-- Shared config: `shared.py`
-- Email engine: `email_engine.py`
-- Email parser: `email_parser.py`
-- CRM connectors: `connectors/`
-- Templates: `templates/`
-- Database helpers: `database.py`, `db_supabase.py`
+## Rule 9 — Reporting Standard
 
-## Environment Variables (Railway)
-
-- `WELCOME_ENGINE_ENABLED` — kill switch for welcome emails (must be `true` to send)
-- `CHASE_ENGINE_ENABLED` — Phase A/C chase sends (default false)
-- `CHAIN_CHASE_ENABLED` — Track 6 chain solicitor sends (default false)
-- `NUVU_API_KEY` — authenticates inbound API calls from CRMs
-- `SUPABASE_URL` / `SUPABASE_ANON_KEY` — database connection (see `db_supabase.py`)
-- `RESEND_API_KEY` — email sending
+Every close-out states: what changed, including files, tables, and commits with hashes; what was verified and how; anything observed but NOT changed, with evidence; and confirms kill switches untouched, zero live emails, and correct project ID used throughout. When quoting past actions, quote verbatim, with no paraphrase.

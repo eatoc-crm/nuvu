@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import os
 
-import resend
-
 from utils.portal_config import portal_team_notifications_enabled
+from utils.send_governor import governed_send
 
 TEAM_NOTIFY_TO = "salesprog@brittonestates.co.uk"
 FROM_LINE = "David Britton Estates, powered by NUVU <salesprog@brittonestates.co.uk>"
@@ -14,6 +13,27 @@ FROM_LINE = "David Britton Estates, powered by NUVU <salesprog@brittonestates.co
 
 def _base_url() -> str:
     return (os.environ.get("NUVU_BASE_URL") or "http://127.0.0.1:5000").rstrip("/")
+
+
+def _send_portal_email(
+    *,
+    to_email: str,
+    subject: str,
+    html: str,
+    source: str,
+    attachments: list[dict] | None = None,
+) -> None:
+    result = governed_send(
+        "portal",
+        to_email.strip(),
+        subject,
+        html,
+        metadata={"source": source},
+        from_address=FROM_LINE,
+        attachments=attachments,
+    )
+    if result != "sent":
+        raise RuntimeError(result)
 
 
 def send_ta6_ta10_seller_portal_link_email(
@@ -39,13 +59,11 @@ def send_ta6_ta10_seller_portal_link_email(
         "<p>This link is unique to you — please don’t share it. If you have any questions, just reply to this email.</p>"
         f"<p>Best wishes,<br>{who}<br>David Britton Estates</p>"
     )
-    resend.Emails.send(
-        {
-            "from": FROM_LINE,
-            "to": [to_email.strip()],
-            "subject": subject,
-            "html": html,
-        }
+    _send_portal_email(
+        to_email=to_email,
+        subject=subject,
+        html=html,
+        source="portal.seller_link",
     )
 
 
@@ -63,13 +81,11 @@ def notify_negotiator_ta6_ta10_submitted(
         f"Review the answers in the NUVU portal: <a href=\"{staff_review_url}\">{staff_review_url}</a>"
     )
     html = f"<p>{body}</p>"
-    resend.Emails.send(
-        {
-            "from": FROM_LINE,
-            "to": [to_email.strip()],
-            "subject": subject,
-            "html": html,
-        }
+    _send_portal_email(
+        to_email=to_email,
+        subject=subject,
+        html=html,
+        source="portal.negotiator_submitted",
     )
 
 
@@ -97,13 +113,11 @@ def notify_team_form_completed(
         return
 
     try:
-        resend.Emails.send(
-            {
-                "from": FROM_LINE,
-                "to": [TEAM_NOTIFY_TO],
-                "subject": subject,
-                "html": html,
-            }
+        _send_portal_email(
+            to_email=TEAM_NOTIFY_TO,
+            subject=subject,
+            html=html,
+            source="portal.team_form_completed",
         )
         print(f"[portal notify sent] {subject}")
     except Exception as exc:
@@ -158,12 +172,10 @@ def send_solicitor_dispatch_email(
         "<p>Kind regards,<br>David Britton Estates — Sales Progression</p>"
     )
     b64 = base64.b64encode(pdf_bytes).decode("ascii")
-    resend.Emails.send(
-        {
-            "from": FROM_LINE,
-            "to": [to_email.strip()],
-            "subject": f"{form_label} — {property_address} — Completed by {seller_name}",
-            "html": html,
-            "attachments": [{"filename": filename, "content": b64}],
-        }
+    _send_portal_email(
+        to_email=to_email,
+        subject=f"{form_label} — {property_address} — Completed by {seller_name}",
+        html=html,
+        source="portal.solicitor_dispatch",
+        attachments=[{"filename": filename, "content": b64}],
     )

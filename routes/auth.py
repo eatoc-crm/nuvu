@@ -4,8 +4,8 @@ import os
 
 from flask import Blueprint, redirect, render_template, render_template_string, request, session
 
-import shared  # ensures shared config (e.g. resend.api_key) is loaded
-import resend
+import shared  # ensures shared config is loaded
+from utils.send_governor import governed_send
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -113,22 +113,24 @@ def login_submit():
     # Send magic link email
     link = f"{AUTH_BASE_URL}/auth/verify?token={token}"
     try:
-        resend.Emails.send(
-            {
-                "from": AUTH_FROM,
-                "to": [email],
-                "subject": "Your NUVU login link",
-                "html": (
-                    "<p>Click the link below to log in to NUVU. "
-                    "This link expires in 15 minutes and can only be used once.</p>"
-                    f'<p><a href="{link}" style="display:inline-block;padding:12px 28px;'
-                    "background:#0f1b2d;color:#ffffff;border-radius:8px;text-decoration:none;"
-                    'font-weight:700;font-size:1rem;">Log in to NUVU</a></p>'
-                    "<p style=\"color:#94a3b8;font-size:.85rem;\">If you didn’t request this, ignore this email.</p>"
-                    "<p style=\"color:#94a3b8;font-size:.85rem;\">David Britton Estates, powered by NUVU</p>"
-                ),
-            }
+        result = governed_send(
+            "notifications",
+            email,
+            "Your NUVU login link",
+            (
+                "<p>Click the link below to log in to NUVU. "
+                "This link expires in 15 minutes and can only be used once.</p>"
+                f'<p><a href="{link}" style="display:inline-block;padding:12px 28px;'
+                "background:#0f1b2d;color:#ffffff;border-radius:8px;text-decoration:none;"
+                'font-weight:700;font-size:1rem;">Log in to NUVU</a></p>'
+                "<p style=\"color:#94a3b8;font-size:.85rem;\">If you didn’t request this, ignore this email.</p>"
+                "<p style=\"color:#94a3b8;font-size:.85rem;\">David Britton Estates, powered by NUVU</p>"
+            ),
+            metadata={"source": "auth.login_submit"},
+            from_address=AUTH_FROM,
         )
+        if result != "sent":
+            raise RuntimeError(result)
         print(f"Magic link sent to {email}")
     except Exception as e:
         print(f"Magic link send FAILED for {email}: {e}")

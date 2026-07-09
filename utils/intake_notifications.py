@@ -12,8 +12,7 @@ from __future__ import annotations
 
 import logging
 import os
-
-import resend
+from html import escape
 
 from utils.notification_log import (
     _content_hash,
@@ -21,6 +20,7 @@ from utils.notification_log import (
     _notification_exists,
     send_notification_once,
 )
+from utils.send_governor import governed_send
 
 log = logging.getLogger(__name__)
 
@@ -34,6 +34,20 @@ def _notification_email() -> str:
 
 def _base_url() -> str:
     return os.environ.get("NUVU_BASE_URL", "https://nuvu-production.up.railway.app").rstrip("/")
+
+
+def _send_notification_email(to_email: str, subject: str, body: str, source: str):
+    result = governed_send(
+        "notifications",
+        to_email,
+        subject,
+        f"<pre style=\"font-family:system-ui,-apple-system,sans-serif;white-space:pre-wrap;\">{escape(body)}</pre>",
+        metadata={"source": source},
+        from_address=SEND_FROM,
+    )
+    if result != "sent":
+        raise RuntimeError(result)
+    return result
 
 
 def send_intake_notification(
@@ -63,13 +77,11 @@ def send_intake_notification(
             notification_type,
             content,
             to_email,
-            lambda: resend.Emails.send(
-                {
-                    "from": SEND_FROM,
-                    "to": [to_email],
-                    "subject": subject,
-                    "text": body,
-                }
+            lambda: _send_notification_email(
+                to_email,
+                subject,
+                body,
+                "intake.single_notification",
             ),
         )
         if result in ("sent", "duplicate_skipped"):
@@ -134,7 +146,12 @@ def send_gate_digest(candidates: list[dict], send_fn=None) -> None:
     def _send_digest():
         if send_fn is not None:
             return send_fn(message)
-        return resend.Emails.send(message)
+        return _send_notification_email(
+            to_email,
+            subject,
+            body,
+            "intake.gate_digest",
+        )
 
     result = send_notification_once(
         DIGEST_PROPERTY_ADDRESS,

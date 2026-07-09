@@ -914,7 +914,13 @@ def send_chase_message(
         return False
 
     try:
-        send_html_email(em, subject, html_body, from_address=CHASE_SEND_FROM)
+        send_result = send_html_email(em, subject, html_body, from_address=CHASE_SEND_FROM)
+        if send_result != "sent":
+            print(
+                f"[chase_engine] send blocked {chase_stage} day={chase_day} "
+                f"property={rid}: {send_result}"
+            )
+            return False
     except Exception as e:
         print(f"[chase_engine] Resend FAILED {chase_stage} day={chase_day} property={rid}: {e}")
         team = _team_flag_email()

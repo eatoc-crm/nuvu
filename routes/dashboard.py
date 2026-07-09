@@ -3020,7 +3020,7 @@ _CARD_CHIP_DEFS = (
 )
 
 
-def _enrich_property_card_display(p: dict, today: date, triggers: list | None):
+def _enrich_property_card_display(p: dict, today: date, triggers=None):
     """Attach display-only fields for rich dashboard cards (read-only merged data)."""
     n_m = len(FORECAST_SCORE_WEIGHTS)
     filled = sum(1 for k, _w in FORECAST_SCORE_WEIGHTS if _field_populated(p, k))

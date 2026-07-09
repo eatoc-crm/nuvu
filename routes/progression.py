@@ -3,12 +3,12 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-import shared  # loads shared config (e.g. resend.api_key) and exports `sb`
-import resend
+import shared  # loads shared config and exports `sb`
 from email_engine import DEFAULT_SEND_FROM, send_html_email
 from db_supabase import supabase_for_backend
 from shared import require_nuvu_api_key, sb
 from utils.events import emit_event
+from utils.send_governor import governed_send
 
 progression_bp = Blueprint("progression", __name__)
 
@@ -151,6 +151,19 @@ def patch_progression(prog_id):
 WELCOME_FROM = "David Britton Estates, powered by NUVU <salesprog@brittonestates.co.uk>"
 
 
+def _send_welcome_email(to_email: str, subject: str, html: str, track: str) -> None:
+    result = governed_send(
+        "welcome",
+        to_email,
+        subject,
+        html,
+        metadata={"source": "welcome_engine", "track": track},
+        from_address=WELCOME_FROM,
+    )
+    if result != "sent":
+        raise RuntimeError(result)
+
+
 def _completion_phrase(data):
     """Return formatted completion date or fallback phrase."""
     est = (data.get("est_completion") or "").strip()
@@ -179,30 +192,28 @@ def _send_welcome_emails(data):
     buyer_name = data.get("buyer_name") or "there"
     if buyer_email:
         try:
-            resend.Emails.send(
-                {
-                    "from": WELCOME_FROM,
-                    "to": [buyer_email],
-                    "subject": "Your move is underway \u2014 here\u2019s what happens next",
-                    "html": (
-                        f"<p>Dear {buyer_name},</p>"
-                        f"<p>Congratulations on having your offer accepted on <strong>{addr}</strong>! "
-                        "We are delighted to be looking after the sale for you and wanted to introduce ourselves.</p>"
-                        "<p>We are David Britton Estates and we will be progressing this transaction through to completion. "
-                        "Our job is to keep every party informed, chase outstanding actions, and make sure nothing falls through the cracks.</p>"
-                        "<p><strong>What happens now?</strong></p>"
-                        "<ul>"
-                        "<li>A sales memorandum has been sent to both solicitors so they can begin the legal work.</li>"
-                        "<li>We will be in regular contact with your solicitor to track progress on searches, enquiries, and contracts.</li>"
-                        "<li>If you need a mortgage, please ensure your broker has submitted the full application as soon as possible.</li>"
-                        "<li>If you need a survey, we recommend booking it within the first two weeks.</li>"
-                        "</ul>"
-                        f"<p>The current estimated completion date is <strong>{comp}</strong>. "
-                        "We will update you if this changes.</p>"
-                        "<p>If you have any questions at all, please do not hesitate to get in touch.</p>"
-                        "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
-                    ),
-                }
+            _send_welcome_email(
+                buyer_email,
+                "Your move is underway \u2014 here\u2019s what happens next",
+                (
+                    f"<p>Dear {buyer_name},</p>"
+                    f"<p>Congratulations on having your offer accepted on <strong>{addr}</strong>! "
+                    "We are delighted to be looking after the sale for you and wanted to introduce ourselves.</p>"
+                    "<p>We are David Britton Estates and we will be progressing this transaction through to completion. "
+                    "Our job is to keep every party informed, chase outstanding actions, and make sure nothing falls through the cracks.</p>"
+                    "<p><strong>What happens now?</strong></p>"
+                    "<ul>"
+                    "<li>A sales memorandum has been sent to both solicitors so they can begin the legal work.</li>"
+                    "<li>We will be in regular contact with your solicitor to track progress on searches, enquiries, and contracts.</li>"
+                    "<li>If you need a mortgage, please ensure your broker has submitted the full application as soon as possible.</li>"
+                    "<li>If you need a survey, we recommend booking it within the first two weeks.</li>"
+                    "</ul>"
+                    f"<p>The current estimated completion date is <strong>{comp}</strong>. "
+                    "We will update you if this changes.</p>"
+                    "<p>If you have any questions at all, please do not hesitate to get in touch.</p>"
+                    "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
+                ),
+                "track_1_buyer",
             )
             print(f"Welcome Engine: Track 1 sent to {buyer_email}")
         except Exception as e:
@@ -213,28 +224,26 @@ def _send_welcome_emails(data):
     vendor_name = data.get("vendor_name") or "there"
     if vendor_email:
         try:
-            resend.Emails.send(
-                {
-                    "from": WELCOME_FROM,
-                    "to": [vendor_email],
-                    "subject": "Your sale is progressing \u2014 here\u2019s the plan",
-                    "html": (
-                        f"<p>Dear {vendor_name},</p>"
-                        f"<p>Great news \u2014 we have accepted an offer on <strong>{addr}</strong> and the transaction is now officially Under Offer.</p>"
-                        "<p>We are David Britton Estates and we will be progressing this sale through to completion on your behalf. "
-                        "Our role is to coordinate between all parties, chase solicitors, and keep you informed at every stage.</p>"
-                        "<p><strong>What happens now?</strong></p>"
-                        "<ul>"
-                        "<li>A sales memorandum has been sent to both your solicitor and the buyer\u2019s solicitor.</li>"
-                        "<li>Your solicitor will prepare the contract pack and respond to any enquiries raised by the buyer\u2019s side.</li>"
-                        "<li>We will chase weekly and escalate anything that stalls.</li>"
-                        "</ul>"
-                        f"<p>The current estimated completion date is <strong>{comp}</strong>. "
-                        "We will keep you updated on any changes to this timeline.</p>"
-                        "<p>If you have any questions, please get in touch at any time.</p>"
-                        "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
-                    ),
-                }
+            _send_welcome_email(
+                vendor_email,
+                "Your sale is progressing \u2014 here\u2019s the plan",
+                (
+                    f"<p>Dear {vendor_name},</p>"
+                    f"<p>Great news \u2014 we have accepted an offer on <strong>{addr}</strong> and the transaction is now officially Under Offer.</p>"
+                    "<p>We are David Britton Estates and we will be progressing this sale through to completion on your behalf. "
+                    "Our role is to coordinate between all parties, chase solicitors, and keep you informed at every stage.</p>"
+                    "<p><strong>What happens now?</strong></p>"
+                    "<ul>"
+                    "<li>A sales memorandum has been sent to both your solicitor and the buyer\u2019s solicitor.</li>"
+                    "<li>Your solicitor will prepare the contract pack and respond to any enquiries raised by the buyer\u2019s side.</li>"
+                    "<li>We will chase weekly and escalate anything that stalls.</li>"
+                    "</ul>"
+                    f"<p>The current estimated completion date is <strong>{comp}</strong>. "
+                    "We will keep you updated on any changes to this timeline.</p>"
+                    "<p>If you have any questions, please get in touch at any time.</p>"
+                    "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
+                ),
+                "track_2_seller",
             )
             print(f"Welcome Engine: Track 2 sent to {vendor_email}")
         except Exception as e:
@@ -245,27 +254,25 @@ def _send_welcome_emails(data):
     bs_name = data.get("buyers_solicitor") or "Sirs/Madams"
     if bs_email:
         try:
-            resend.Emails.send(
-                {
-                    "from": WELCOME_FROM,
-                    "to": [bs_email],
-                    "subject": f"{addr} \u2014 sales memorandum provided, transaction now Under Offer",
-                    "html": (
-                        f"<p>Dear {bs_name},</p>"
-                        f"<p>We write to confirm that <strong>{addr}</strong> is now Under Offer and a sales memorandum has been issued to all parties.</p>"
-                        "<p>We are David Britton Estates and we handle sales progression on behalf of the vendor. "
-                        "We will be your main point of contact for chasing and coordinating this transaction.</p>"
-                        "<p><strong>We kindly request:</strong></p>"
-                        "<ul>"
-                        "<li>Confirmation that you are instructed and have received the memorandum.</li>"
-                        "<li>Please order searches at the earliest opportunity.</li>"
-                        "<li>Any enquiries or issues \u2014 please raise them with us directly so we can resolve quickly.</li>"
-                        "</ul>"
-                        f"<p>The current estimated completion date is <strong>{comp}</strong>.</p>"
-                        "<p>We look forward to working with you to bring this transaction to a successful conclusion.</p>"
-                        "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
-                    ),
-                }
+            _send_welcome_email(
+                bs_email,
+                f"{addr} \u2014 sales memorandum provided, transaction now Under Offer",
+                (
+                    f"<p>Dear {bs_name},</p>"
+                    f"<p>We write to confirm that <strong>{addr}</strong> is now Under Offer and a sales memorandum has been issued to all parties.</p>"
+                    "<p>We are David Britton Estates and we handle sales progression on behalf of the vendor. "
+                    "We will be your main point of contact for chasing and coordinating this transaction.</p>"
+                    "<p><strong>We kindly request:</strong></p>"
+                    "<ul>"
+                    "<li>Confirmation that you are instructed and have received the memorandum.</li>"
+                    "<li>Please order searches at the earliest opportunity.</li>"
+                    "<li>Any enquiries or issues \u2014 please raise them with us directly so we can resolve quickly.</li>"
+                    "</ul>"
+                    f"<p>The current estimated completion date is <strong>{comp}</strong>.</p>"
+                    "<p>We look forward to working with you to bring this transaction to a successful conclusion.</p>"
+                    "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
+                ),
+                "track_3_buyer_solicitor",
             )
             print(f"Welcome Engine: Track 3 sent to {bs_email}")
         except Exception as e:
@@ -276,27 +283,25 @@ def _send_welcome_emails(data):
     vs_name = data.get("vendors_solicitor") or "Sirs/Madams"
     if vs_email:
         try:
-            resend.Emails.send(
-                {
-                    "from": WELCOME_FROM,
-                    "to": [vs_email],
-                    "subject": f"{addr} \u2014 sales memorandum provided, transaction now Under Offer",
-                    "html": (
-                        f"<p>Dear {vs_name},</p>"
-                        f"<p>We write to confirm that <strong>{addr}</strong> is now Under Offer and a sales memorandum has been issued to all parties.</p>"
-                        "<p>We are David Britton Estates and we handle sales progression on behalf of the vendor. "
-                        "We will be your main point of contact for chasing and coordinating this transaction.</p>"
-                        "<p><strong>We kindly request:</strong></p>"
-                        "<ul>"
-                        "<li>Confirmation that you are instructed and have received the memorandum.</li>"
-                        "<li>Please prepare the contract pack and title documents at the earliest opportunity.</li>"
-                        "<li>Any enquiries or issues \u2014 please raise them with us directly so we can resolve quickly.</li>"
-                        "</ul>"
-                        f"<p>The current estimated completion date is <strong>{comp}</strong>.</p>"
-                        "<p>We look forward to working with you to bring this transaction to a successful conclusion.</p>"
-                        "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
-                    ),
-                }
+            _send_welcome_email(
+                vs_email,
+                f"{addr} \u2014 sales memorandum provided, transaction now Under Offer",
+                (
+                    f"<p>Dear {vs_name},</p>"
+                    f"<p>We write to confirm that <strong>{addr}</strong> is now Under Offer and a sales memorandum has been issued to all parties.</p>"
+                    "<p>We are David Britton Estates and we handle sales progression on behalf of the vendor. "
+                    "We will be your main point of contact for chasing and coordinating this transaction.</p>"
+                    "<p><strong>We kindly request:</strong></p>"
+                    "<ul>"
+                    "<li>Confirmation that you are instructed and have received the memorandum.</li>"
+                    "<li>Please prepare the contract pack and title documents at the earliest opportunity.</li>"
+                    "<li>Any enquiries or issues \u2014 please raise them with us directly so we can resolve quickly.</li>"
+                    "</ul>"
+                    f"<p>The current estimated completion date is <strong>{comp}</strong>.</p>"
+                    "<p>We look forward to working with you to bring this transaction to a successful conclusion.</p>"
+                    "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
+                ),
+                "track_4_seller_solicitor",
             )
             print(f"Welcome Engine: Track 4 sent to {vs_email}")
         except Exception as e:
@@ -306,28 +311,26 @@ def _send_welcome_emails(data):
     ca_email = (data.get("chain_agent_email") or "").strip()
     if ca_email:
         try:
-            resend.Emails.send(
-                {
-                    "from": WELCOME_FROM,
-                    "to": [ca_email],
-                    "subject": f"{addr} \u2014 chain coordination, David Britton Estates",
-                    "html": (
-                        "<p>Dear colleague,</p>"
-                        f"<p>We are writing to introduce ourselves as the progressing agent for <strong>{addr}</strong>, which is now Under Offer.</p>"
-                        "<p>We understand your property forms part of the chain linked to this transaction. "
-                        "We would like to coordinate with you to ensure the chain progresses smoothly and any blockers are identified early.</p>"
-                        "<p><strong>Could you please confirm:</strong></p>"
-                        "<ul>"
-                        "<li>The current status of your transaction.</li>"
-                        "<li>Your estimated completion date.</li>"
-                        "<li>Any known issues or dependencies we should be aware of.</li>"
-                        "</ul>"
-                        f"<p>Our current estimated completion date is <strong>{comp}</strong>. "
-                        "We aim to keep all chain agents informed of progress on our side.</p>"
-                        "<p>Please feel free to contact us at any time.</p>"
-                        "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
-                    ),
-                }
+            _send_welcome_email(
+                ca_email,
+                f"{addr} \u2014 chain coordination, David Britton Estates",
+                (
+                    "<p>Dear colleague,</p>"
+                    f"<p>We are writing to introduce ourselves as the progressing agent for <strong>{addr}</strong>, which is now Under Offer.</p>"
+                    "<p>We understand your property forms part of the chain linked to this transaction. "
+                    "We would like to coordinate with you to ensure the chain progresses smoothly and any blockers are identified early.</p>"
+                    "<p><strong>Could you please confirm:</strong></p>"
+                    "<ul>"
+                    "<li>The current status of your transaction.</li>"
+                    "<li>Your estimated completion date.</li>"
+                    "<li>Any known issues or dependencies we should be aware of.</li>"
+                    "</ul>"
+                    f"<p>Our current estimated completion date is <strong>{comp}</strong>. "
+                    "We aim to keep all chain agents informed of progress on our side.</p>"
+                    "<p>Please feel free to contact us at any time.</p>"
+                    "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
+                ),
+                "track_5_chain_agent",
             )
             print(f"Welcome Engine: Track 5 sent to {ca_email}")
         except Exception as e:
@@ -468,12 +471,14 @@ def api_chain_outreach():
     live = False
     if CHAIN_OUTREACH_ENABLED:
         try:
-            send_html_email(
+            send_result = send_html_email(
                 agent_email,
                 subject,
                 html,
                 from_address=DEFAULT_SEND_FROM,
             )
+            if send_result != "sent":
+                return jsonify({"error": f"email send blocked: {send_result}"}), 503
             live = True
             print(
                 f"Chain outreach: sent to {agent_email} "

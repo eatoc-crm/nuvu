@@ -420,7 +420,7 @@ def suggest_emails(prop, tone="professional"):
 
 
 # ─────────────────────────────────────────────────────────────
-#  OUTBOUND SEND (Resend)
+#  OUTBOUND SEND (governed Resend chokepoint)
 # ─────────────────────────────────────────────────────────────
 
 DEFAULT_SEND_FROM = (
@@ -429,24 +429,17 @@ DEFAULT_SEND_FROM = (
 
 
 def send_html_email(to, subject, html_body, from_address=None):
-    """Send a single HTML email via Resend.
+    """Send a single HTML email through the send governor.
 
     ``to`` may be one address (str) or a list of strings.
-    Requires ``RESEND_API_KEY`` and ``resend.api_key`` (see ``shared``).
     """
-    import os
+    from utils.send_governor import governed_send
 
-    import resend
-
-    if not getattr(resend, "api_key", None):
-        resend.api_key = os.environ.get("RESEND_API_KEY", "")
-    addr = from_address or DEFAULT_SEND_FROM
-    recipients = to if isinstance(to, list) else [to]
-    return resend.Emails.send(
-        {
-            "from": addr,
-            "to": recipients,
-            "subject": subject,
-            "html": html_body,
-        }
+    return governed_send(
+        "chase",
+        to,
+        subject,
+        html_body,
+        metadata={"source": "email_engine.send_html_email"},
+        from_address=from_address or DEFAULT_SEND_FROM,
     )

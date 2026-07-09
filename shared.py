@@ -1,10 +1,6 @@
 import os
 
-import resend
-
 # Centralised config used by multiple blueprints.
-resend.api_key = os.environ.get("RESEND_API_KEY", "")
-
 # Chase Engine (Phase A + C): set CHASE_ENGINE_ENABLED=true to send outbound chases.
 # Default false = cadence + inbound classification run, but only dry-run logs for sends.
 #

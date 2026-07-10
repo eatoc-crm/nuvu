@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 from utils.completeness_gate import (
     check_tier_1a,
     check_tier_1b,
+    check_tier_1c,
     check_tier_1d,
     validate_email,
     validate_phone,
@@ -260,3 +261,41 @@ def test_overall_blocked_with_missing_fields():
     expected_status = "blocked"
     assert expected_status == "blocked"
     assert len(missing_1d) > 0
+
+
+# ─────────────────────────────────────────────────────────────
+#  FAIL-CLOSED: exceptions must return BLOCKED, never PASSED
+# ─────────────────────────────────────────────────────────────
+
+def test_tier_1a_exception_returns_blocked():
+    """An exception inside check_tier_1a must return BLOCKED, not PASSED."""
+    passed, missing = check_tier_1a(None)  # None.get() raises AttributeError
+    assert passed is False
+    assert len(missing) == 1
+    assert "check errored" in missing[0]
+
+
+def test_tier_1b_exception_returns_blocked():
+    """An exception inside check_tier_1b must return BLOCKED, not PASSED."""
+    passed, missing = check_tier_1b(None)
+    assert passed is False
+    assert len(missing) == 1
+    assert "check errored" in missing[0]
+
+
+def test_tier_1c_exception_returns_blocked():
+    """An exception inside check_tier_1c must return BLOCKED, not PASSED."""
+    with patch("db_supabase.supabase_for_backend") as mock_sb:
+        mock_sb.return_value.table.return_value.select.return_value.eq.return_value.execute.side_effect = RuntimeError("db exploded")
+        passed, missing = check_tier_1c("1 High Street", property_id="some-uuid")
+    assert passed is False
+    assert len(missing) == 1
+    assert "check errored" in missing[0]
+
+
+def test_tier_1d_exception_returns_blocked():
+    """An exception inside check_tier_1d must return BLOCKED, not PASSED."""
+    passed, missing = check_tier_1d(None)  # None.get() raises AttributeError
+    assert passed is False
+    assert len(missing) == 1
+    assert "check errored" in missing[0]

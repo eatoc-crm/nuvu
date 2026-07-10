@@ -61,22 +61,26 @@ def _non_empty(value) -> bool:
 
 def check_tier_1a(property_data: dict) -> tuple[bool, list[str]]:
     """Tier 1A: buyer & seller name, email, phone."""
-    missing: list[str] = []
+    try:
+        missing: list[str] = []
 
-    checks = [
-        ("buyer_name",    _non_empty,    property_data.get("buyer_name")),
-        ("buyer_email",   validate_email, property_data.get("buyer_email")),
-        ("buyer_phone",   validate_phone, property_data.get("buyer_phone")),
-        ("vendor_name",   _non_empty,    property_data.get("vendor_name")),
-        ("vendor_email",  validate_email, property_data.get("vendor_email")),
-        ("vendor_phone",  validate_phone, property_data.get("vendor_phone")),
-    ]
+        checks = [
+            ("buyer_name",    _non_empty,    property_data.get("buyer_name")),
+            ("buyer_email",   validate_email, property_data.get("buyer_email")),
+            ("buyer_phone",   validate_phone, property_data.get("buyer_phone")),
+            ("vendor_name",   _non_empty,    property_data.get("vendor_name")),
+            ("vendor_email",  validate_email, property_data.get("vendor_email")),
+            ("vendor_phone",  validate_phone, property_data.get("vendor_phone")),
+        ]
 
-    for field, validator, value in checks:
-        if not validator(value):
-            missing.append(field)
+        for field, validator, value in checks:
+            if not validator(value):
+                missing.append(field)
 
-    return (len(missing) == 0, missing)
+        return (len(missing) == 0, missing)
+    except Exception as exc:
+        log.warning("[completeness_gate] check_tier_1a error: %s", exc)
+        return (False, [f"check errored: {exc}"])
 
 
 def check_tier_1b(property_data: dict) -> tuple[bool, list[str]]:
@@ -88,51 +92,79 @@ def check_tier_1b(property_data: dict) -> tuple[bool, list[str]]:
     Contact person (buyer_solicitor_contact_name / seller_solicitor_contact_name) is
     stored when available but does NOT block the gate.
     """
-    missing: list[str] = []
+    try:
+        missing: list[str] = []
 
-    checks = [
-        (
-            "buyer_solicitor_firm",
-            _non_empty,
-            property_data.get("buyer_solicitor_firm")
-            or property_data.get("buyer_solicitor")
-            or property_data.get("buyers_solicitor"),
-        ),
-        ("buyer_solicitor_email",  validate_email,  property_data.get("buyer_solicitor_email")),
-        ("buyer_solicitor_phone",  validate_phone,  property_data.get("buyer_solicitor_phone")),
-        (
-            "seller_solicitor_firm",
-            _non_empty,
-            property_data.get("seller_solicitor_firm")
-            or property_data.get("vendor_solicitor")
-            or property_data.get("vendors_solicitor"),
-        ),
-        ("seller_solicitor_email", validate_email,  property_data.get("seller_solicitor_email")),
-        ("seller_solicitor_phone", validate_phone,  property_data.get("seller_solicitor_phone")),
-    ]
+        checks = [
+            (
+                "buyer_solicitor_firm",
+                _non_empty,
+                property_data.get("buyer_solicitor_firm")
+                or property_data.get("buyer_solicitor")
+                or property_data.get("buyers_solicitor"),
+            ),
+            ("buyer_solicitor_email",  validate_email,  property_data.get("buyer_solicitor_email")),
+            ("buyer_solicitor_phone",  validate_phone,  property_data.get("buyer_solicitor_phone")),
+            (
+                "seller_solicitor_firm",
+                _non_empty,
+                property_data.get("seller_solicitor_firm")
+                or property_data.get("vendor_solicitor")
+                or property_data.get("vendors_solicitor"),
+            ),
+            ("seller_solicitor_email", validate_email,  property_data.get("seller_solicitor_email")),
+            ("seller_solicitor_phone", validate_phone,  property_data.get("seller_solicitor_phone")),
+        ]
 
-    for field, validator, value in checks:
-        if not validator(value):
-            missing.append(field)
+        for field, validator, value in checks:
+            if not validator(value):
+                missing.append(field)
 
-    return (len(missing) == 0, missing)
+        return (len(missing) == 0, missing)
+    except Exception as exc:
+        log.warning("[completeness_gate] check_tier_1b error: %s", exc)
+        return (False, [f"check errored: {exc}"])
 
 
-def check_tier_1c(property_address: str) -> tuple[bool, list[str]]:
+def check_tier_1c(
+    property_address: str,
+    property_id: str | None = None,
+) -> tuple[bool, list[str]]:
     """Tier 1C: chain completeness.
 
     Chain-free → always passes.
     Chain exists → require ≥ 80 % of links to have: link_address, estate_agent, estate_agent_email.
-    Currently chain_links is always empty, so all properties pass as chain-free.
+
+    chain_links.property_id is a UUID column (references sales_pipeline.id).  The
+    caller should supply property_id directly from the sales_pipeline row to avoid
+    an extra lookup.  If omitted, the UUID is resolved from sales_pipeline by address.
+
+    Currently chain_links is empty until Phase 3 chain-capture, so all properties
+    pass as chain-free.  Any error in this tier returns BLOCKED (fail closed).
     """
     try:
         from db_supabase import supabase_for_backend
 
         client = supabase_for_backend()
+
+        pid = (property_id or "").strip()
+        if not pid:
+            row = (
+                client.table("sales_pipeline")
+                .select("id")
+                .eq("property_address", property_address)
+                .limit(1)
+                .execute()
+            )
+            rows = row.data or []
+            if not rows:
+                return (True, [])
+            pid = str(rows[0]["id"])
+
         result = (
             client.table("chain_links")
             .select("id,link_address,estate_agent,estate_agent_email")
-            .eq("property_id", property_address)
+            .eq("property_id", pid)
             .execute()
         )
         links = result.data or []
@@ -157,28 +189,32 @@ def check_tier_1c(property_address: str) -> tuple[bool, list[str]]:
 
     except Exception as exc:
         log.warning("[completeness_gate] check_tier_1c error for '%s': %s", property_address, exc)
-        return (True, [])  # fail open — do not block on chain data errors
+        return (False, [f"check errored: {exc}"])
 
 
 def check_tier_1d(property_data: dict) -> tuple[bool, list[str]]:
     """Tier 1D: sale_price required; other transaction details captured but optional."""
-    missing: list[str] = []
-
-    sale_price = (
-        property_data.get("sale_price")
-        or property_data.get("agreed_price")
-        or property_data.get("current_price")
-    )
-
     try:
-        price_val = float(sale_price) if sale_price is not None else 0
-    except (TypeError, ValueError):
-        price_val = 0
+        missing: list[str] = []
 
-    if price_val <= 0:
-        missing.append("sale_price")
+        sale_price = (
+            property_data.get("sale_price")
+            or property_data.get("agreed_price")
+            or property_data.get("current_price")
+        )
 
-    return (len(missing) == 0, missing)
+        try:
+            price_val = float(sale_price) if sale_price is not None else 0
+        except (TypeError, ValueError):
+            price_val = 0
+
+        if price_val <= 0:
+            missing.append("sale_price")
+
+        return (len(missing) == 0, missing)
+    except Exception as exc:
+        log.warning("[completeness_gate] check_tier_1d error: %s", exc)
+        return (False, [f"check errored: {exc}"])
 
 
 # ─────────────────────────────────────────────────────────────
@@ -324,7 +360,7 @@ def evaluate_property_readonly(prop: dict) -> dict | None:
 
     pass_1a, miss_1a = check_tier_1a(prop)
     pass_1b, miss_1b = check_tier_1b(prop)
-    pass_1c, miss_1c = check_tier_1c(addr)
+    pass_1c, miss_1c = check_tier_1c(addr, property_id=prop.get("id"))
     pass_1d, miss_1d = check_tier_1d(prop)
 
     all_pass = pass_1a and pass_1b and pass_1c and pass_1d
@@ -347,7 +383,7 @@ def _evaluate_property(prop: dict, client, emit_event_fn) -> dict | None:
     # Run tiers
     pass_1a, miss_1a = check_tier_1a(prop)
     pass_1b, miss_1b = check_tier_1b(prop)
-    pass_1c, miss_1c = check_tier_1c(addr)
+    pass_1c, miss_1c = check_tier_1c(addr, property_id=prop.get("id"))
     pass_1d, miss_1d = check_tier_1d(prop)
 
     all_pass = pass_1a and pass_1b and pass_1c and pass_1d

@@ -316,6 +316,29 @@ def run_completeness_gate_for_address(property_address: str) -> None:
         )
 
 
+def evaluate_property_readonly(prop: dict) -> dict | None:
+    """Evaluate completeness tiers without writing to intake_queue or events."""
+    addr = (prop.get("property_address") or "").strip()
+    if not addr:
+        return None
+
+    pass_1a, miss_1a = check_tier_1a(prop)
+    pass_1b, miss_1b = check_tier_1b(prop)
+    pass_1c, miss_1c = check_tier_1c(addr)
+    pass_1d, miss_1d = check_tier_1d(prop)
+
+    all_pass = pass_1a and pass_1b and pass_1c and pass_1d
+    all_missing = miss_1a + miss_1b + miss_1c + miss_1d
+
+    return {
+        "property_address": addr,
+        "gate_status": "ready" if all_pass else "blocked",
+        "property_data": prop,
+        "missing_fields": all_missing,
+        "tiers": {"1a": pass_1a, "1b": pass_1b, "1c": pass_1c, "1d": pass_1d},
+    }
+
+
 def _evaluate_property(prop: dict, client, emit_event_fn) -> dict | None:
     addr = (prop.get("property_address") or "").strip()
     if not addr:

@@ -12,8 +12,12 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 from html import escape
 
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+from utils.field_labels import labels_for_fields
 from utils.notification_log import (
     _content_hash,
     _insert_notification_log,
@@ -26,6 +30,7 @@ log = logging.getLogger(__name__)
 
 SEND_FROM = "David Britton Estates, powered by NUVU <salesprog@brittonestates.co.uk>"
 DIGEST_PROPERTY_ADDRESS = "__gate_digest__"
+TEMPLATE_DIR = Path(__file__).resolve().parents[1] / "templates"
 
 
 def _notification_email() -> str:
@@ -36,12 +41,23 @@ def _base_url() -> str:
     return os.environ.get("NUVU_BASE_URL", "https://nuvu-production.up.railway.app").rstrip("/")
 
 
-def _send_notification_email(to_email: str, subject: str, body: str, source: str):
+def _send_notification_email(
+    to_email: str,
+    subject: str,
+    body: str,
+    source: str,
+    *,
+    body_is_html: bool = False,
+):
+    html_body = body if body_is_html else (
+        f"<pre style=\"font-family:system-ui,-apple-system,sans-serif;white-space:pre-wrap;\">"
+        f"{escape(body)}</pre>"
+    )
     result = governed_send(
         "notifications",
         to_email,
         subject,
-        f"<pre style=\"font-family:system-ui,-apple-system,sans-serif;white-space:pre-wrap;\">{escape(body)}</pre>",
+        html_body,
         metadata={"source": source},
         from_address=SEND_FROM,
     )
@@ -140,7 +156,7 @@ def send_gate_digest(candidates: list[dict], send_fn=None) -> None:
         "from": SEND_FROM,
         "to": [to_email],
         "subject": subject,
-        "text": body,
+        "html": body,
     }
 
     def _send_digest():
@@ -151,6 +167,7 @@ def send_gate_digest(candidates: list[dict], send_fn=None) -> None:
             subject,
             body,
             "intake.gate_digest",
+            body_is_html=True,
         )
 
     result = send_notification_once(
@@ -216,30 +233,41 @@ def _gate_blocked_content(missing_fields: list[str]) -> list[str]:
     return sorted(str(field) for field in (missing_fields or []))
 
 
+def render_gate_digest(candidates: list[dict]) -> tuple[str, str]:
+    """Render the gate digest subject and HTML body for preview or send."""
+    return _build_digest_email(candidates)
+
+
 def _build_digest_email(candidates: list[dict]) -> tuple[str, str]:
     queue_url = f"{_base_url()}/intake-queue"
-    subject = f"NUVU Intake: {len(candidates)} Properties Need Data"
-    lines = [
-        "The completeness gate found new properties that need attention:",
-        "",
-    ]
-
-    for item in sorted(candidates, key=lambda c: c.get("property_address", "")):
-        property_address = item.get("property_address") or "Unknown property"
-        missing = ", ".join(_gate_blocked_content(item.get("missing_fields") or []))
-        lines.append(f"- {property_address}")
-        lines.append(f"  Missing: {missing or 'See NUVU for details'}")
-
-    lines.extend(
-        [
-            "",
-            f"View details: {queue_url}",
-            "",
-            "Please enter the missing data in EATOC.",
-            "NUVU will re-check automatically on next sync.",
-        ]
+    subject = f"NUVU — {len(candidates)} properties need attention"
+    properties = _digest_template_properties(candidates)
+    body = _template_env().get_template("email/gate_digest.html").render(
+        subject=subject,
+        properties=properties,
+        queue_url=queue_url,
     )
-    return subject, "\n".join(lines)
+    return subject, body
+
+
+def _template_env() -> Environment:
+    return Environment(
+        loader=FileSystemLoader(str(TEMPLATE_DIR)),
+        autoescape=select_autoescape(("html", "xml")),
+    )
+
+
+def _digest_template_properties(candidates: list[dict]) -> list[dict]:
+    properties: list[dict] = []
+    for item in sorted(candidates, key=lambda c: c.get("property_address", "")):
+        address = str(item.get("property_address") or "").strip() or "Unknown property"
+        properties.append(
+            {
+                "address": address,
+                "missing_labels": labels_for_fields(item.get("missing_fields") or []),
+            }
+        )
+    return properties
 
 
 def _build_email(

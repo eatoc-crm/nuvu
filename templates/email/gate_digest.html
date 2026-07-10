@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{{ subject }}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#F4F4F4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1B3A5C;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#F4F4F4;padding:24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#FFFFFF;">
+            <tr>
+              <td style="background:#1B3A5C;padding:28px 30px 24px 30px;text-align:center;">
+                <p style="margin:0;font-size:28px;font-weight:700;letter-spacing:0.18em;line-height:1;">
+                  <span style="color:#C5D93A;">N</span><span style="color:#FFFFFF;">UVU</span>
+                </p>
+                <p style="margin:10px 0 0 0;font-size:10px;font-weight:500;letter-spacing:0.28em;text-transform:uppercase;color:#B8B8B8;">Live Sales Progression</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 30px 8px 30px;background:#FFFFFF;">
+                <h1 style="margin:0;font-size:22px;line-height:1.35;font-weight:700;color:#1B3A5C;">{{ properties|length }} {{ "property needs" if properties|length == 1 else "properties need" }} attention</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 30px 20px 30px;background:#FFFFFF;">
+                <p style="margin:0;font-size:15px;line-height:1.6;color:#555555;">These properties need details completing before they can move through intake.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 30px 8px 30px;background:#FFFFFF;">
+                {% for property in properties %}
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 14px 0;">
+                  <tr>
+                    <td style="padding:16px 18px;background:#FFFFFF;border-left:3px solid #C5D93A;border-top:1px solid #E8E8E8;border-right:1px solid #E8E8E8;border-bottom:1px solid #E8E8E8;">
+                      <p style="margin:0 0 8px 0;font-size:16px;line-height:1.4;color:#1B3A5C;"><strong>{{ property.address }}</strong></p>
+                      <p style="margin:0;font-size:14px;line-height:1.6;color:#555555;">Missing: {{ property.missing_labels|join(", ") if property.missing_labels else "See NUVU for details" }}</p>
+                    </td>
+                  </tr>
+                </table>
+                {% endfor %}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:4px 30px 28px 30px;background:#FFFFFF;">
+                <p style="margin:0;font-size:14px;line-height:1.6;color:#555555;"><a href="{{ queue_url }}" style="color:#1B3A5C;text-decoration:underline;font-weight:600;">Open the intake queue</a></p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 30px 24px 30px;background:#F4F4F4;border-top:1px solid #E8E8E8;">
+                <p style="margin:0 0 10px 0;font-size:13px;line-height:1.55;color:#777777;">NUVU checks continuously — you will only be emailed when something changes.</p>
+                <p style="margin:0;font-size:13px;line-height:1.55;color:#777777;">David Britton Estates, powered by NUVU</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

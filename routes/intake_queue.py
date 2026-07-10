@@ -14,6 +14,7 @@ from flask import Blueprint, flash, redirect, render_template_string, request, s
 
 from db_supabase import supabase_for_backend
 from utils.events import emit_event
+from utils.field_labels import labels_for_fields
 
 intake_queue_bp = Blueprint("intake_queue", __name__)
 
@@ -341,8 +342,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
       <div class="missing-list">
         <strong>Missing fields:</strong>
         <ul>
-          {% for f in item.missing_fields %}
-          <li>{{ f | replace('_', ' ') | title }}</li>
+          {% for label in item.missing_field_labels %}
+          <li>{{ label }}</li>
           {% endfor %}
         </ul>
       </div>
@@ -394,6 +395,7 @@ def _enrich_items(items: list[dict], pipeline_map: dict) -> list[dict]:
         item["buyer_solicitor_firm"] = prop.get("buyer_solicitor_firm") or prop.get("buyers_solicitor", "")
         item["seller_solicitor_firm"]= prop.get("seller_solicitor_firm") or prop.get("vendors_solicitor", "")
         item["_time_in_queue"]       = _time_ago(item.get("created_at"))
+        item["missing_field_labels"] = labels_for_fields(item.get("missing_fields"))
     return items
 
 

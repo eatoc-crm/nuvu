@@ -227,7 +227,7 @@ Legend: **Auth** = NUVU staff session unless exempt. **Response** = primary retu
 |---------|-------------|------------------|
 | **Supabase (PostgREST)** | `db_supabase.py`, `db_portal.py`, route handlers | CRUD on `sales_progression`, `sales_pipeline`, `inbound_emails`, `chase_messages`, `chase_confirmations`, `chain_links`, `portal_sessions`, etc. |
 | **Resend** | `routes/auth.py` (magic link); `routes/progression.py` (welcome tracks); `email_engine.send_html_email` ← `routes/chase_engine.py`, `routes/progression.py` (chain outreach when enabled); `routes/portal_notify.py` (portal lifecycle + dispatch attachments); failure copy to `CHASE_TEAM_EMAIL` from chase engine | Outbound transactional HTML (+ PDF attachment on solicitor dispatch). |
-| **EATOC HTTP API** | `routes/crm.py` — `fetch_eatoc_properties`, `save_crm_note` | GET `https://app.eatoc.co.uk/api/nuvu/properties` (header `x-api-key: NUVU_API_KEY`); PATCH `…/properties/{id}` with `{ "nuvu_notes": … }`. |
+| **EATOC HTTP API** | `utils/eatoc_api.py` helper | Centralised GET/POST/PATCH helper owns the EATOC base URL and outbound API-key header construction. |
 | **Anthropic** | `routes/portal_forms.py` — `_claude_messages` | Messages API (`claude-haiku-4-5-20251001`) for seller form assistant. |
 
 **Not invoked by Flask routes in this repo:** `connectors/*.py`, `scripts/*` (Alto/EATOC utilities) — documented as reference/tooling only unless separately executed.
@@ -254,7 +254,7 @@ Everything else on the main app (including `/`, `/api/progression`, `/api/sales-
 ## Gaps / risks flagged during audit
 
 1. **`/api/duplicates` and `/api/chain/outreach`:** Global login guard applies first; they are **not** in `AUTH_EXEMPT_PREFIXES`, so a pure API client without session cookies cannot use them even with `X-NUVU-API-KEY`.
-2. **`POST /api/crm/notes/<prop_id>`:** Public at Flask layer with no `require_nuvu_api_key` — security posture depends entirely on deployment/network and EATOC’s acceptance of the server’s `x-api-key`.
+2. **`POST /api/crm/notes/<prop_id>`:** Public at Flask layer with no `require_nuvu_api_key` — security posture depends entirely on deployment/network and EATOC’s acceptance of the server API-key header.
 3. **`crm_cards.html`:** Unused template asset.
 4. **`GET /api/property/<id>`:** No frontend references located in-repo.
 

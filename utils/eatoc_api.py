@@ -28,6 +28,13 @@ def eatoc_get(path: str, params: Optional[Dict] = None) -> Union[Dict, List]:
     return resp.json()
 
 
+def eatoc_get_status(path: str, timeout: int = 10) -> int:
+    """GET from EATOC API and return only the HTTP status code."""
+    url = f"{EATOC_API_BASE}{path}"
+    resp = http_requests.get(url, headers=_headers(), timeout=timeout)
+    return resp.status_code
+
+
 def eatoc_post(path: str, body: dict) -> dict:
     """POST to EATOC API. Returns parsed JSON on success; raises on HTTP error."""
     url = f"{EATOC_API_BASE}{path}"

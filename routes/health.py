@@ -9,11 +9,10 @@ no sensitive data, no property information, no API keys.
 """
 import time
 import logging
-import requests
-import os
 from datetime import datetime
 from flask import Blueprint, jsonify
 from db_supabase import supabase
+from utils.eatoc_api import eatoc_get_status
 
 logger = logging.getLogger(__name__)
 health_bp = Blueprint("health", __name__)
@@ -32,17 +31,11 @@ def _check_supabase():
 def _check_eatoc_api():
     """Can we reach the EATOC adapter API?"""
     try:
-        base = os.environ.get("EATOC_API_BASE", "https://app.eatoc.co.uk")
-        key = os.environ.get("NUVU_API_KEY", "dbe-nuvu-2026")
         start = time.time()
-        resp = requests.get(
-            f"{base}/api/nuvu/properties",
-            headers={"x-api-key": key},
-            timeout=10,
-        )
+        status_code = eatoc_get_status("/api/nuvu/properties", timeout=10)
         return {
-            "status": "ok" if resp.status_code == 200 else "error",
-            "http_status": resp.status_code,
+            "status": "ok" if status_code == 200 else "error",
+            "http_status": status_code,
             "ms": round((time.time() - start) * 1000),
         }
     except Exception as e:

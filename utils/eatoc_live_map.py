@@ -1,12 +1,10 @@
 """EATOC live property list mapped to dashboard card shape (dashboard + portal)."""
 
-import os
 from datetime import datetime
 
 import requests as http_requests
 
-EATOC_API_URL = "https://app.eatoc.co.uk/api/nuvu/properties"
-NUVU_API_KEY = os.environ.get("NUVU_API_KEY", "dbe-nuvu-2026")
+from utils.eatoc_api import eatoc_get
 
 
 def _iso_date_prefix(val):
@@ -19,13 +17,7 @@ def _iso_date_prefix(val):
 def fetch_eatoc_properties():
     """Fetch live sales progression data from the EATOC CRM API."""
     try:
-        resp = http_requests.get(
-            EATOC_API_URL,
-            headers={"x-api-key": NUVU_API_KEY},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        return resp.json(), None
+        return eatoc_get("/api/nuvu/properties"), None
     except http_requests.RequestException as e:
         return [], str(e)
 

@@ -271,9 +271,7 @@ def sync_chain_links() -> None:
     """Fetch chain links from EATOC and upsert into local chain_links."""
     try:
         from utils.eatoc_api import eatoc_get
-        import os
 
-        base = os.environ.get("EATOC_API_BASE", "https://app.eatoc.co.uk")
         rows = eatoc_get("/api/nuvu/chain-links")
         if not isinstance(rows, list):
             rows = rows.get("chain_links") or rows.get("data") or []

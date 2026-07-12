@@ -57,15 +57,15 @@ Once Phase 1 is complete, the deal has momentum. These milestones progress in pa
 
 ### Channel 1 — Dedicated NUVU Email
 
-`davidbrittonestates@brandnuvu.co.uk` — the primary sales progression contact address. Solicitors, brokers, surveyors reply here. NUVU parses directly.
+Planned, not yet implemented in NUVU. Future dedicated NUVU email parsing will receive solicitor, broker, and surveyor replies directly.
 
 ### Channel 2 — Legacy Email Parsing
 
-`sales@brittonestates.co.uk` / `salesprog@brittonestates.co.uk` — safety net for contacts who don't use the NUVU address. NUVU monitors and parses for progression-relevant content.
+Planned, not yet implemented in NUVU. Future legacy email parsing may act as a safety net for contacts who do not use the dedicated NUVU address.
 
 ### Channel 3 — EATOC Note Feed (Permanent Sync)
 
-Any note added to a buyer or seller card in EATOC is pushed to NUVU in real time. **Hard rule: only properties that exist in NUVU (Under Offer and beyond).** No exceptions.
+Live. Any note added to a buyer or seller card in EATOC is pushed to NUVU via `/api/update` in real time. **Hard rule: only properties that exist in NUVU (Under Offer and beyond).** No exceptions.
 
 ### Email Matching Rules (Priority Order)
 
@@ -163,7 +163,7 @@ nuvu-live/
 | Custom domain | app.brandnuvu.co.uk (not yet configured) |
 | GitHub | github.com/eatoc-crm/nuvu (branch: main) |
 | Local dir | /Users/davidbritton/nuvu-live |
-| Supabase | grosqsxnwhuvazgbjwan.supabase.co |
+| Supabase | nuvu-production (`xhxgqbjrgqyrrazmvufh`) |
 | Deploy | Git push to main → Railway autodeploy |
 | Email sending | Resend (salesprog@brittonestates.co.uk) |
 

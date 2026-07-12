@@ -5,7 +5,6 @@ import requests as http_requests
 
 import shared  # loads shared config and provides `sb`
 from shared import sb, require_nuvu_api_key
-from routes.progression import _send_welcome_emails
 from utils.eatoc_api import eatoc_post
 from utils.events import emit_event
 
@@ -137,9 +136,6 @@ def api_intake():
         ).execute()
     except Exception as e:
         return jsonify({"error": f"sales_progression upsert failed: {e}"}), 500
-
-    # ── Welcome Engine: send 5 outbound emails ──────────────
-    _send_welcome_emails(data)
 
     return jsonify({"success": True, "property": addr}), 200
 

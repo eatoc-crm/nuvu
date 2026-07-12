@@ -491,7 +491,7 @@ def intake_queue_approve(property_address: str):
         },
     )
 
-    # Trigger welcome email using pipeline data
+    # Trigger welcome email using approved property data
     try:
         pipeline_result = (
             client.table("sales_pipeline")
@@ -500,9 +500,21 @@ def intake_queue_approve(property_address: str):
             .execute()
         )
         pipeline_row = (pipeline_result.data or [None])[0]
-        if pipeline_row:
+        progression_result = (
+            client.table("sales_progression")
+            .select("*")
+            .eq("property_address", property_address)
+            .execute()
+        )
+        progression_row = (progression_result.data or [None])[0]
+        property_data = {
+            **(pipeline_row or {}),
+            **(progression_row or {}),
+            "property_address": property_address,
+        }
+        if pipeline_row or progression_row:
             from routes.progression import _send_welcome_emails
-            _send_welcome_emails(pipeline_row)
+            _send_welcome_emails(property_data, trigger="intake_approved")
     except Exception as exc:
         import logging
         logging.getLogger(__name__).warning(

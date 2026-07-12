@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from datetime import datetime
 
@@ -157,6 +159,7 @@ def _send_welcome_email(
     html: str,
     track: str,
     property_address: str,
+    trigger: str | None = None,
 ) -> None:
     result = governed_send(
         "welcome",
@@ -171,6 +174,21 @@ def _send_welcome_email(
         from_address=WELCOME_FROM,
         property_address=property_address,
     )
+    if trigger:
+        emit_event(
+            event_type="comms_sent",
+            property_address=property_address,
+            actor="system",
+            summary=f"Welcome Engine {track}: {result}",
+            payload={
+                "trigger": trigger,
+                "track": track,
+                "category": "welcome",
+                "recipient": to_email,
+                "subject": subject,
+                "outcome": result,
+            },
+        )
     if result != "sent":
         raise RuntimeError(result)
 
@@ -187,7 +205,7 @@ def _completion_phrase(data):
     return "a target of 10\u201312 weeks from today"
 
 
-def _send_welcome_emails(data):
+def _send_welcome_emails(data, trigger: str | None = None):
     """Fire tracks 1-5 of the Welcome Engine. Never raises."""
     if not os.environ.get("WELCOME_ENGINE_ENABLED", "false").lower() == "true":
         print(
@@ -226,6 +244,7 @@ def _send_welcome_emails(data):
                 ),
                 "track_1_buyer",
                 addr,
+                trigger,
             )
             print(f"Welcome Engine: Track 1 sent to {buyer_email}")
         except Exception as e:
@@ -257,6 +276,7 @@ def _send_welcome_emails(data):
                 ),
                 "track_2_seller",
                 addr,
+                trigger,
             )
             print(f"Welcome Engine: Track 2 sent to {vendor_email}")
         except Exception as e:
@@ -287,6 +307,7 @@ def _send_welcome_emails(data):
                 ),
                 "track_3_buyer_solicitor",
                 addr,
+                trigger,
             )
             print(f"Welcome Engine: Track 3 sent to {bs_email}")
         except Exception as e:
@@ -317,6 +338,7 @@ def _send_welcome_emails(data):
                 ),
                 "track_4_seller_solicitor",
                 addr,
+                trigger,
             )
             print(f"Welcome Engine: Track 4 sent to {vs_email}")
         except Exception as e:
@@ -347,6 +369,7 @@ def _send_welcome_emails(data):
                 ),
                 "track_5_chain_agent",
                 addr,
+                trigger,
             )
             print(f"Welcome Engine: Track 5 sent to {ca_email}")
         except Exception as e:

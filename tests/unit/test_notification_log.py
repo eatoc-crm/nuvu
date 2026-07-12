@@ -2,6 +2,10 @@ from utils import notification_log
 from utils.intake_notifications import send_gate_digest
 
 
+class UniqueViolation(Exception):
+    pass
+
+
 class FakeResult:
     def __init__(self, data=None):
         self.data = data or []
@@ -13,6 +17,7 @@ class FakeSupabase:
             "notification_log": [],
             "intake_queue": [],
         }
+        self.enforce_notification_unique = False
 
     def table(self, name):
         return FakeQuery(self, name)
@@ -53,6 +58,14 @@ class FakeQuery:
         rows = self.db.rows.setdefault(self.table_name, [])
         if self.operation == "insert":
             row = dict(self.payload)
+            if self.table_name == "notification_log" and self.db.enforce_notification_unique:
+                for existing in rows:
+                    if (
+                        existing.get("agency_id") == row.get("agency_id")
+                        and existing.get("content_hash") == row.get("content_hash")
+                        and existing.get("sent_at", "") >= "2026-07-12T00:00:00"
+                    ):
+                        raise UniqueViolation("duplicate key value violates unique constraint uniq_notification_hash_v2")
             row.setdefault("id", f"row-{len(rows) + 1}")
             rows.append(row)
             return FakeResult([row])
@@ -89,6 +102,7 @@ def test_send_notification_once_logs_first_send(monkeypatch):
     assert result == "sent"
     assert sends == ["sent"]
     assert len(db.rows["notification_log"]) == 1
+    assert db.rows["notification_log"][0]["payload"]["status"] == "sent"
 
 
 def test_send_notification_once_skips_duplicate(monkeypatch):
@@ -113,6 +127,96 @@ def test_send_notification_once_skips_duplicate(monkeypatch):
 
     assert result == "duplicate_skipped"
     assert sends == ["first"]
+    assert len(db.rows["notification_log"]) == 1
+
+
+def test_send_notification_once_unique_violation_skips_concurrent_duplicate(monkeypatch):
+    db = FakeSupabase()
+    db.enforce_notification_unique = True
+    sends = []
+    monkeypatch.setattr(notification_log, "_client", lambda: db)
+    monkeypatch.setattr(notification_log, "_notification_exists", lambda *args, **kwargs: False)
+
+    first = notification_log.send_notification_once(
+        "1 High Street",
+        "gate_blocked",
+        ["buyer_email"],
+        "team@example.com",
+        lambda: sends.append("first"),
+    )
+    second = notification_log.send_notification_once(
+        "2 High Street",
+        "gate_blocked",
+        ["buyer_email"],
+        "team@example.com",
+        lambda: sends.append("second"),
+    )
+
+    assert first == "sent"
+    assert second == "duplicate_skipped"
+    assert sends == ["first"]
+    assert len(db.rows["notification_log"]) == 1
+
+
+def test_send_notification_once_reserved_row_blocks_after_crash(monkeypatch):
+    db = FakeSupabase()
+    sends = []
+    monkeypatch.setattr(notification_log, "_client", lambda: db)
+    content = ["buyer_email"]
+    db.rows["notification_log"].append(
+        {
+            "id": "row-crash",
+            "agency_id": "dbe",
+            "property_address": "1 High Street",
+            "notification_type": "gate_blocked",
+            "content_hash": notification_log._content_hash(content),
+            "recipient": "team@example.com",
+            "sent_at": "2026-07-12T09:00:00+00:00",
+            "payload": {"status": "reserved", "content": content},
+        }
+    )
+
+    result = notification_log.send_notification_once(
+        "1 High Street",
+        "gate_blocked",
+        content,
+        "team@example.com",
+        lambda: sends.append("second"),
+    )
+
+    assert result == "duplicate_skipped"
+    assert sends == []
+    assert len(db.rows["notification_log"]) == 1
+
+
+def test_send_notification_once_historical_hash_blocks_even_before_partial_index(monkeypatch):
+    db = FakeSupabase()
+    sends = []
+    monkeypatch.setattr(notification_log, "_client", lambda: db)
+    content = ["buyer_email"]
+    db.rows["notification_log"].append(
+        {
+            "id": "row-history",
+            "agency_id": "dbe",
+            "property_address": "Old Property",
+            "notification_type": "gate_blocked",
+            "content_hash": notification_log._content_hash(content),
+            "recipient": "team@example.com",
+            "sent_at": "2026-07-10T09:00:00+00:00",
+            "payload": {"status": "sent", "content": content},
+        }
+    )
+
+    result = notification_log.send_notification_once(
+        "New Property",
+        "gate_blocked",
+        content,
+        "team@example.com",
+        lambda: sends.append("new"),
+    )
+
+    assert result == "duplicate_skipped"
+    assert sends == []
     assert len(db.rows["notification_log"]) == 1
 
 

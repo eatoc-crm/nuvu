@@ -12,6 +12,7 @@ from flask import Blueprint, jsonify, request, session
 from db_supabase import supabase_for_backend
 from db_portal import fetch_ta6_ta10_session_for_pipeline
 from email_engine import send_html_email
+from utils.events import emit_event
 from utils.chase_templates import (
     CHASE_SEND_FROM,
     format_surveyor_panel_ul,
@@ -881,6 +882,45 @@ def _fetch_preferred_surveyor_rows(client, limit: int = 5) -> list[dict[str, Any
         return []
 
 
+def _emit_chase_comms_sent(
+    *,
+    property_id: str,
+    property_address: str,
+    chase_stage: str,
+    chase_day: int,
+    recipient_type: str,
+    recipient_email: str | None,
+    subject: str,
+    outcome: str,
+    dry_run: bool,
+    trigger: str,
+    message_type: str,
+    chain_link_id: str | None = None,
+) -> None:
+    addr = (property_address or "").strip() or str(property_id)
+    emit_event(
+        event_type="comms_sent",
+        property_address=addr,
+        actor="chase_engine",
+        summary=f"Chase Engine {chase_stage} day {chase_day}: {outcome}",
+        payload={
+            "category": "chase",
+            "trigger": trigger or chase_stage,
+            "chase_stage": chase_stage,
+            "chase_day": chase_day,
+            "message_type": message_type,
+            "property_id": str(property_id),
+            "property_address": addr,
+            "recipient_category": recipient_type,
+            "recipient": recipient_email,
+            "subject": subject,
+            "outcome": outcome,
+            "dry_run": dry_run,
+            "chain_link_id": chain_link_id,
+        },
+    )
+
+
 def send_chase_message(
     *,
     property_id: str,
@@ -915,24 +955,55 @@ def send_chase_message(
         if outbound_enabled is None
         else bool(outbound_enabled)
     )
+    property_address = _property_address_for_progression_id(client, rid)
+    trigger = dry_run_label or chase_stage
 
     if not enabled:
+        outcome = "dry_run"
         print(
-            f"[chase_engine] DRY-RUN {dry_run_label or chase_stage} day={chase_day} "
+            f"[chase_engine] DRY-RUN {trigger} day={chase_day} "
             f"property={rid} chain_link={clid or '-'} "
             f"to={recipient_email or '(no email)'} subject={subject[:80]!r}"
+        )
+        _emit_chase_comms_sent(
+            property_id=rid,
+            property_address=property_address,
+            chase_stage=chase_stage,
+            chase_day=chase_day,
+            recipient_type=recipient_type,
+            recipient_email=recipient_email,
+            subject=subject,
+            outcome=outcome,
+            dry_run=True,
+            trigger=trigger,
+            message_type=message_type,
+            chain_link_id=clid,
         )
         return True
 
     em = (recipient_email or "").strip()
     if not em or "@" not in em:
+        outcome = "blocked:no_recipient_email"
         print(
             f"[chase_engine] SKIP send (no recipient email) {chase_stage} "
             f"day={chase_day} property={rid}"
         )
+        _emit_chase_comms_sent(
+            property_id=rid,
+            property_address=property_address,
+            chase_stage=chase_stage,
+            chase_day=chase_day,
+            recipient_type=recipient_type,
+            recipient_email=recipient_email,
+            subject=subject,
+            outcome=outcome,
+            dry_run=False,
+            trigger=trigger,
+            message_type=message_type,
+            chain_link_id=clid,
+        )
         return False
 
-    property_address = _property_address_for_progression_id(client, rid)
     try:
         send_result = send_html_email(
             em,
@@ -946,9 +1017,38 @@ def send_chase_message(
                 f"[chase_engine] send blocked {chase_stage} day={chase_day} "
                 f"property={rid}: {send_result}"
             )
+            _emit_chase_comms_sent(
+                property_id=rid,
+                property_address=property_address,
+                chase_stage=chase_stage,
+                chase_day=chase_day,
+                recipient_type=recipient_type,
+                recipient_email=em,
+                subject=subject,
+                outcome=send_result,
+                dry_run=False,
+                trigger=trigger,
+                message_type=message_type,
+                chain_link_id=clid,
+            )
             return False
     except Exception as e:
+        outcome = "blocked:send_exception"
         print(f"[chase_engine] Resend FAILED {chase_stage} day={chase_day} property={rid}: {e}")
+        _emit_chase_comms_sent(
+            property_id=rid,
+            property_address=property_address,
+            chase_stage=chase_stage,
+            chase_day=chase_day,
+            recipient_type=recipient_type,
+            recipient_email=em,
+            subject=subject,
+            outcome=outcome,
+            dry_run=False,
+            trigger=trigger,
+            message_type=message_type,
+            chain_link_id=clid,
+        )
         team = _team_flag_email()
         if team and "@" in team:
             try:
@@ -961,6 +1061,21 @@ def send_chase_message(
             except Exception as e2:
                 print(f"[chase_engine] team flag email failed: {e2}")
         return False
+
+    _emit_chase_comms_sent(
+        property_id=rid,
+        property_address=property_address,
+        chase_stage=chase_stage,
+        chase_day=chase_day,
+        recipient_type=recipient_type,
+        recipient_email=em,
+        subject=subject,
+        outcome="sent",
+        dry_run=False,
+        trigger=trigger,
+        message_type=message_type,
+        chain_link_id=clid,
+    )
 
     now = datetime.now(timezone.utc).isoformat()
     row: dict[str, Any] = {

@@ -65,30 +65,16 @@ def get_event_counts_by_type() -> dict[str, int]:
 
 
 def get_active_gates() -> list[dict]:
-    """Properties with recent gate_raised events (last 7 days)
-    that have no subsequent human_decision to resolve them."""
+    """Properties currently waiting in the completeness gate queue."""
     try:
-        cutoff = (datetime.utcnow() - timedelta(days=7)).isoformat()
-
-        gates = (
-            supabase.table("events")
-            .select("*")
-            .eq("event_type", "gate_raised")
-            .gte("created_at", cutoff)
-            .order("created_at", desc=True)
+        result = (
+            supabase.table("intake_queue")
+            .select("property_address,gate_status,missing_fields,created_at,updated_at")
+            .in_("gate_status", ["ready", "blocked"])
+            .order("updated_at", desc=True)
             .execute()
-        ).data or []
-
-        decisions = (
-            supabase.table("events")
-            .select("property_address,created_at")
-            .eq("event_type", "human_decision")
-            .gte("created_at", cutoff)
-            .execute()
-        ).data or []
-
-        resolved = {d["property_address"] for d in decisions}
-        return [g for g in gates if g["property_address"] not in resolved]
+        )
+        return result.data or []
     except Exception as e:
         logger.error(f"Failed to fetch active gates: {e}")
         return []

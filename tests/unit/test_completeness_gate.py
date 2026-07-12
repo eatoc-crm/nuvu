@@ -418,6 +418,76 @@ def test_sweep_error_sets_property_blocked_gate_error(monkeypatch):
     assert events[-1]["payload"]["reason"] == "gate_error"
 
 
+def test_sweep_emits_gate_event_only_on_transition(monkeypatch):
+    db = FakeSupabase()
+    prop = {
+        **VALID_1A,
+        **VALID_1B,
+        "id": "property-1",
+        "property_address": "1 High Street",
+        "status": "active",
+        "do_not_chase": False,
+        "sale_price": 275000,
+        "buyer_email": "",
+    }
+    db.rows["sales_pipeline"].append(prop)
+    events = []
+    monkeypatch.setattr("db_supabase.supabase_for_backend", lambda: db)
+    monkeypatch.setattr("utils.events.emit_event", lambda **event: events.append(event))
+    monkeypatch.setattr("utils.intake_notifications.send_gate_digest", lambda candidates: None)
+    monkeypatch.setattr("utils.intake_notifications.send_intake_notification", lambda *args, **kwargs: None)
+
+    completeness_gate.run_completeness_gate()
+    assert len(events) == 1
+    assert events[-1]["payload"]["gate_status"] == "blocked"
+    assert events[-1]["payload"]["missing_fields"] == ["buyer_email"]
+
+    completeness_gate.run_completeness_gate()
+    assert len(events) == 1
+
+    prop["buyer_email"] = "buyer@example.com"
+    completeness_gate.run_completeness_gate()
+    assert len(events) == 2
+    assert events[-1]["payload"]["gate_status"] == "ready"
+
+    prop["buyer_phone"] = ""
+    completeness_gate.run_completeness_gate()
+    assert len(events) == 3
+    assert events[-1]["payload"]["gate_status"] == "blocked"
+    assert events[-1]["payload"]["missing_fields"] == ["buyer_phone"]
+
+
+def test_blocked_reason_set_change_emits_one_gate_event(monkeypatch):
+    db = FakeSupabase()
+    prop = {
+        **VALID_1A,
+        **VALID_1B,
+        "id": "property-1",
+        "property_address": "1 High Street",
+        "status": "active",
+        "do_not_chase": False,
+        "sale_price": 275000,
+        "buyer_email": "",
+    }
+    db.rows["sales_pipeline"].append(prop)
+    events = []
+    monkeypatch.setattr("db_supabase.supabase_for_backend", lambda: db)
+    monkeypatch.setattr("utils.events.emit_event", lambda **event: events.append(event))
+    monkeypatch.setattr("utils.intake_notifications.send_gate_digest", lambda candidates: None)
+    monkeypatch.setattr("utils.intake_notifications.send_intake_notification", lambda *args, **kwargs: None)
+
+    completeness_gate.run_completeness_gate()
+    assert len(events) == 1
+
+    prop["buyer_email"] = "buyer@example.com"
+    prop["buyer_phone"] = ""
+    completeness_gate.run_completeness_gate()
+
+    assert len(events) == 2
+    assert events[-1]["payload"]["gate_status"] == "blocked"
+    assert events[-1]["payload"]["missing_fields"] == ["buyer_phone"]
+
+
 def test_sweep_error_does_not_regress_approved_row(monkeypatch):
     db = FakeSupabase()
     db.rows["sales_pipeline"].append(

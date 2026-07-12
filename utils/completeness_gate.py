@@ -258,6 +258,19 @@ def run_completeness_gate() -> None:
 
         log.info("[completeness_gate] evaluating %d properties", len(properties))
 
+        # Snapshot current gate state before the rebuild so event emission can be
+        # transition-only even though the queue is refreshed each sweep.
+        current_gate_rows = (
+            client.table("intake_queue")
+            .select("property_address,gate_status,missing_fields")
+            .execute()
+        )
+        previous_gate_by_address = {
+            (row.get("property_address") or "").strip(): row
+            for row in (current_gate_rows.data or [])
+            if (row.get("property_address") or "").strip()
+        }
+
         # Only clear stale queue entries after confirming pipeline data exists.
         (
             client.table("intake_queue")
@@ -271,12 +284,18 @@ def run_completeness_gate() -> None:
 
         notification_candidates = []
         for prop in properties:
+            addr = (prop.get("property_address") or "").strip()
             try:
-                candidate = _evaluate_property(prop, client, emit_event)
+                candidate = _evaluate_property(
+                    prop,
+                    client,
+                    emit_event,
+                    previous_gate=previous_gate_by_address.get(addr),
+                )
                 if candidate:
                     notification_candidates.append(candidate)
             except Exception as exc:
-                addr = prop.get("property_address", "unknown")
+                addr = addr or prop.get("property_address", "unknown")
                 log.warning("[completeness_gate] error evaluating '%s': %s", addr, exc)
                 candidate = _set_gate_blocked(
                     prop,
@@ -284,6 +303,7 @@ def run_completeness_gate() -> None:
                     emit_event,
                     reason="gate_error",
                     error=str(exc),
+                    previous_gate=previous_gate_by_address.get(addr),
                 )
                 if candidate:
                     notification_candidates.append(candidate)
@@ -451,7 +471,26 @@ def evaluate_property_readonly(prop: dict) -> dict | None:
     }
 
 
-def _evaluate_property(prop: dict, client, emit_event_fn) -> dict | None:
+def _normalize_missing_fields(value) -> list[str]:
+    if not value:
+        return []
+    if isinstance(value, list):
+        return sorted(str(item) for item in value)
+    return sorted(str(value).split(","))
+
+
+def _gate_transition_changed(previous_gate: dict | None, new_status: str, missing_fields: list[str]) -> bool:
+    if not previous_gate:
+        return True
+    prev_status = previous_gate.get("gate_status")
+    if prev_status != new_status:
+        return True
+    if new_status == "blocked":
+        return _normalize_missing_fields(previous_gate.get("missing_fields")) != _normalize_missing_fields(missing_fields)
+    return False
+
+
+def _evaluate_property(prop: dict, client, emit_event_fn, previous_gate: dict | None = None) -> dict | None:
     addr = (prop.get("property_address") or "").strip()
     if not addr:
         return None
@@ -478,11 +517,11 @@ def _evaluate_property(prop: dict, client, emit_event_fn) -> dict | None:
     # Fetch current record (if any)
     existing = (
         client.table("intake_queue")
-        .select("gate_status,notification_sent,approved_at")
+        .select("gate_status,notification_sent,approved_at,missing_fields")
         .eq("property_address", addr)
         .execute()
     )
-    current = (existing.data or [None])[0]
+    current = previous_gate or (existing.data or [None])[0]
     prev_status = current["gate_status"] if current else None
 
     # If approved, never regress — skip further processing
@@ -490,8 +529,7 @@ def _evaluate_property(prop: dict, client, emit_event_fn) -> dict | None:
         return None
 
     # Determine whether to emit events / notifications
-    status_changed = (prev_status != new_status)
-    is_new = (prev_status is None)
+    gate_changed = _gate_transition_changed(current, new_status, all_missing)
 
     # Upsert
     row = {
@@ -509,13 +547,13 @@ def _evaluate_property(prop: dict, client, emit_event_fn) -> dict | None:
     }
 
     # Display flag only. Send decisions come from notification_log.
-    if status_changed:
+    if gate_changed:
         row["notification_sent"] = False
 
     client.table("intake_queue").upsert(row, on_conflict="property_address").execute()
 
-    # Emit event only on first appearance or status change (avoids spam)
-    if is_new or status_changed:
+    # Emit only when the stored gate state transitions or blocked reasons change.
+    if gate_changed:
         tiers = {"1a": pass_1a, "1b": pass_1b, "1c": pass_1c, "1d": pass_1d}
         if all_pass:
             summary = f"Completeness gate PASSED — awaiting approval"
@@ -546,6 +584,7 @@ def _set_gate_blocked(
     *,
     reason: str,
     error: str | None = None,
+    previous_gate: dict | None = None,
 ) -> dict | None:
     addr = (prop.get("property_address") or "").strip()
     if not addr:
@@ -553,11 +592,11 @@ def _set_gate_blocked(
 
     existing = (
         client.table("intake_queue")
-        .select("gate_status")
+        .select("gate_status,missing_fields")
         .eq("property_address", addr)
         .execute()
     )
-    current = (existing.data or [None])[0]
+    current = previous_gate or (existing.data or [None])[0]
     prev_status = current["gate_status"] if current else None
     if prev_status in ("approved", "rejected"):
         return None
@@ -574,23 +613,25 @@ def _set_gate_blocked(
         "missing_fields": missing_fields,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
-    if prev_status != "blocked":
+    gate_changed = _gate_transition_changed(current, "blocked", missing_fields)
+    if gate_changed:
         row["notification_sent"] = False
     client.table("intake_queue").upsert(row, on_conflict="property_address").execute()
 
-    emit_event_fn(
-        event_type="gate_raised",
-        property_address=addr,
-        actor="system",
-        summary=f"Completeness gate BLOCKED — {reason}",
-        payload={
-            "tiers": tiers,
-            "gate_status": "blocked",
-            "missing_fields": missing_fields,
-            "reason": reason,
-            "error": error,
-        },
-    )
+    if gate_changed:
+        emit_event_fn(
+            event_type="gate_raised",
+            property_address=addr,
+            actor="system",
+            summary=f"Completeness gate BLOCKED — {reason}",
+            payload={
+                "tiers": tiers,
+                "gate_status": "blocked",
+                "missing_fields": missing_fields,
+                "reason": reason,
+                "error": error,
+            },
+        )
 
     return {
         "property_address": addr,

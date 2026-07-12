@@ -158,7 +158,7 @@ def check_tier_1c(
             )
             rows = row.data or []
             if not rows:
-                return (True, [])
+                return (False, ["pipeline_row_missing"])
             pid = str(rows[0]["id"])
 
         result = (
@@ -225,7 +225,9 @@ def run_completeness_gate() -> None:
     """Main entry point. Called from adapter_sync after every sync cycle.
 
     Kill switch: COMPLETENESS_GATE_ENABLED=false → returns immediately.
-    All exceptions are caught; a gate failure must never crash the sync.
+    The sales_pipeline SELECT runs BEFORE intake_queue is touched; a query
+    failure leaves the queue intact.  Fatal errors log at ERROR level with
+    full traceback and emit a gate_raised event with payload error:true.
     """
     if os.environ.get("COMPLETENESS_GATE_ENABLED", "true").lower() != "true":
         log.debug("[completeness_gate] disabled — skipping")
@@ -239,10 +241,8 @@ def run_completeness_gate() -> None:
 
         client = supabase_for_backend()
 
-        # Clear stale intake_queue entries before rebuild
-        client.table("intake_queue").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
-        log.info("[completeness_gate] intake_queue cleared — rebuilding from current pipeline")
-
+        # Query sales_pipeline BEFORE touching intake_queue.  If this select
+        # fails the queue is left intact; the outer except catches it below.
         result = (
             client.table("sales_pipeline")
             .select("*")
@@ -258,6 +258,17 @@ def run_completeness_gate() -> None:
 
         log.info("[completeness_gate] evaluating %d properties", len(properties))
 
+        # Only clear stale queue entries after confirming pipeline data exists.
+        (
+            client.table("intake_queue")
+            .delete()
+            .neq("id", "00000000-0000-0000-0000-000000000000")
+            .neq("gate_status", "approved")
+            .neq("gate_status", "rejected")
+            .execute()
+        )
+        log.info("[completeness_gate] intake_queue cleared — rebuilding from current pipeline")
+
         notification_candidates = []
         for prop in properties:
             try:
@@ -267,6 +278,15 @@ def run_completeness_gate() -> None:
             except Exception as exc:
                 addr = prop.get("property_address", "unknown")
                 log.warning("[completeness_gate] error evaluating '%s': %s", addr, exc)
+                candidate = _set_gate_blocked(
+                    prop,
+                    client,
+                    emit_event,
+                    reason="gate_error",
+                    error=str(exc),
+                )
+                if candidate:
+                    notification_candidates.append(candidate)
 
         send_gate_digest(notification_candidates)
         for candidate in notification_candidates:
@@ -289,7 +309,22 @@ def run_completeness_gate() -> None:
         log.info("[completeness_gate] gate evaluation complete")
 
     except Exception as exc:
-        log.warning("[completeness_gate] run_completeness_gate unexpected error: %s", exc)
+        log.error(
+            "[completeness_gate] run_completeness_gate FATAL: %s",
+            exc,
+            exc_info=True,
+        )
+        try:
+            from utils.events import emit_event
+            emit_event(
+                event_type="gate_raised",
+                property_address="system",
+                actor="system",
+                summary=f"Completeness gate FATAL error: {exc}",
+                payload={"error": True, "exception": str(exc)},
+            )
+        except Exception as emit_exc:
+            log.error("[completeness_gate] also failed to emit error event: %s", emit_exc)
 
 
 def run_completeness_gate_for_address(property_address: str) -> None:
@@ -307,6 +342,7 @@ def run_completeness_gate_for_address(property_address: str) -> None:
     if not property_address:
         return
 
+    client = None
     try:
         from db_supabase import supabase_for_backend
         from utils.events import emit_event
@@ -322,9 +358,23 @@ def run_completeness_gate_for_address(property_address: str) -> None:
         rows = result.data or []
         if not rows:
             log.info(
-                "[completeness_gate] no row in sales_pipeline for '%s' — skipping gate",
+                "[completeness_gate] no row in sales_pipeline for '%s' — blocking gate",
                 property_address,
             )
+            candidate = _set_gate_blocked(
+                {"property_address": property_address},
+                client,
+                emit_event,
+                reason="pipeline_row_missing",
+            )
+            if candidate:
+                send_intake_notification(
+                    candidate["property_address"],
+                    candidate["gate_status"],
+                    candidate["property_data"],
+                    candidate["missing_fields"],
+                    candidate["tiers"],
+                )
             return
 
         if rows[0].get("do_not_chase") is True:
@@ -350,6 +400,32 @@ def run_completeness_gate_for_address(property_address: str) -> None:
             "[completeness_gate] run_completeness_gate_for_address error for '%s': %s",
             property_address, exc,
         )
+        if client is not None:
+            try:
+                from utils.events import emit_event
+                from utils.intake_notifications import send_intake_notification
+
+                candidate = _set_gate_blocked(
+                    {"property_address": property_address},
+                    client,
+                    emit_event,
+                    reason="gate_error",
+                    error=str(exc),
+                )
+                if candidate:
+                    send_intake_notification(
+                        candidate["property_address"],
+                        candidate["gate_status"],
+                        candidate["property_data"],
+                        candidate["missing_fields"],
+                        candidate["tiers"],
+                    )
+            except Exception as block_exc:
+                log.error(
+                    "[completeness_gate] failed to mark '%s' blocked after gate error: %s",
+                    property_address,
+                    block_exc,
+                )
 
 
 def evaluate_property_readonly(prop: dict) -> dict | None:
@@ -460,4 +536,66 @@ def _evaluate_property(prop: dict, client, emit_event_fn) -> dict | None:
         "property_data": prop,
         "missing_fields": all_missing,
         "tiers": {"1a": pass_1a, "1b": pass_1b, "1c": pass_1c, "1d": pass_1d},
+    }
+
+
+def _set_gate_blocked(
+    prop: dict,
+    client,
+    emit_event_fn,
+    *,
+    reason: str,
+    error: str | None = None,
+) -> dict | None:
+    addr = (prop.get("property_address") or "").strip()
+    if not addr:
+        return None
+
+    existing = (
+        client.table("intake_queue")
+        .select("gate_status")
+        .eq("property_address", addr)
+        .execute()
+    )
+    current = (existing.data or [None])[0]
+    prev_status = current["gate_status"] if current else None
+    if prev_status in ("approved", "rejected"):
+        return None
+
+    tiers = {"1a": False, "1b": False, "1c": False, "1d": False}
+    missing_fields = [reason]
+    row = {
+        "property_address": addr,
+        "gate_status": "blocked",
+        "tier_1a_pass": False,
+        "tier_1b_pass": False,
+        "tier_1c_pass": False,
+        "tier_1d_pass": False,
+        "missing_fields": missing_fields,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if prev_status != "blocked":
+        row["notification_sent"] = False
+    client.table("intake_queue").upsert(row, on_conflict="property_address").execute()
+
+    emit_event_fn(
+        event_type="gate_raised",
+        property_address=addr,
+        actor="system",
+        summary=f"Completeness gate BLOCKED — {reason}",
+        payload={
+            "tiers": tiers,
+            "gate_status": "blocked",
+            "missing_fields": missing_fields,
+            "reason": reason,
+            "error": error,
+        },
+    )
+
+    return {
+        "property_address": addr,
+        "gate_status": "blocked",
+        "property_data": prop,
+        "missing_fields": missing_fields,
+        "tiers": tiers,
     }

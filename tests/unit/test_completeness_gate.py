@@ -6,6 +6,7 @@ These tests are fully offline (no Supabase calls).
 import pytest
 from unittest.mock import MagicMock, patch
 
+from utils import completeness_gate
 from utils.completeness_gate import (
     check_tier_1a,
     check_tier_1b,
@@ -149,9 +150,20 @@ def test_tier_1c_pass_chain_free():
 
     with patch("db_supabase.supabase_for_backend", return_value=mock_client):
         from utils.completeness_gate import check_tier_1c
-        passed, missing = check_tier_1c("1 High Street, Penrith")
+        passed, missing = check_tier_1c("1 High Street, Penrith", property_id="property-1")
     assert passed is True
     assert missing == []
+
+
+def test_tier_1c_missing_pipeline_row_blocks():
+    mock_client = MagicMock()
+    mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value.data = []
+
+    with patch("db_supabase.supabase_for_backend", return_value=mock_client):
+        passed, missing = check_tier_1c("Missing Pipeline Row")
+
+    assert passed is False
+    assert missing == ["pipeline_row_missing"]
 
 
 def test_tier_1c_pass_chain_80_percent():
@@ -243,7 +255,7 @@ def test_overall_ready_when_all_tiers_pass():
         )
         pass_1a, _ = check_tier_1a(all_pass_data)
         pass_1b, _ = check_tier_1b(all_pass_data)
-        pass_1c, _ = check_tier_1c("1 High Street")
+        pass_1c, _ = check_tier_1c("1 High Street", property_id="property-1")
         pass_1d, _ = check_tier_1d(all_pass_data)
 
     assert pass_1a and pass_1b and pass_1c and pass_1d
@@ -299,3 +311,163 @@ def test_tier_1d_exception_returns_blocked():
     assert passed is False
     assert len(missing) == 1
     assert "check errored" in missing[0]
+
+
+class FakeResult:
+    def __init__(self, data=None):
+        self.data = data or []
+
+
+class FakeSupabase:
+    def __init__(self):
+        self.rows = {
+            "sales_pipeline": [],
+            "intake_queue": [],
+        }
+
+    def table(self, name):
+        return FakeQuery(self, name)
+
+
+class FakeQuery:
+    def __init__(self, db, table_name):
+        self.db = db
+        self.table_name = table_name
+        self.operation = "select"
+        self.filters = []
+        self.payload = None
+
+    def select(self, _columns):
+        self.operation = "select"
+        return self
+
+    def eq(self, key, value):
+        self.filters.append((key, value))
+        return self
+
+    def in_(self, key, values):
+        self.filters.append((key, set(values)))
+        return self
+
+    def delete(self):
+        self.operation = "delete"
+        return self
+
+    def neq(self, key, value):
+        self.filters.append((key, ("neq", value)))
+        return self
+
+    def upsert(self, payload, on_conflict=None):
+        self.operation = "upsert"
+        self.payload = payload
+        return self
+
+    def execute(self):
+        rows = self.db.rows.setdefault(self.table_name, [])
+        if self.operation == "delete":
+            self.db.rows[self.table_name] = [
+                row for row in rows if not self._matches(row)
+            ]
+            return FakeResult([])
+
+        if self.operation == "upsert":
+            row = dict(self.payload)
+            address = row.get("property_address")
+            for existing in rows:
+                if existing.get("property_address") == address:
+                    existing.update(row)
+                    return FakeResult([existing])
+            rows.append(row)
+            return FakeResult([row])
+
+        return FakeResult([row for row in rows if self._matches(row)])
+
+    def _matches(self, row):
+        for key, value in self.filters:
+            if isinstance(value, tuple) and value[0] == "neq":
+                if row.get(key) == value[1]:
+                    return False
+            elif isinstance(value, set):
+                if row.get(key) not in value:
+                    return False
+            elif row.get(key) != value:
+                return False
+        return True
+
+
+def test_sweep_error_sets_property_blocked_gate_error(monkeypatch):
+    db = FakeSupabase()
+    db.rows["sales_pipeline"].append(
+        {"property_address": "1 High Street", "status": "active", "do_not_chase": False}
+    )
+    events = []
+    monkeypatch.setattr("db_supabase.supabase_for_backend", lambda: db)
+    monkeypatch.setattr("utils.events.emit_event", lambda **event: events.append(event))
+    monkeypatch.setattr("utils.intake_notifications.send_gate_digest", lambda candidates: None)
+    monkeypatch.setattr("utils.intake_notifications.send_intake_notification", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        completeness_gate,
+        "_evaluate_property",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
+
+    completeness_gate.run_completeness_gate()
+
+    assert db.rows["intake_queue"][0]["gate_status"] == "blocked"
+    assert db.rows["intake_queue"][0]["missing_fields"] == ["gate_error"]
+    assert events[-1]["payload"]["reason"] == "gate_error"
+
+
+def test_sweep_error_does_not_regress_approved_row(monkeypatch):
+    db = FakeSupabase()
+    db.rows["sales_pipeline"].append(
+        {"property_address": "1 High Street", "status": "active", "do_not_chase": False}
+    )
+    db.rows["intake_queue"].append(
+        {"property_address": "1 High Street", "gate_status": "approved"}
+    )
+    monkeypatch.setattr("db_supabase.supabase_for_backend", lambda: db)
+    monkeypatch.setattr("utils.events.emit_event", lambda **event: None)
+    monkeypatch.setattr("utils.intake_notifications.send_gate_digest", lambda candidates: None)
+    monkeypatch.setattr("utils.intake_notifications.send_intake_notification", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        completeness_gate,
+        "_evaluate_property",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
+
+    completeness_gate.run_completeness_gate()
+
+    assert db.rows["intake_queue"][0]["gate_status"] == "approved"
+
+
+def test_single_address_error_sets_blocked_gate_error(monkeypatch):
+    db = FakeSupabase()
+    db.rows["sales_pipeline"].append(
+        {"property_address": "1 High Street", "status": "active", "do_not_chase": False}
+    )
+    monkeypatch.setattr("db_supabase.supabase_for_backend", lambda: db)
+    monkeypatch.setattr("utils.events.emit_event", lambda **event: None)
+    monkeypatch.setattr("utils.intake_notifications.send_intake_notification", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        completeness_gate,
+        "_evaluate_property",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
+
+    completeness_gate.run_completeness_gate_for_address("1 High Street")
+
+    assert db.rows["intake_queue"][0]["gate_status"] == "blocked"
+    assert db.rows["intake_queue"][0]["missing_fields"] == ["gate_error"]
+
+
+def test_single_address_missing_pipeline_row_sets_blocked(monkeypatch):
+    db = FakeSupabase()
+    monkeypatch.setattr("db_supabase.supabase_for_backend", lambda: db)
+    monkeypatch.setattr("utils.events.emit_event", lambda **event: None)
+    monkeypatch.setattr("utils.intake_notifications.send_intake_notification", lambda *args, **kwargs: None)
+
+    completeness_gate.run_completeness_gate_for_address("Missing Property")
+
+    assert db.rows["intake_queue"][0]["gate_status"] == "blocked"
+    assert db.rows["intake_queue"][0]["missing_fields"] == ["pipeline_row_missing"]

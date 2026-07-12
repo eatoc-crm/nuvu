@@ -2,6 +2,7 @@
 
 REQUIRED_TABLES = [
     "events",
+    "health_probe",
     "sales_pipeline",
     "chain_links",
     "sales_progression",

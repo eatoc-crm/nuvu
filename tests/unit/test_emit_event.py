@@ -1,5 +1,34 @@
 """Unit: emit_event validation and behaviour."""
+import utils.events as events_module
 from utils.events import emit_event, VALID_EVENT_TYPES
+
+
+class FakeResult:
+    def __init__(self, data):
+        self.data = data
+
+
+class FakeInsert:
+    def __init__(self, row):
+        self.row = row
+
+    def execute(self):
+        return FakeResult([{**self.row, "id": "fake-event-id"}])
+
+
+class FakeTable:
+    def insert(self, row):
+        return FakeInsert(row)
+
+
+class FakeSupabase:
+    def table(self, table_name):
+        assert table_name == "events"
+        return FakeTable()
+
+
+def _use_fake_supabase(monkeypatch):
+    monkeypatch.setattr(events_module, "supabase", FakeSupabase())
 
 
 def test_valid_event_types_complete():
@@ -37,8 +66,9 @@ def test_none_property_address_returns_none():
     assert result is None
 
 
-def test_valid_event_inserts_and_cleanup(supabase_client):
+def test_valid_event_inserts(monkeypatch):
     """A valid emit_event call should insert and return the row."""
+    _use_fake_supabase(monkeypatch)
     result = emit_event(
         event_type="comms_sent",
         property_address="UNIT_TEST_DELETE_ME",
@@ -50,11 +80,10 @@ def test_valid_event_inserts_and_cleanup(supabase_client):
     assert result["event_type"] == "comms_sent"
     assert result["property_address"] == "UNIT_TEST_DELETE_ME"
 
-    supabase_client.table("events").delete().eq("id", result["id"]).execute()
 
-
-def test_default_actor_is_system(supabase_client):
+def test_default_actor_is_system(monkeypatch):
     """When actor is not provided, defaults to 'system'."""
+    _use_fake_supabase(monkeypatch)
     result = emit_event(
         event_type="gate_raised",
         property_address="UNIT_TEST_DELETE_ME",
@@ -62,16 +91,13 @@ def test_default_actor_is_system(supabase_client):
     )
     assert result["actor"] == "system"
 
-    supabase_client.table("events").delete().eq("id", result["id"]).execute()
 
-
-def test_payload_defaults_to_empty_dict(supabase_client):
+def test_payload_defaults_to_empty_dict(monkeypatch):
     """When payload is not provided, defaults to {}."""
+    _use_fake_supabase(monkeypatch)
     result = emit_event(
         event_type="milestone_changed",
         property_address="UNIT_TEST_DELETE_ME",
         summary="Default payload test",
     )
     assert result["payload"] == {}
-
-    supabase_client.table("events").delete().eq("id", result["id"]).execute()

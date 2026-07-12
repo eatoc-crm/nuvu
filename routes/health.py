@@ -11,6 +11,7 @@ import time
 import logging
 import requests
 import os
+from datetime import datetime
 from flask import Blueprint, jsonify
 from db_supabase import supabase
 
@@ -48,20 +49,16 @@ def _check_eatoc_api():
         return {"status": "error", "error": str(e)}
 
 
-def _check_events_writable():
-    """Can we write to and delete from the events table?"""
+def _check_health_probe_writable():
+    """Can we write to and delete from the health_probe table?"""
     try:
         start = time.time()
         row = {
-            "event_type": "comms_sent",
-            "property_address": "HEALTH_CHECK_DELETE",
-            "summary": "Health check probe",
-            "actor": "health_check",
-            "payload": {"health_check": True},
+            "probed_at": datetime.utcnow().isoformat(),
         }
-        result = supabase.table("events").insert(row).execute()
+        result = supabase.table("health_probe").insert(row).execute()
         if result.data:
-            supabase.table("events").delete().eq(
+            supabase.table("health_probe").delete().eq(
                 "id", result.data[0]["id"]
             ).execute()
         return {"status": "ok", "ms": round((time.time() - start) * 1000)}
@@ -74,7 +71,7 @@ def health():
     checks = {
         "supabase": _check_supabase(),
         "eatoc_api": _check_eatoc_api(),
-        "events_writable": _check_events_writable(),
+        "health_probe_writable": _check_health_probe_writable(),
     }
 
     all_ok = all(c["status"] == "ok" for c in checks.values())

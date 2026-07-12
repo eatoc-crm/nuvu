@@ -1,27 +1,21 @@
-"""Smoke: Events table accepts writes and reads."""
+"""Smoke: health_probe table accepts writes, reads, and cleanup deletes."""
 
 
-def test_event_write_read_cycle(supabase_client):
-    """Insert a test event, read it back, delete it."""
-    test_row = {
-        "event_type": "comms_sent",
-        "property_address": "SMOKE_TEST_DELETE_ME",
-        "summary": "Smoke test event",
-        "actor": "pytest",
-        "payload": {"smoke_test": True},
-    }
+def test_health_probe_write_read_cleanup_cycle(supabase_client):
+    """Insert a health probe row, read it back, delete it."""
+    test_row = {}
 
-    insert = supabase_client.table("events").insert(test_row).execute()
-    assert insert.data, "Event insert returned no data"
+    insert = supabase_client.table("health_probe").insert(test_row).execute()
+    assert insert.data, "Health probe insert returned no data"
     event_id = insert.data[0]["id"]
 
     read = (
-        supabase_client.table("events")
+        supabase_client.table("health_probe")
         .select("*")
         .eq("id", event_id)
         .execute()
     )
     assert len(read.data) == 1
-    assert read.data[0]["property_address"] == "SMOKE_TEST_DELETE_ME"
+    assert read.data[0]["id"] == event_id
 
-    supabase_client.table("events").delete().eq("id", event_id).execute()
+    supabase_client.table("health_probe").delete().eq("id", event_id).execute()

@@ -225,6 +225,25 @@ def _pipeline_row_for_address(client, address: str) -> dict[str, Any] | None:
         return None
 
 
+def _property_address_for_progression_id(client, property_id: str) -> str:
+    pid = (property_id or "").strip()
+    if not pid:
+        return ""
+    try:
+        result = (
+            client.table("sales_progression")
+            .select("property_address")
+            .eq("id", pid)
+            .limit(1)
+            .execute()
+        )
+        rows = result.data or []
+        return (rows[0].get("property_address") or "").strip() if rows else ""
+    except Exception as exc:
+        print(f"[chase_engine] property address lookup failed for {pid}: {exc}")
+        return ""
+
+
 def _add_working_days_mon_fri(start: date, n: int) -> date:
     """Add n Mon–Fri working days (UK chase brief: ~10 weeks = 50 working days)."""
     if n <= 0:
@@ -913,8 +932,15 @@ def send_chase_message(
         )
         return False
 
+    property_address = _property_address_for_progression_id(client, rid)
     try:
-        send_result = send_html_email(em, subject, html_body, from_address=CHASE_SEND_FROM)
+        send_result = send_html_email(
+            em,
+            subject,
+            html_body,
+            from_address=CHASE_SEND_FROM,
+            property_address=property_address,
+        )
         if send_result != "sent":
             print(
                 f"[chase_engine] send blocked {chase_stage} day={chase_day} "

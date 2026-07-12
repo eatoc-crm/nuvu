@@ -151,14 +151,25 @@ def patch_progression(prog_id):
 WELCOME_FROM = "David Britton Estates, powered by NUVU <salesprog@brittonestates.co.uk>"
 
 
-def _send_welcome_email(to_email: str, subject: str, html: str, track: str) -> None:
+def _send_welcome_email(
+    to_email: str,
+    subject: str,
+    html: str,
+    track: str,
+    property_address: str,
+) -> None:
     result = governed_send(
         "welcome",
         to_email,
         subject,
         html,
-        metadata={"source": "welcome_engine", "track": track},
+        metadata={
+            "source": "welcome_engine",
+            "track": track,
+            "property_address": property_address,
+        },
         from_address=WELCOME_FROM,
+        property_address=property_address,
     )
     if result != "sent":
         raise RuntimeError(result)
@@ -214,6 +225,7 @@ def _send_welcome_emails(data):
                     "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
                 ),
                 "track_1_buyer",
+                addr,
             )
             print(f"Welcome Engine: Track 1 sent to {buyer_email}")
         except Exception as e:
@@ -244,6 +256,7 @@ def _send_welcome_emails(data):
                     "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
                 ),
                 "track_2_seller",
+                addr,
             )
             print(f"Welcome Engine: Track 2 sent to {vendor_email}")
         except Exception as e:
@@ -273,6 +286,7 @@ def _send_welcome_emails(data):
                     "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
                 ),
                 "track_3_buyer_solicitor",
+                addr,
             )
             print(f"Welcome Engine: Track 3 sent to {bs_email}")
         except Exception as e:
@@ -302,6 +316,7 @@ def _send_welcome_emails(data):
                     "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
                 ),
                 "track_4_seller_solicitor",
+                addr,
             )
             print(f"Welcome Engine: Track 4 sent to {vs_email}")
         except Exception as e:
@@ -331,6 +346,7 @@ def _send_welcome_emails(data):
                     "<p>Kind regards,<br>The Sales Progression Team<br>David Britton Estates</p>"
                 ),
                 "track_5_chain_agent",
+                addr,
             )
             print(f"Welcome Engine: Track 5 sent to {ca_email}")
         except Exception as e:
@@ -476,6 +492,7 @@ def api_chain_outreach():
                 subject,
                 html,
                 from_address=DEFAULT_SEND_FROM,
+                property_address=property_address,
             )
             if send_result != "sent":
                 return jsonify({"error": f"email send blocked: {send_result}"}), 503

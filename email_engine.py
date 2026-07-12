@@ -428,7 +428,7 @@ DEFAULT_SEND_FROM = (
 )
 
 
-def send_html_email(to, subject, html_body, from_address=None):
+def send_html_email(to, subject, html_body, from_address=None, property_address=None):
     """Send a single HTML email through the send governor.
 
     ``to`` may be one address (str) or a list of strings.
@@ -440,6 +440,10 @@ def send_html_email(to, subject, html_body, from_address=None):
         to,
         subject,
         html_body,
-        metadata={"source": "email_engine.send_html_email"},
+        metadata={
+            "source": "email_engine.send_html_email",
+            "property_address": property_address,
+        },
         from_address=from_address or DEFAULT_SEND_FROM,
+        property_address=property_address,
     )

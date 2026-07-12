@@ -125,6 +125,29 @@ def _counts_by_category(rows: list[dict[str, Any]]) -> dict[str, int]:
     return dict(Counter(str(row.get("category") or "unknown") for row in rows))
 
 
+def _property_is_do_not_chase(client, property_address: str) -> tuple[bool | None, str | None]:
+    addr = (property_address or "").strip()
+    if not addr:
+        return None, None
+    try:
+        result = (
+            client.table("sales_pipeline")
+            .select("do_not_chase")
+            .eq("property_address", addr)
+            .limit(1)
+            .execute()
+        )
+    except Exception as exc:
+        log.warning("[send_governor] do_not_chase lookup failed for '%s': %s", addr, exc)
+        return None, "do_not_chase_lookup_failed"
+
+    rows = result.data or []
+    if not rows:
+        log.warning("[send_governor] do_not_chase lookup found no row for '%s'", addr)
+        return None, "do_not_chase_lookup_failed"
+    return bool(rows[0].get("do_not_chase") is True), None
+
+
 def _cap_alert_body(reason: str, counts: dict[str, int], window_start: datetime) -> str:
     lines = [
         "<p>NUVU Send Governor has blocked outbound email because a send cap was hit.</p>",
@@ -228,11 +251,13 @@ def governed_send(
     *,
     from_address: str | None = None,
     attachments: list[dict[str, Any]] | None = None,
+    property_address: str | None = None,
 ) -> str:
     """Send an email through the global governor.
 
     Returns: 'sent' | 'blocked:<reason>'
-    Reasons: kill_switch_global, kill_switch_category, hourly_cap, daily_cap
+    Reasons: kill_switch_global, kill_switch_category, do_not_chase,
+    do_not_chase_lookup_failed, hourly_cap, daily_cap
     """
     attempted_at = _now()
     agency_id = _agency_id()
@@ -241,6 +266,10 @@ def governed_send(
     subject = str(subject or "")
     safe_metadata = _safe_metadata(metadata)
     client = _client()
+    linked_property_address = (
+        (property_address or "").strip()
+        or str((safe_metadata or {}).get("property_address") or "").strip()
+    )
 
     if not _bool_env("SEND_GOVERNOR_ENABLED", True):
         return _block(
@@ -265,6 +294,31 @@ def governed_send(
             attempted_at=attempted_at,
             metadata=safe_metadata,
         )
+
+    if category in {"chase", "welcome"} and linked_property_address:
+        blocked, lookup_error = _property_is_do_not_chase(client, linked_property_address)
+        if lookup_error:
+            return _block(
+                client=client,
+                agency_id=agency_id,
+                category=category,
+                recipients=recipients,
+                subject=subject,
+                reason=lookup_error,
+                attempted_at=attempted_at,
+                metadata=safe_metadata,
+            )
+        if blocked:
+            return _block(
+                client=client,
+                agency_id=agency_id,
+                category=category,
+                recipients=recipients,
+                subject=subject,
+                reason="do_not_chase",
+                attempted_at=attempted_at,
+                metadata=safe_metadata,
+            )
 
     if category != SYSTEM_CATEGORY:
         hour_start = attempted_at - timedelta(hours=1)

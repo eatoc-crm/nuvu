@@ -15,6 +15,7 @@ class FakeSupabase:
         self.rows = {
             "send_log": [],
             "notification_log": [],
+            "sales_pipeline": [],
         }
 
     def table(self, name):
@@ -182,6 +183,119 @@ def test_blocked_attempts_are_in_send_log(monkeypatch):
             "id": "send_log-1",
         }
     ]
+
+
+def test_do_not_chase_blocks_flagged_chase_addresses(monkeypatch):
+    db = FakeSupabase()
+    sends = []
+    now = datetime(2026, 7, 12, 12, 0, tzinfo=timezone.utc)
+    _setup(monkeypatch, db, sends, now)
+    flagged = [
+        "Plot at Culgaith",
+        "Romanway Irthington, CA6 4NF",
+        "The Barns at Albyfield",
+    ]
+    db.rows["sales_pipeline"] = [
+        {"property_address": addr, "do_not_chase": True}
+        for addr in flagged
+    ]
+
+    results = [
+        send_governor.governed_send(
+            "chase",
+            "buyer@example.com",
+            "Chase",
+            "<p>Body</p>",
+            property_address=addr,
+        )
+        for addr in flagged
+    ]
+
+    assert results == ["blocked:do_not_chase"] * 3
+    assert sends == []
+    assert [row["outcome"] for row in db.rows["send_log"]] == ["blocked:do_not_chase"] * 3
+
+
+def test_do_not_chase_allows_non_flagged_property(monkeypatch):
+    db = FakeSupabase()
+    sends = []
+    now = datetime(2026, 7, 12, 12, 0, tzinfo=timezone.utc)
+    _setup(monkeypatch, db, sends, now)
+    db.rows["sales_pipeline"].append(
+        {"property_address": "1 High Street", "do_not_chase": False}
+    )
+
+    result = send_governor.governed_send(
+        "chase",
+        "buyer@example.com",
+        "Chase",
+        "<p>Body</p>",
+        property_address="1 High Street",
+    )
+
+    assert result == "sent"
+    assert len(sends) == 1
+
+
+def test_do_not_chase_lookup_failure_blocks_chase(monkeypatch):
+    db = FakeSupabase()
+    sends = []
+    now = datetime(2026, 7, 12, 12, 0, tzinfo=timezone.utc)
+    _setup(monkeypatch, db, sends, now)
+
+    result = send_governor.governed_send(
+        "chase",
+        "buyer@example.com",
+        "Chase",
+        "<p>Body</p>",
+        property_address="Missing Address",
+    )
+
+    assert result == "blocked:do_not_chase_lookup_failed"
+    assert sends == []
+    assert db.rows["send_log"][0]["outcome"] == "blocked:do_not_chase_lookup_failed"
+
+
+def test_do_not_chase_blocks_welcome_category(monkeypatch):
+    db = FakeSupabase()
+    sends = []
+    now = datetime(2026, 7, 12, 12, 0, tzinfo=timezone.utc)
+    _setup(monkeypatch, db, sends, now)
+    db.rows["sales_pipeline"].append(
+        {"property_address": "The Barns at Albyfield", "do_not_chase": True}
+    )
+
+    result = send_governor.governed_send(
+        "welcome",
+        "seller@example.com",
+        "Welcome",
+        "<p>Body</p>",
+        property_address="The Barns at Albyfield",
+    )
+
+    assert result == "blocked:do_not_chase"
+    assert sends == []
+
+
+def test_do_not_chase_does_not_block_notifications(monkeypatch):
+    db = FakeSupabase()
+    sends = []
+    now = datetime(2026, 7, 12, 12, 0, tzinfo=timezone.utc)
+    _setup(monkeypatch, db, sends, now)
+    db.rows["sales_pipeline"].append(
+        {"property_address": "Plot at Culgaith", "do_not_chase": True}
+    )
+
+    result = send_governor.governed_send(
+        "notifications",
+        "team@example.com",
+        "Alert",
+        "<p>Body</p>",
+        property_address="Plot at Culgaith",
+    )
+
+    assert result == "sent"
+    assert len(sends) == 1
 
 
 def test_hourly_cap_uses_rolling_window(monkeypatch):
